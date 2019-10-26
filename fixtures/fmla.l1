@@ -1,0 +1,15 @@
+int main() {
+	int a;
+	int b;
+	int c;
+	int d;
+
+	a = 1;
+	b = 5;
+	c = 6;
+
+	// we don't have sq roots yet!
+	d = b*b-4*a*c;
+
+	return -b + d / 2 / a;
+}
