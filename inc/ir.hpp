@@ -25,8 +25,8 @@ r14             | r14d          | r14w          | r14b
 r15             | r15d          | r15w          | r15b
  */
 enum class Reg {
- RAX, RBX, RCX, RDX, RSI, RDI, RSP, RBP,
- R8, R9, R10, R11, R12, R13, R14, R15,
+	EAX, EDI, ESI, EDX, ECX, R8D, R9D, R10D, R11D,  // caller-saved
+	EBX, R12D, R13D, R14D, R15D, RSP, RBP, // callee-saved
 };
 
 
@@ -73,24 +73,31 @@ struct Inst {
 	Operand dst;
 	Operand s1;
 	Operand s2;
+	uint arity;
 
-	Inst(OpCode opcode, Operand dst, Operand s1, Operand s2) :
+	Inst(OpCode opcode, Operand dst, Operand s1, Operand s2, uint arity) :
 		opcode(opcode),
 		dst(dst),
 		s1(s1),
-		s2(s2)
+		s2(s2),
+		arity(arity)
+	{}
+
+	Inst(OpCode opcode, Operand dst, Operand s1, Operand s2) :
+		Inst(opcode, dst, s1, s2, 3)
 	{}
 
 	Inst(OpCode opcode, Operand dst, Operand src) :
-		Inst(opcode, dst, src, 0)
+		Inst(opcode, dst, src, 0, 2)
 	{}
 
 	Inst(OpCode opcode) :
-		Inst(opcode, 0, 0, 0)
+		Inst(opcode, 0, 0, 0, 0)
 	{}
 };
 
 
+std::ostream& operator<<(std::ostream& output, const OpCode& opcode);
 std::ostream& operator<<(std::ostream& output, const Reg& reg);
 std::ostream& operator<<(std::ostream& output, const Operand& op);
 std::ostream& operator<<(std::ostream& output, const Inst& inst);

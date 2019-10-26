@@ -3,4 +3,4 @@
 
 
 // TODO: return asm
-bool compile(std::string fn);
+std::string compile(std::string fn);

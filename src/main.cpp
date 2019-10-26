@@ -1,3 +1,4 @@
+#include <iostream>
 #include "files.hpp"
 #include "compiler.hpp"
 
@@ -18,5 +19,5 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	compile(src);
+	std::cout << compile(src) << std::endl;
 }

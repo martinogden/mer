@@ -1,38 +1,41 @@
-#include <iostream>
+#include <sstream>
 #include "compiler.hpp"
 #include "parser.hpp"
 #include "semant.hpp"
 #include "codegen.hpp"
+#include "regalloc.hpp"
+#include "instsel.hpp"
 
 
-void printMsgs(std::vector<std::string>& msgs) {
-	for (std::string& msg : msgs)
-		std::cout << msg << std::endl;
+std::string join(std::vector<std::string>& lines) {
+	std::stringstream buf;
+	for (std::string& line : lines)
+		buf << line << "\n";
+	return buf.str();
 }
 
 
-bool compile(std::string src) {
+std::string compile(std::string src) {
 	Parser parser(src);
 	Prog* program = parser.run();
 
-	if (!program) {
-		printMsgs(parser.getErrors());
-		return false;
-	}
+	if (!program)
+		return join( parser.getErrors() );
 
 	Semant semant(program);
 	bool is_valid = semant.run();
 
-	if (!is_valid) {
-		printMsgs(semant.getErrors());
-		return false;
-	}
+	if (!is_valid)
+		return join( semant.getErrors() );
+
 
 	CodeGen codegen(program);
 	std::vector<Inst>& insts = codegen.run();
 
-	for (Inst& inst : insts)
-		std::cout << inst << std::endl;
 
-	return true;
+	BasicBlock bb = toBasicBlock(insts);
+	std::set<Reg> regs = alloc(bb);
+
+	std::vector<std::string> as = instsel(bb.insts, regs);
+	return join(as);
 }

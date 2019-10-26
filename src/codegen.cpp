@@ -1,16 +1,36 @@
+#include <iostream>
 #include "codegen.hpp"
 
 
 CodeGen::CodeGen(Prog* program) :
 	program(program),
-	op(Reg::RAX),
-	tmp(0)
+	op(Reg::EAX),
+	// physical registers are indexed 0-15. temps 16-
+	// TODO: codegen shouldn't depend on # of physical registers
+	// find a better solution (this way makes reg alloc easy for now)
+	tmp(16)
 {}
 
 
 std::vector<Inst>& CodeGen::run() {
 	program->accept(*this);
 	return insts;
+}
+
+
+inline OpCode toOpCode(BinOp op) {
+	switch (op) {
+		case BinOp::ADD:
+			return OpCode::ADD;
+		case BinOp::SUB:
+			return OpCode::SUB;
+		case BinOp::MUL:
+			return OpCode::MUL;
+		case BinOp::DIV:
+			return OpCode::DIV;
+		case BinOp::MOD:
+			return OpCode::MOD;
+	}
 }
 
 
@@ -25,8 +45,8 @@ void CodeGen::visit(BinaryExpr* expr) {
 	setDst(s2);
 	expr->right->accept(*this);
 
-	// TODO use correct opcode
-	emit({ OpCode::ADD, dst, s1, s2 });
+	OpCode op = toOpCode(expr->op);
+	emit({ op, dst, s1, s2 });
 }
 
 
@@ -37,6 +57,7 @@ void CodeGen::visit(UnaryExpr* unary) {
 	setDst(src);
 	unary->expr->accept(*this);
 
+	assert(unary->op == UnOp::NEG);
 	emit({ OpCode::SUB, dst, {OpType::IMM, 0}, src });
 }
 
@@ -63,7 +84,7 @@ void CodeGen::visit(DeclStmt* stmt) {
 
 
 void CodeGen::visit(ReturnStmt* stmt) {
-	setDst(Reg::RAX);
+	setDst(Reg::EAX);
 	stmt->expr->accept(*this);
 	emit(OpCode::RET);
 }

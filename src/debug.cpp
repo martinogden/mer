@@ -1,7 +1,10 @@
+#include <iomanip>
+#include <sstream>
 #include "token.hpp"
 #include "ast.hpp"
 #include "operator.hpp"
 #include "ir.hpp"
+#include "graph.hpp"
 
 
 bool Token::operator==(const Token& other) const {
@@ -147,59 +150,93 @@ std::ostream& operator<<(std::ostream& output, const Reg& reg) {
 	std::string name;
 
 	switch (reg) {
-		case Reg::RAX:
-			name = "rax";
+		case Reg::EAX:
+			name = "eax";
 			break;
-		case Reg::RBX:
-			name = "rbx";
+		case Reg::EBX:
+			name = "ebx";
 			break;
-		case Reg::RCX:
-			name = "rcx";
+		case Reg::ECX:
+			name = "ecx";
 			break;
-		case Reg::RDX:
-			name = "rdx";
+		case Reg::EDX:
+			name = "edx";
 			break;
-		case Reg::RSI:
-			name = "rsi";
+		case Reg::ESI:
+			name = "esi";
 			break;
-		case Reg::RDI:
-			name = "rdi";
+		case Reg::EDI:
+			name = "edi";
 			break;
+
+		case Reg::R8D:
+			name = "r8d";
+			break;
+		case Reg::R9D:
+			name = "r9d";
+			break;
+		case Reg::R10D:
+			name = "r10d";
+			break;
+		case Reg::R11D:
+			name = "r11d";
+			break;
+		case Reg::R12D:
+			name = "r12d";
+			break;
+		case Reg::R13D:
+			name = "r13d";
+			break;
+		case Reg::R14D:
+			name = "r14d";
+			break;
+		case Reg::R15D:
+			name = "r15d";
+			break;
+
 		case Reg::RSP:
 			name = "rsp";
 			break;
 		case Reg::RBP:
 			name = "rbp";
 			break;
-
-		case Reg::R8:
-			name = "r8";
-			break;
-		case Reg::R9:
-			name = "r9";
-			break;
-		case Reg::R10:
-			name = "r10";
-			break;
-		case Reg::R11:
-			name = "r1";
-			break;
-		case Reg::R12:
-			name = "r12";
-			break;
-		case Reg::R13:
-			name = "r13";
-			break;
-		case Reg::R14:
-			name = "r14";
-			break;
-		case Reg::R15:
-			name = "r15";
-			break;
-
 	}
 
-	output << '%' << name;
+	output << name;
+	return output;
+}
+
+
+std::ostream& operator<<(std::ostream& output, const OpCode& opcode) {
+	switch (opcode) {
+		case OpCode::ADD:
+			output << "add";
+			break;
+		case OpCode::SUB:
+			output << "sub";
+			break;
+
+		case OpCode::MUL:
+			output << "mul";
+			break;
+
+		case OpCode::DIV:
+			output << "div";
+			break;
+
+		case OpCode::MOD:
+			output << "mod";
+			break;
+
+		case OpCode::MOV:
+			output << "mov";
+			break;
+
+		case OpCode::RET:
+			output << "ret";
+			break;
+	}
+
 	return output;
 }
 
@@ -208,13 +245,13 @@ std::ostream& operator<<(std::ostream& output, const Operand& op) {
 
 	switch (op.type) {
 		case OpType::REG:
-			output << static_cast<Reg>(op.value);
+			output << '%' << static_cast<Reg>(op.value);
 			break;
 		case OpType::IMM:
-			output << op.value;
+			output << '$' << op.value;
 			break;
 		case OpType::TMP:
-			output << "#" << op.value;
+			output << '#' << op.value;
 			break;
 	}
 
@@ -223,52 +260,70 @@ std::ostream& operator<<(std::ostream& output, const Operand& op) {
 
 
 std::ostream& operator<<(std::ostream& output, const Inst& inst) {
-	std::string name;
-	int arity;
-	char op;
-
-	switch (inst.opcode) {
-		case OpCode::ADD:
-			arity = 3;
-			op = '+';
-			break;
-		case OpCode::SUB:
-			arity = 3;
-			op = '-';
-			break;
-		case OpCode::MUL:
-			arity = 3;
-			op = '*';
-			break;
-		case OpCode::DIV:
-			arity = 3;
-			op = '+';
-			break;
-		case OpCode::MOD:
-			arity = 3;
-			op = '%';
-			break;
-
-		case OpCode::MOV:
-			arity = 2;
-			break;
-
-		case OpCode::RET:
-			arity = 0;
-			output << "ret";
-			break;
-	}
-
-	switch (arity) {
-		case 3:
-			output << inst.dst << " <- " << inst.s1 << " + " << inst.s2;
-			break;
-		case 2:
-			output << inst.dst << " <- " << inst.s1;
-			break;
-		default:
-			break;
-	}
+	output << inst.opcode;
+	if (inst.arity == 2)
+		output << " " << inst.s1 << " -> " << inst.dst;
+	if (inst.arity == 3)
+		output << " " << inst.s1 << ", " << inst.s2 << " -> " << inst.dst;
 
 	return output;
+}
+
+
+std::ostream& operator<<(std::ostream& output, const Graph& G) {
+	output << "graph G {" << std::endl;
+
+	for (auto& adj : G.adj)
+		output << "\t" << adj.first << std::endl;
+
+	for (auto& adj : G.adj) {
+		Vertex u = adj.first;
+
+		for (Vertex v : adj.second) {
+			if (u < v)
+				output << "\t" << u << " -- " << v << std::endl;
+		}
+	}
+
+	output << "}";
+
+	return output;
+}
+
+
+std::string toHexColor(uint c) {
+	std::stringstream output;
+	output << std::setfill('0') << std::setw(2) << std::hex << (202*c)%255;
+	output << std::setfill('0') << std::setw(2) << std::hex << (157*c)%255;
+	output << std::setfill('0') << std::setw(2) << std::hex << (3*c)%255;
+	return output.str();
+}
+
+
+std::string printGraph(Graph* G, std::unordered_map<Vertex, uint>& coloring) {
+	std::stringstream output;
+	output << "graph G {" << std::endl;
+
+	std::set<Vertex> V = G->getVertices();
+
+	for (uint u : V) {
+		uint c = coloring[u];
+		output << u << " [fillcolor=\"#" << toHexColor(c+1);
+		output << "\",label=\"";
+		if (u < 16)
+			output << static_cast<Reg>(u);
+		else
+			output << u;
+		output << "//" << c << "\",style=filled]" << std::endl;
+	}
+
+	for (uint u : V) {
+		for (uint v : G->getNeighbors(u)) {
+			if (u < v)
+				output << "\t" << u << " -- " << v << std::endl;
+		}
+	}
+	output << "}";
+
+	return output.str();
 }

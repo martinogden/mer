@@ -26,6 +26,6 @@ enum class AsnOp {
 };
 
 
-std::ostream& operator<<(std::ostream& output, const UnOp& cat);
-std::ostream& operator<<(std::ostream& output, const BinOp& cat);
-std::ostream& operator<<(std::ostream& output, const AsnOp& cat);
+std::ostream& operator<<(std::ostream& output, const UnOp& op);
+std::ostream& operator<<(std::ostream& output, const BinOp& op);
+std::ostream& operator<<(std::ostream& output, const AsnOp& op);
