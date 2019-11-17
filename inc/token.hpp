@@ -25,15 +25,39 @@ enum struct TokenType {
 	DIV,
 	MOD,
 	EQL,
+	BANG,
+	TILDE,
+	AMP,
+	PIPE,
+	CARET,
+	LT,
+	GT,
+	LT_LT,
+	GT_GT,
+	AMP_AMP,
+	PIPE_PIPE,
+	SUB_SUB,
+	ADD_ADD,
 	// ...are in the same order as these
 	ADD_EQL,
 	SUB_EQL,
 	MUL_EQL,
 	DIV_EQL,
 	MOD_EQL,
-	// EQL_EQL // not yet,
+	EQL_EQL,
+	BANG_EQL,
+	TILDE_EQL,
+	AMP_EQL,
+	PIPE_EQL,
+	CARET_EQL,
+	LT_EQL,
+	GT_EQL,
+	LT_LT_EQL,
+	GT_GT_EQL,
 
 	// punctuation
+	QUESTION,
+	COLON,
 	SEMICOLON,
 	LPAREN,
 	RPAREN,
@@ -42,9 +66,15 @@ enum struct TokenType {
 
 	// keywords
 	RETURN,
-	INT,
-};
+	IF,
+	ELSE,
+	WHILE,
+	FOR,
+	TRUE,
+	FALSE,
 
+	TYPE,
+};
 
 
 struct Token {

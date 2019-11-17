@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_set>
 #include <string>
 #include "token.hpp"
 
@@ -10,6 +11,7 @@ private:
 	uint curr;
 	uint line;
 	uint col;
+	std::unordered_set<std::string> types;
 
 	// src navigation
 	void incrCol();

@@ -1,9 +1,12 @@
 #pragma once
-#include <set>
-#include "ir.hpp"
-#include "cfg.hpp"
-#include "graph.hpp"
+#include <vector>
+#include <unordered_map>
+#include "operand.hpp"
+#include "x86asm.hpp"
 
 
-// allocated registers (in-place)
-std::set<Reg> alloc(BasicBlock& bb);
+typedef std::unordered_map<Operand, Reg> Alloc;
+
+Alloc regAlloc(std::vector<X86Asm>& code);
+
+std::vector<X86Asm> regAssign(std::vector<X86Asm>& code, Alloc& regs);

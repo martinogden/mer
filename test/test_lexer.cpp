@@ -41,12 +41,12 @@ TEST_CASE("Spacing", MODULE) {
 
 TEST_CASE("Valid program", MODULE) {
 	expect("int main() {\n\tint x = 3;\n\treturn x;\n}\n", {
-		{TokenType::INT, "int", 0, 1, 1},
+		{TokenType::TYPE, "int", 0, 1, 1},
 		{TokenType::IDENT, "main", 0, 1, 5},
 		{TokenType::LPAREN, "(", 0, 1, 9},
 		{TokenType::RPAREN, ")", 0, 1, 10},
 		{TokenType::LBRACE, "{", 0, 1, 12},
-		{TokenType::INT, "int", 0, 2, 2},
+		{TokenType::TYPE, "int", 0, 2, 2},
 		{TokenType::IDENT, "x", 0, 2, 6},
 		{TokenType::EQL, "=", 0, 2, 8},
 		{TokenType::NUM, "3", 3, 2, 10},

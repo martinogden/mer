@@ -1,13 +1,13 @@
 #pragma once
 #include <sstream>
-#include "visitor.hpp"
-#include "ast.hpp"
+#include "parse-tree-visitor.hpp"
+#include "parse-tree.hpp"
 
 
 class TreePrinter : public Visitor {
 private:
 	std::stringstream buffer;
-	Prog* program;
+	ParseTree* tree;
 
 	void append(std::string str);
 	void open(std::string atom);
@@ -16,18 +16,22 @@ private:
 	void close();
 
 public:
-	TreePrinter(Prog* program);
+	TreePrinter(ParseTree* program);
 	std::string run();
 
+	void visit(TernaryExpr*);
 	void visit(BinaryExpr*);
 	void visit(UnaryExpr*);
 	void visit(LiteralExpr*);
-	void visit(VarExpr*);
+	void visit(IdExpr*);
 
 	void visit(DeclStmt*);
+	void visit(IfStmt*);
+	void visit(WhileStmt*);
+	void visit(ForStmt*);
 	void visit(ReturnStmt*);
 	void visit(BlockStmt*);
+	void visit(ExprStmt*);
 	void visit(AssignStmt*);
-
-	void visit(Prog*);
+	void visit(PostOpStmt*);
 };

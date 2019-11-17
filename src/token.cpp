@@ -27,15 +27,18 @@ std::unordered_set<std::string> reserved = {
 
 
 std::unordered_map<std::string, TokenType> keywords = {
-	{"int", TokenType::INT},
 	{"return", TokenType::RETURN},
+	{"if", TokenType::IF},
+	{"else", TokenType::ELSE},
+	{"while", TokenType::WHILE},
+	{"for", TokenType::FOR},
+	{"true", TokenType::TRUE},
+	{"false", TokenType::FALSE},
 };
 
 
 std::string error(std::string msg, Token& token) {
 	std::stringstream buffer;
-	buffer << "Error on line ";
-	buffer << token.line << ", column " << token.col << "." << std::endl;
-	buffer << msg;
+	buffer << "(line " << token.line << ", column " << token.col << ')' << msg;
 	return buffer.str();
 }

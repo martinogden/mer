@@ -1,139 +1,121 @@
-#include <iostream>
 #include "codegen.hpp"
+#include "conversion.hpp"
 
 
-CodeGen::CodeGen(Prog* program) :
-	program(program),
-	op(Reg::EAX),
-	// physical registers are indexed 0-15. temps 16-
-	// TODO: codegen shouldn't depend on # of physical registers
-	// find a better solution (this way makes reg alloc easy for now)
-	tmp(16)
+CodeGen::CodeGen(IRTCmd* cmd, Generator& gen) :
+	cmd(cmd),
+	gen(gen),
+	retval("tmp")  // keep compiler happy
 {}
 
 
 std::vector<Inst>& CodeGen::run() {
-	program->accept(*this);
+	cmd->accept(*this);
 	return insts;
 }
 
-
-inline OpCode toOpCode(BinOp op) {
-	switch (op) {
-		case BinOp::ADD:
-			return OpCode::ADD;
-		case BinOp::SUB:
-			return OpCode::SUB;
-		case BinOp::MUL:
-			return OpCode::MUL;
-		case BinOp::DIV:
-			return OpCode::DIV;
-		case BinOp::MOD:
-			return OpCode::MOD;
-	}
-}
-
-
-void CodeGen::visit(BinaryExpr* expr) {
-	Operand dst = getDst();
-
-	Operand s1 = newTmp();
-	setDst(s1);
-	expr->left->accept(*this);
-
-	Operand s2 = newTmp();
-	setDst(s2);
-	expr->right->accept(*this);
-
-	OpCode op = toOpCode(expr->op);
-	emit({ op, dst, s1, s2 });
-}
-
-
-void CodeGen::visit(UnaryExpr* unary) {
-	Operand dst = getDst();
-
-	Operand src = newTmp();
-	setDst(src);
-	unary->expr->accept(*this);
-
-	assert(unary->op == UnOp::NEG);
-	emit({ OpCode::SUB, dst, {OpType::IMM, 0}, src });
-}
-
-
-void CodeGen::visit(LiteralExpr* expr) {
-	int value = expr->token.value;
-	emit({ OpCode::MOV, getDst(), {OpType::IMM, value} });
-}
-
-
-void CodeGen::visit(VarExpr* expr) {
-	emit({ OpCode::MOV, getDst(), lookup(expr->identifier) });
-}
-
-
-void CodeGen::visit(DeclStmt* stmt) {
-	Operand op = reserve(stmt->identifier);
-
-	if (stmt->expr) {
-		setDst(op);
-		stmt->expr->accept(*this);
-	}
-}
-
-
-void CodeGen::visit(ReturnStmt* stmt) {
-	setDst(Reg::EAX);
-	stmt->expr->accept(*this);
-	emit(OpCode::RET);
-}
-
-
-void CodeGen::visit(AssignStmt* stmt) {
-	setDst( lookup(stmt->lvalue) );
-	stmt->rvalue->accept(*this);
-}
-
-
-void CodeGen::visit(BlockStmt* block) {
-	for (auto stmt : block->statements)
-		stmt->accept(*this);
-}
-
-
-void CodeGen::visit(Prog* prog) {
-	for (auto stmt : prog->statements)
-		stmt->accept(*this);
-}
-
-
 void CodeGen::emit(Inst inst) {
-	insts.push_back(std::move(inst));
+	insts.push_back(inst);
 }
 
 
-Operand CodeGen::newTmp() {
-	return tmp++;
+void CodeGen::ret(Operand op) {
+	retval = op;
 }
 
 
-Operand CodeGen::getDst() {
-	return op;
+Operand& CodeGen::get(IRTExpr* expr) {
+	expr->accept(*this);
+	return retval;
 }
 
 
-void CodeGen::setDst(Operand dst) {
-	op = dst;
+void CodeGen::visit(SeqCmd* cmd) {
+	cmd->head->accept(*this);
+	cmd->rest->accept(*this);
 }
 
 
-Operand CodeGen::reserve(std::string id) {
-	env.define(id, tmp++);
-	return lookup(id);
+void CodeGen::visit(NopCmd* cmd) {}
+
+
+void CodeGen::visit(AssignCmd* cmd) {
+	Operand op = get(cmd->value);
+	emit({ Inst::MOV, cmd->var, op });
 }
 
 
-Operand CodeGen::lookup(std::string id) {
-	return env.lookup(id);
+void CodeGen::visit(EffAssignCmd* cmd) {
+	Operand left = get(cmd->left);
+	Operand right = get(cmd->right);
+	Inst::OpCode opcode = toOpCode(cmd->op);
+
+
+	// Operand t = right;
+	// if (right.is(Operand::IMM)) {
+	// 	t = gen.tmp();
+	// 	emit({ Inst::MOV, t, right });
+	// }
+
+	emit({ opcode, cmd->var, left, right });
+}
+
+
+void CodeGen::visit(LabelCmd* cmd) {
+	emit({ Inst::LBL, Operand::label(cmd->name) });
+}
+
+
+void CodeGen::visit(IfCmd* cmd) {
+	Operand t = gen.tmp();
+	Operand left = get(cmd->cmp.left);
+	Operand right = get(cmd->cmp.right);
+	Inst::OpCode opcode = toOpCode(cmd->cmp.op);
+
+	emit({ Inst::SUB, t, left, right });
+	emit({ opcode, t, Operand::label(cmd->then), Operand::label(cmd->otherwise) });
+}
+
+
+void CodeGen::visit(GotoCmd* cmd) {
+	emit({ Inst::JMP, Operand::label(cmd->label) });
+}
+
+
+void CodeGen::visit(ReturnCmd* cmd) {
+	Operand op = get(cmd->expr);
+
+	// // t will be assigned to %eax for x86-64 regalloc -
+	// // makes that easier if we add this extra var here
+	// Operand t = gen.tmp();
+	// emit({ Inst::MOV, t, op });
+
+	emit({ Inst::RET, op });
+}
+
+
+void CodeGen::visit(CmdExpr* e) {
+	e->cmd->accept(*this);
+	ret( get(e->expr) );
+}
+
+
+void CodeGen::visit(IntExpr* e) {
+	ret(e->value);
+}
+
+
+void CodeGen::visit(VarExpr* e) {
+	ret(e->name);
+}
+
+
+void CodeGen::visit(PairExpr* e) {
+	Operand left = get(e->left);
+	Operand right = get(e->right);
+	Operand t = gen.tmp();
+	Inst::OpCode opcode = toOpCode(e->op);
+
+	emit({ opcode, t, left, right });
+	ret(t);
 }

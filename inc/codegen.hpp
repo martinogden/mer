@@ -1,40 +1,39 @@
 #pragma once
 #include <vector>
-#include "visitor.hpp"
-#include "ast.hpp"
-#include "ir.hpp"
-#include "symtab.hpp"
+#include "irt-visitor.hpp"
+#include "irt.hpp"
+#include "operand.hpp"
+#include "generator.hpp"
 
 
-class CodeGen : public Visitor {
+class CodeGen : public IRTVisitor {
 private:
-	Prog* program;
+	IRTCmd* cmd;
+	Generator& gen;
+
 	std::vector<Inst> insts;
-	SymTab<int> env;
-	Operand op;
-	uint tmp;
+	Operand retval;
 
-	Operand newTmp();
-	void setDst(Operand dst);
-	Operand getDst();
-	Operand reserve(std::string name);
-	Operand lookup(std::string name);
-
-	void emit(Inst inst);
+	void emit(Inst);
+	void ret(Operand);
 
 public:
-	CodeGen(Prog* program);
-	std::vector<Inst>& run();
+	CodeGen(IRTCmd* cmd, Generator& gen);
 
-	void visit(BinaryExpr*);
-	void visit(UnaryExpr*);
-	void visit(LiteralExpr*);
+	void visit(SeqCmd*);
+	void visit(NopCmd*);
+	void visit(AssignCmd*);
+	void visit(EffAssignCmd*);
+	void visit(LabelCmd*);
+	void visit(IfCmd*);
+	void visit(GotoCmd*);
+	void visit(ReturnCmd*);
+
+	void visit(CmdExpr*);
+	void visit(IntExpr*);
 	void visit(VarExpr*);
+	void visit(PairExpr*);
 
-	void visit(DeclStmt*);
-	void visit(ReturnStmt*);
-	void visit(BlockStmt*);
-	void visit(AssignStmt*);
-
-	void visit(Prog*);
+	Operand& get(IRTExpr*);
+	std::vector<Inst>& run();
 };

@@ -1,11 +1,12 @@
 #include "catch.hpp"
 #include <string>
 #include "parser.hpp"
-#include "tree_printer.hpp"
+#include "tree-printer.hpp"
 
 
 void testParse(std::string src, std::string expected) {
-	Parser parser(src);
+	ParserSpec spec = createParserSpec();
+	Parser parser(src, spec);
 	Prog* program = parser.run();
 	TreePrinter printer(program);
 

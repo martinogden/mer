@@ -1,8 +1,8 @@
 CPP=clang++
 CPPFLAGS=-g -Wall -std=c++11 -Iinc -Ilib
 
-SRC=$(wildcard src/*.cpp)
-HDR=$(wildcard inc/*.hpp)
+SRC=$(wildcard src/*.cpp) $(wildcard src/parser/*.cpp) $(wildcard src/translator/*.cpp)
+HDR=$(wildcard inc/*.hpp) $(wildcard inc/parser/*.hpp) $(wildcard inc/translator/*.hpp)
 OBJ=$(SRC:src/%.cpp=build/%.o)
 
 TEST_SRC=$(wildcard test/*.cpp)
@@ -15,6 +15,8 @@ bin/c0c: $(OBJ) $(HDR)
 
 build/%.o: src/%.cpp
 	mkdir -p build
+	mkdir -p build/parser
+	mkdir -p build/translator
 	$(CPP) $(CPPFLAGS) -c $< -o $@
 
 
@@ -31,3 +33,5 @@ build/test/%.o: test/%.cpp
 clean:
 	rm -rf *.dSYM
 	rm -rf build
+	rm -f bin/c0c
+	rm -f bin/test

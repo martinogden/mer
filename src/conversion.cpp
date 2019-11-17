@@ -1,0 +1,166 @@
+#include "conversion.hpp"
+
+
+UnOp toUnOp(TokenType type) {
+	switch(type) {
+		case TokenType::BANG:
+			return UnOp::LOG_NOT;
+		case TokenType::TILDE:
+			return UnOp::BIT_NOT;
+		case TokenType::SUB:
+			return UnOp::NEG;
+		default:
+			throw 1;  // TODO: we should never get here
+	}
+}
+
+
+BinOp toBinOp(TokenType type) {
+	switch(type) {
+		// arithmetic
+		case TokenType::ADD:
+			return BinOp::ADD;
+		case TokenType::SUB:
+			return BinOp::SUB;
+		case TokenType::MUL:
+			return BinOp::MUL;
+		case TokenType::DIV:
+			return BinOp::DIV;
+		case TokenType::MOD:
+			return BinOp::MOD;
+
+		// comparision
+		case TokenType::LT:
+			return BinOp::LT;
+		case TokenType::LT_EQL:
+			return BinOp::LT_EQL;
+		case TokenType::GT:
+			return BinOp::GT;
+		case TokenType::GT_EQL:
+			return BinOp::GT_EQL;
+		case TokenType::EQL_EQL:
+			return BinOp::EQL;
+		case TokenType::BANG_EQL:
+			return BinOp::NOT_EQL;
+
+		// logic
+		case TokenType::AMP_AMP:
+			return BinOp::LOG_AND;
+		case TokenType::PIPE_PIPE:
+			return BinOp::LOG_OR;
+
+		// bitwise
+		case TokenType::AMP:
+			return BinOp::BIT_AND;
+		case TokenType::PIPE:
+			return BinOp::BIT_OR;
+		case TokenType::CARET:
+			return BinOp::XOR;
+		case TokenType::LT_LT:
+			return BinOp::LS;
+		case TokenType::GT_GT:
+			return BinOp::RS;
+
+		default:
+			throw 1;  // TODO: we should never get here
+	}
+}
+
+
+
+BinOp asnOpToBinOp(TokenType type) {
+	switch(type) {
+		// arithmetic
+		case TokenType::EQL:
+			return BinOp::EQL;
+		case TokenType::ADD_EQL:
+			return BinOp::ADD;
+		case TokenType::SUB_EQL:
+			return BinOp::SUB;
+		case TokenType::MUL_EQL:
+			return BinOp::MUL;
+		case TokenType::DIV_EQL:
+			return BinOp::DIV;
+		case TokenType::MOD_EQL:
+			return BinOp::MOD;
+
+		// bitwise
+		case TokenType::AMP_EQL:
+			return BinOp::BIT_AND;
+		case TokenType::PIPE_EQL:
+			return BinOp::BIT_OR;
+		case TokenType::CARET_EQL:
+			return BinOp::XOR;
+		case TokenType::LT_LT_EQL:
+			return BinOp::LS;
+		case TokenType::GT_GT_EQL:
+			return BinOp::RS;
+
+		default:
+			throw 1;  // TODO: we should never get here
+	}
+}
+
+
+BinOp postOpToBinOp(TokenType type) {
+	switch(type) {
+		case TokenType::ADD_ADD:
+			return BinOp::ADD;
+		case TokenType::SUB_SUB:
+			return BinOp::SUB;
+		default:
+			throw 1;  // TODO: we should never get here
+	}
+}
+
+
+Type toType(Token token) {
+	assert (token.type == TokenType::TYPE);
+
+	if (token.lexeme == "int")
+		return Type::INT;
+	else {
+		assert(token.lexeme == "bool");
+		return Type::BOOL;
+	}
+}
+
+
+Inst::OpCode toOpCode(BinOp op) {
+	switch (op) {
+		case BinOp::ADD:
+			return Inst::ADD;
+		case BinOp::SUB:
+			return Inst::SUB;
+		case BinOp::MUL:
+			return Inst::MUL;
+		case BinOp::DIV:
+			return Inst::DIV;
+		case BinOp::MOD:
+			return Inst::MOD;
+
+		case BinOp::BIT_AND:
+			return Inst::AND;
+		case BinOp::BIT_OR:
+			return Inst::OR;
+		case BinOp::XOR:
+			return Inst::XOR;
+
+		case BinOp::EQL:
+			return Inst::JEQ;
+		case BinOp::NOT_EQL:
+			return Inst::JNE;
+		case BinOp::LT:
+			return Inst::JLT;
+		case BinOp::LT_EQL:
+			return Inst::JLE;
+		case BinOp::GT:
+			return Inst::JGT;
+		case BinOp::GT_EQL:
+			return Inst::JGE;
+
+		default:
+			assert(false && "TODO: finish BinOp -> OpCode");
+			throw 1;
+	}
+}

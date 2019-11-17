@@ -1,154 +1,139 @@
 #include "ast.hpp"
 
 
-Expr::Expr(Token token) :
+ASTNode::ASTNode(Token token) :
 	token(token)
 {}
 
 
-Stmt::Stmt(Token token) :
-	token(token)
-{}
-
-
-DeclStmt::DeclStmt(Token token, std::string identifier, Expr* expr) :
-	Stmt(token),
-	identifier(identifier),
+AssignNode::AssignNode(Token token, std::string id, Expr* expr) :
+	ASTNode(token),
+	id(id),
 	expr(expr)
 {}
 
 
-DeclStmt::~DeclStmt() {
+AssignNode::~AssignNode() {
 	delete expr;
 }
 
 
-void DeclStmt::accept(Visitor& visitor) {
+void AssignNode::accept(ASTVisitor& visitor) {
 	visitor.visit(this);
 };
 
 
-ReturnStmt::ReturnStmt(Token token, Expr* expr) :
-	Stmt(token),
+IfNode::IfNode(Token token, Expr* cond, ASTNode* then, ASTNode* otherwise) :
+	ASTNode(token),
+	cond(cond),
+	then(then),
+	otherwise(otherwise)
+{}
+
+
+IfNode::~IfNode() {
+	delete cond;
+	delete then;
+	delete otherwise;
+}
+
+
+void IfNode::accept(ASTVisitor& visitor) {
+	visitor.visit(this);
+};
+
+
+WhileNode::WhileNode(Token token, Expr* cond, ASTNode* body) :
+	ASTNode(token),
+	cond(cond),
+	body(body)
+{}
+
+
+WhileNode::~WhileNode() {
+	delete cond;
+	delete body;
+}
+
+
+void WhileNode::accept(ASTVisitor& visitor) {
+	visitor.visit(this);
+};
+
+
+ReturnNode::ReturnNode(Token token, Expr* expr) :
+	ASTNode(token),
 	expr(expr)
 {}
 
 
-void ReturnStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
-};
-
-
-ReturnStmt::~ReturnStmt() {
+ReturnNode::~ReturnNode() {
 	delete expr;
 }
 
 
-BlockStmt::BlockStmt(Token token, std::vector<Stmt*> statements) :
-	Stmt(token),
-	statements(statements)
-{}
-
-
-BlockStmt::~BlockStmt() {
-	for (auto stmt : statements)
-		delete stmt;
-}
-
-
-void BlockStmt::accept(Visitor& visitor) {
+void ReturnNode::accept(ASTVisitor& visitor) {
 	visitor.visit(this);
 };
 
 
-AssignStmt::AssignStmt(Token token, std::string lvalue, AsnOp op, Expr* rvalue) :
-	Stmt(token),
-	op(op),
-	lvalue(lvalue),
-	rvalue(rvalue)
+NopNode::NopNode(Token token) :
+	ASTNode(token)
 {}
 
 
-AssignStmt::~AssignStmt() {
-	delete rvalue;
-}
-
-
-void AssignStmt::accept(Visitor& visitor) {
+void NopNode::accept(ASTVisitor& visitor) {
 	visitor.visit(this);
 };
 
 
-BinaryExpr::BinaryExpr(Token token, BinOp op, Expr* left, Expr* right) :
-	Expr(token),
-	op(op),
-	left(left),
-	right(right)
+SeqNode::SeqNode(Token token, ASTNode* head, ASTNode* rest) :
+	ASTNode(token),
+	head(head),
+	rest(rest)
 {}
 
 
-BinaryExpr::~BinaryExpr() {
-	delete left;
-	delete right;
+SeqNode::~SeqNode() {
+	delete head;
+	delete rest;
 }
 
 
-void BinaryExpr::accept(Visitor& visitor) {
+void SeqNode::accept(ASTVisitor& visitor) {
 	visitor.visit(this);
 };
 
 
-UnaryExpr::UnaryExpr(Token token, UnOp op, Expr* expr) :
-	Expr(token),
-	op(op),
+DeclNode::DeclNode(Token token, std::string id, Type type, ASTNode* scope) :
+	ASTNode(token),
+	id(id),
+	type(type),
+	scope(scope)
+{}
+
+
+DeclNode::~DeclNode() {
+	delete scope;
+}
+
+
+void DeclNode::accept(ASTVisitor& visitor) {
+	visitor.visit(this);
+};
+
+
+ExprNode::ExprNode(Token token, Expr* expr) :
+	ASTNode(token),
 	expr(expr)
 {}
 
 
-UnaryExpr::~UnaryExpr() {
+ExprNode::~ExprNode() {
 	delete expr;
 }
 
 
-void UnaryExpr::accept(Visitor& visitor) {
-	visitor.visit(this);
-};
-
-
-LiteralExpr::LiteralExpr(Token token) :
-	Expr(token),
-	value(std::stoi(token.lexeme))
-{}
-
-
-void LiteralExpr::accept(Visitor& visitor) {
-	visitor.visit(this);
-};
-
-
-VarExpr::VarExpr(Token token) :
-	Expr(token),
-	identifier(token.lexeme)
-{}
-
-
-void VarExpr::accept(Visitor& visitor) {
-	visitor.visit(this);
-};
-
-
-Prog::Prog(Token token, std::vector<Stmt*> statements) :
-	token(token),
-	statements(statements)
-{}
-
-
-Prog::~Prog() {
-	for (auto stmt : statements)
-		delete stmt;
-}
-
-
-void Prog::accept(Visitor& visitor) {
+void ExprNode::accept(ASTVisitor& visitor) {
 	visitor.visit(this);
 };

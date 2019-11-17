@@ -3,29 +3,52 @@
 
 
 enum class UnOp {
+	LOG_NOT,
+	BIT_NOT,
 	NEG,
 };
 
 
 enum class BinOp {
+	// arithmetic
 	ADD,
 	SUB,
 	MUL,
 	DIV,
 	MOD,
+
+	// relational
+	LT,
+	LT_EQL,
+	GT,
+	GT_EQL,
+	EQL,
+	NOT_EQL,
+
+	// logical
+	LOG_AND,
+	LOG_OR,
+
+	// bitwise
+	BIT_AND,
+	BIT_OR,
+	XOR,
+	LS,
+	RS,
 };
 
 
-enum class AsnOp {
-	ADD_EQL,
-	SUB_EQL,
-	MUL_EQL,
-	DIV_EQL,
-	MOD_EQL,
+enum class OpType {
+	ARITH,
+	BITWISE,
+	LOGICAL,
+	REL,
 	EQL,
 };
 
 
+OpType getOpType(BinOp op);
+
+
 std::ostream& operator<<(std::ostream& output, const UnOp& op);
 std::ostream& operator<<(std::ostream& output, const BinOp& op);
-std::ostream& operator<<(std::ostream& output, const AsnOp& op);

@@ -1,121 +1,100 @@
 #pragma once
-#include <iostream>
-#include <vector>
+#include <string>
 #include "token.hpp"
-#include "visitor.hpp"
-#include "operator.hpp"
+#include "ast-visitor.hpp"
+#include "type.hpp"
+#include "parse-tree.hpp"
 
 
-class Expr {
+class ASTNode {
 public:
 	Token token;
-
-	Expr(Token token);
-	virtual ~Expr() = default;
-	virtual void accept(Visitor& visitor) = 0;
+	ASTNode(Token token);
+	virtual ~ASTNode() = default;
+	virtual void accept(ASTVisitor& visitor) = 0;
 };
 
 
-class Stmt {
+class AssignNode : public ASTNode {
 public:
-	Token token;
-
-	Stmt(Token token);
-	virtual ~Stmt() = default;
-	virtual void accept(Visitor& visitor) = 0;
-};
-
-
-class DeclStmt : public Stmt {
-public:
-	std::string identifier;
+	std::string id;
 	Expr* expr;
 
-	DeclStmt(Token token, std::string identifier, Expr* expr);
-	~DeclStmt();
-	void accept(Visitor& visitor) override;
+	AssignNode(Token token, std::string id, Expr* expr);
+	~AssignNode();
+	void accept(ASTVisitor& visitor) override;
 };
 
 
-class ReturnStmt : public Stmt {
+class IfNode : public ASTNode {
+public:
+	Expr* cond;
+	ASTNode* then;
+	ASTNode* otherwise;
+
+	IfNode(Token token, Expr* cond, ASTNode* then, ASTNode* otherwise);
+	~IfNode();
+	void accept(ASTVisitor& visitor) override;
+};
+
+
+class WhileNode : public ASTNode {
+public:
+	Expr* cond;
+	ASTNode* body;
+
+	WhileNode(Token token, Expr* cond, ASTNode* body);
+	~WhileNode();
+	void accept(ASTVisitor& visitor) override;
+};
+
+
+class ReturnNode : public ASTNode {
 public:
 	Expr* expr;
 
-	ReturnStmt(Token token, Expr* expr);
-	~ReturnStmt();
-	void accept(Visitor& visitor) override;
+	ReturnNode(Token token, Expr* expr);
+	~ReturnNode();
+	void accept(ASTVisitor& visitor) override;
 };
 
 
-class BlockStmt : public Stmt {
-public:
-	std::vector<Stmt*> statements;
 
-	BlockStmt(Token token, std::vector<Stmt*> statements);
-	~BlockStmt();
-	void accept(Visitor& visitor) override;
+class NopNode : public ASTNode {
+public:
+	NopNode(Token token);
+	void accept(ASTVisitor& visitor) override;
 };
 
 
-class AssignStmt : public Stmt {
+class SeqNode : public ASTNode {
 public:
-	AsnOp op;
-	std::string lvalue;
-	Expr* rvalue;
+	ASTNode* head;
+	ASTNode* rest;
 
-	AssignStmt(Token token, std::string lvalue, AsnOp op, Expr* rvalue);
-	~AssignStmt();
-	void accept(Visitor& visitor) override;
+	SeqNode(Token token, ASTNode* head, ASTNode* rest);
+	~SeqNode();
+	void accept(ASTVisitor& visitor) override;
 };
 
 
-class BinaryExpr : public Expr {
+class DeclNode : public ASTNode {
 public:
-	BinOp op;
-	Expr* left;
-	Expr* right;
+	std::string id;
+	Type type;
+	ASTNode* scope;
 
-	BinaryExpr(Token token, BinOp op, Expr* left, Expr* right);
-	~BinaryExpr();
-	void accept(Visitor& visitor) override;
+	DeclNode(Token token, std::string id, Type type, ASTNode* scope);
+	~DeclNode();
+	void accept(ASTVisitor& visitor) override;
 };
 
 
-class UnaryExpr : public Expr {
+class ExprNode : public ASTNode {
 public:
-	UnOp op;
 	Expr* expr;
 
-	UnaryExpr(Token token, UnOp op, Expr* expr);
-	~UnaryExpr();
-	void accept(Visitor& visitor) override;
-};
-
-
-class LiteralExpr : public Expr {
-public:
-	int value;
-
-	LiteralExpr(Token token);
-	void accept(Visitor& visitor) override;
-};
-
-
-class VarExpr : public Expr {
-public:
-	std::string identifier;
-
-	VarExpr(Token token);
-	void accept(Visitor& visitor) override;
-};
-
-
-class Prog {
-public:
-	Token token;
-	std::vector<Stmt*> statements;
-
-	Prog(Token token, std::vector<Stmt*> statements);
-	~Prog();
-	void accept(Visitor& visitor);
+	ExprNode(Token token, Expr* expr);
+	~ExprNode();
+	void accept(ASTVisitor& visitor) override;
 };

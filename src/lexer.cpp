@@ -9,7 +9,8 @@ Lexer::Lexer(std::string src) :
 	src(src),
 	curr(0),
 	line(1),
-	col(1)
+	col(1),
+	types({"int", "bool"})
 {}
 
 
@@ -25,6 +26,10 @@ Token Lexer::nextToken() {
 
 		switch (c) {
 			// punctuation
+			case '?':
+				return emit(TokenType::QUESTION);
+			case ':':
+				return emit(TokenType::COLON);
 			case ';':
 				return emit(TokenType::SEMICOLON);
 			case '(':
@@ -37,6 +42,47 @@ Token Lexer::nextToken() {
 				return emit(TokenType::RBRACE);
 
 			// operators + special cases
+			case '>':
+				if (accept('>')) {
+					if (accept('='))
+						return emit(TokenType::GT_GT_EQL);
+					return emit(TokenType::GT_GT);
+				}
+				if (accept('='))
+					return emit(TokenType::GT_EQL);
+				return emit(TokenType::GT);
+			case '<':
+				if (accept('<')) {
+					if (accept('='))
+						return emit(TokenType::LT_LT_EQL);
+					return emit(TokenType::LT_LT);
+				}
+				if (accept('='))
+					return emit(TokenType::LT_EQL);
+				return emit(TokenType::LT);
+
+			case '!':
+				if (accept('='))
+					return emit(TokenType::BANG_EQL);
+				return emit(TokenType::BANG);
+			case '~':
+				return emit(TokenType::TILDE);
+			case '&':
+				if (accept('&'))
+					return emit(TokenType::AMP_AMP);
+				if (accept('='))
+					return emit(TokenType::AMP_EQL);
+				return emit(TokenType::AMP);
+			case '|':
+				if (accept('|'))
+					return emit(TokenType::PIPE_PIPE);
+				if (accept('='))
+					return emit(TokenType::PIPE_EQL);
+				return emit(TokenType::PIPE);
+			case '^':
+				if (accept('='))
+					return emit(TokenType::CARET_EQL);
+				return emit(TokenType::CARET);
 			case '/':
 				if (accept('/')) {
 					singleLineComment();
@@ -51,13 +97,17 @@ Token Lexer::nextToken() {
 				return op(c);
 			case '-':
 				if (accept('-'))
-					return emit(TokenType::RESERVED);
+					return emit(TokenType::SUB_SUB);
 				return op(c);
 			case '+':
+				if (accept('+'))
+					return emit(TokenType::ADD_ADD);
 			case '*':
 			case '%':
 				return op(c);
 			case '=':
+				if (accept('='))
+					return emit(TokenType::EQL_EQL);
 				return emit(TokenType::EQL);
 			default:
 				if (isDecDigit(c))
@@ -140,8 +190,10 @@ void Lexer::whitespace() {
 
 void Lexer::singleLineComment() {
 	while (!isAtEnd()) {
-		if (accept('\n'))
+		if (accept('\n')) {
+			incrLine();
 			break;
+		}
 		advance();
 	}
 }
@@ -293,6 +345,9 @@ Token Lexer::ident() {
 
 	if (keywords.find(lexeme) != keywords.end())
 		return emit(keywords[lexeme], lexeme);
+
+	if (types.find(lexeme) != types.end())
+		return emit(TokenType::TYPE, lexeme);
 
 	if (reserved.find(lexeme) != reserved.end())
 		return emit(TokenType::RESERVED, lexeme);
