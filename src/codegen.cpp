@@ -4,8 +4,7 @@
 
 CodeGen::CodeGen(IRTCmd* cmd, Generator& gen) :
 	cmd(cmd),
-	gen(gen),
-	retval("tmp")  // keep compiler happy
+	gen(gen)
 {}
 
 
@@ -50,13 +49,6 @@ void CodeGen::visit(EffAssignCmd* cmd) {
 	Operand right = get(cmd->right);
 	Inst::OpCode opcode = toOpCode(cmd->op);
 
-
-	// Operand t = right;
-	// if (right.is(Operand::IMM)) {
-	// 	t = gen.tmp();
-	// 	emit({ Inst::MOV, t, right });
-	// }
-
 	emit({ opcode, cmd->var, left, right });
 }
 
@@ -84,12 +76,6 @@ void CodeGen::visit(GotoCmd* cmd) {
 
 void CodeGen::visit(ReturnCmd* cmd) {
 	Operand op = get(cmd->expr);
-
-	// // t will be assigned to %eax for x86-64 regalloc -
-	// // makes that easier if we add this extra var here
-	// Operand t = gen.tmp();
-	// emit({ Inst::MOV, t, op });
-
 	emit({ Inst::RET, op });
 }
 

@@ -3,6 +3,7 @@
 #include "irt-visitor.hpp"
 #include "irt.hpp"
 #include "operand.hpp"
+#include "inst.hpp"
 #include "generator.hpp"
 
 

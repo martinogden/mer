@@ -5,6 +5,7 @@
 #include "operator.hpp"
 #include "graph.hpp"
 #include "operand.hpp"
+#include "inst.hpp"
 
 
 bool Token::operator==(const Token& other) const {
@@ -345,55 +346,30 @@ std::ostream& operator<<(std::ostream& output, const Inst::OpCode& opcode) {
 }
 
 
-// std::ostream& operator<<(std::ostream& output, const Operand& op) {
+// TODO: generalize: only works for T with a to_string method
+template <typename T>
+std::ostream& operator<<(std::ostream& output, const Graph<T>& G) {
+	output << "graph G {" << std::endl;
+	std::unordered_set<std::string> added;
+	for (auto& adj : G.adj)
+		output << "\t\"" << adj.first.to_string() << "\"" << std::endl;
 
-// 	switch (op.type) {
-// 		case OperandType::REG:
-// 			output << '%' << static_cast<Reg>(op.value);
-// 			break;
-// 		case OperandType::IMM:
-// 			output << '$' << op.value;
-// 			break;
-// 		case OperandType::TMP:
-// 			output << '#' << op.value;
-// 			break;
-// 	}
+	for (auto& adj : G.adj) {
+		T u = adj.first;
 
-// 	return output;
-// }
+		for (T v : adj.second) {
+			if (added.find(u.to_string() + v.to_string()) == added.end()) {
+				output << "\t\"" << u.to_string() << "\" -- \"" << v.to_string() << "\"" << std::endl;
+				added.insert(u.to_string() + v.to_string());
+				added.insert(v.to_string() + u.to_string());
+			}
+		}
+	}
 
+	output << "}";
 
-// std::ostream& operator<<(std::ostream& output, const Inst& inst) {
-// 	output << inst.opcode;
-// 	if (inst.arity == 2)
-// 		output << " " << inst.s1 << " -> " << inst.dst;
-// 	if (inst.arity == 3)
-// 		output << " " << inst.s1 << ", " << inst.s2 << " -> " << inst.dst;
-
-// 	return output;
-// }
-
-
-// template <typename T>
-// std::ostream& operator<<(std::ostream& output, const Graph<T>& G) {
-// 	output << "graph G {" << std::endl;
-
-// 	for (auto& adj : G.adj)
-// 		output << "\t" << adj.first << std::endl;
-
-// 	for (auto& adj : G.adj) {
-// 		T u = adj.first;
-
-// 		for (T v : adj.second) {
-// 			if (u < v)
-// 				output << "\t" << u << " -- " << v << std::endl;
-// 		}
-// 	}
-
-// 	output << "}";
-
-// 	return output;
-// }
+	return output;
+}
 
 
 std::string toHexColor(uint c) {

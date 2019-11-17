@@ -6,7 +6,6 @@
 #include "type-checker.hpp"
 #include "elaborator.hpp"
 #include "codegen.hpp"
-#include "regalloc.hpp"
 #include "tree-printer.hpp"
 #include "ast-printer.hpp"
 #include "init-checker.hpp"
@@ -15,8 +14,8 @@
 #include "irt-printer.hpp"
 #include "generator.hpp"
 #include "graph.hpp"
-#include "x86.hpp"
-#include "x86asm.hpp"
+#include "x86/codegen.hpp"
+#include "x86/regalloc.hpp"
 
 
 std::string join(std::vector<std::string>& lines) {
@@ -110,10 +109,10 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 	Alloc regs = regAlloc(code);
 
 	if (stage == Stage::REGALLOC) {
-		// for (const auto& pair : regs) {
-		// 	if (pair.first.is(Operand::TMP))
-		// 		std::cout << pair.first << " -> " << pair.second << std::endl;
-		// }
+		for (const auto& pair : regs) {
+			if (pair.first.is(Operand::TMP))
+				std::cout << pair.first << " -> " << pair.second << std::endl;
+		}
 		return {true, ""};
 	}
 

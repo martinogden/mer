@@ -1,8 +1,6 @@
 #include "parse-tree.hpp"
 
 
-// The 'identity' visitor
-
 void Visitor::visit(TernaryExpr* expr) {
 	expr->cond->accept(*this);
 	expr->then->accept(*this);

@@ -2,7 +2,7 @@
 #include <vector>
 #include <unordered_map>
 #include "operand.hpp"
-#include "x86asm.hpp"
+#include "x86/asm.hpp"
 
 
 typedef std::unordered_map<Operand, Reg> Alloc;

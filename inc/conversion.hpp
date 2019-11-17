@@ -4,6 +4,8 @@
 #include "operator.hpp"
 #include "type.hpp"
 #include "operand.hpp"
+#include "inst.hpp"
+#include "x86/asm.hpp"
 
 
 // tokentype -> operators
@@ -17,5 +19,9 @@ BinOp postOpToBinOp(TokenType type);
 Type toType(Token token);
 
 
-// operators -> opcodes
+// operators -> ir opcodes
 Inst::OpCode toOpCode(BinOp op);
+
+
+// ir opcodes -> asm opcodes
+X86Asm::OpCode toOpcode(Inst::OpCode opcode);

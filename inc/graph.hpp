@@ -92,26 +92,5 @@ public:
 		DiGraph<T>::removeEdge(v, u);
 	}
 
-	friend std::ostream& operator<<(std::ostream& output, const Graph& G) {
-		output << "graph G {" << std::endl;
-		std::unordered_set<std::string> added;
-		for (auto& adj : G.adj)
-			output << "\t\"" << adj.first.to_string() << "\"" << std::endl;
-
-		for (auto& adj : G.adj) {
-			T u = adj.first;
-
-			for (T v : adj.second) {
-				if (added.find(u.to_string() + v.to_string()) == added.end()) {
-					output << "\t\"" << u.to_string() << "\" -- \"" << v.to_string() << "\"" << std::endl;
-					added.insert(u.to_string() + v.to_string());
-					added.insert(v.to_string() + u.to_string());
-				}
-			}
-		}
-
-		output << "}";
-
-		return output;
-	}
+	friend std::ostream& operator<<(std::ostream& output, const Graph& G);
 };

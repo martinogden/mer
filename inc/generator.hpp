@@ -8,7 +8,8 @@ private:
 	int nextLabel;
 
 public:
-	Generator() : nextTmp(1), nextLabel(1) {}
+	Generator()
+		: nextTmp(1), nextLabel(1) {}
 
 	std::string tmp() {
 		return "#" + std::to_string(nextTmp++);

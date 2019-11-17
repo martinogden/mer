@@ -164,3 +164,48 @@ Inst::OpCode toOpCode(BinOp op) {
 			throw 1;
 	}
 }
+
+
+X86Asm::OpCode toOpcode(Inst::OpCode opcode) {
+	switch (opcode) {
+		case Inst::ADD:
+			return X86Asm::ADD;
+		case Inst::SUB:
+			return X86Asm::SUB;
+		case Inst::MUL:
+			return X86Asm::IMUL;
+		case Inst::DIV:
+		case Inst::MOD:
+			return X86Asm::IDIV;
+
+		case Inst::AND:
+			return X86Asm::AND;
+		case Inst::OR:
+			return X86Asm::OR;
+		case Inst::XOR:
+			return X86Asm::XOR;
+
+		case Inst::MOV:
+			return X86Asm::MOV;
+
+		case Inst::JMP:
+			return X86Asm::JMP;
+		case Inst::JEQ:
+			return X86Asm::JE;
+		case Inst::JNE:
+			return X86Asm::JNE;
+		case Inst::JLT:
+			return X86Asm::JL;
+		case Inst::JLE:
+			return X86Asm::JLE;
+		case Inst::JGT:
+			return X86Asm::JG;
+		case Inst::JGE:
+			return X86Asm::JGE;
+
+		case Inst::RET:
+			return X86Asm::RET;
+		case Inst::LBL:
+			return X86Asm::LBL;
+	}
+};
