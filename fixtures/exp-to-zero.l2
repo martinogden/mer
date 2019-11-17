@@ -1,0 +1,10 @@
+//test return 1
+
+int main() {
+    int x = 0xFF;
+
+    while (x > 0)
+        x /= 2;
+
+    return 1;
+}

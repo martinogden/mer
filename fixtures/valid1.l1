@@ -1,7 +1,7 @@
 //test return 7
 
 int main() {
-	int x;
-	x = 3;
-	return x + 4;
+    int x;
+    x = 3;
+    return x + 4;
 }

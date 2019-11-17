@@ -1,0 +1,6 @@
+//test return 3
+
+
+int main() {
+    return 0xF & 3;
+}

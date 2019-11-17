@@ -1,0 +1,13 @@
+//test return 45
+
+int main() {
+    int x = 0;
+    int i = 1;
+
+    while (i < 10) {
+        x += i;
+        i++;
+    }
+
+    return x;
+}

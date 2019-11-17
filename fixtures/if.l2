@@ -1,0 +1,12 @@
+//test return 3
+
+int main() {
+    int x = 2;
+
+    if (true) {
+        x++;
+        return x;
+    }
+    else
+        return -1;
+}

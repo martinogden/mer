@@ -1,0 +1,6 @@
+//test return 255
+
+
+int main() {
+    return 0x0F | 0xF0;
+}

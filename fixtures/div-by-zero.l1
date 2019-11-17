@@ -1,5 +1,5 @@
 //test div-by-zero
 
 int main() {
-	return 3 / 0;
+    return 3 / 0;
 }

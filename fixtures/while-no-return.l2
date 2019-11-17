@@ -1,0 +1,16 @@
+//test error
+// this actually does always return, but the
+// compiler shouldn't be able to detect it
+
+int main() {
+    int x = 0;
+    int i = 1;
+
+    while (true) {
+        x += i;
+        i++;
+
+        if (i == 10)
+            return x;
+    }
+}
