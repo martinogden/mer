@@ -23,5 +23,6 @@ Type toType(Token token);
 Inst::OpCode toOpCode(BinOp op);
 
 
+// TODO: better name
 // ir opcodes -> asm opcodes
 X86Asm::OpCode toOpcode(Inst::OpCode opcode);
