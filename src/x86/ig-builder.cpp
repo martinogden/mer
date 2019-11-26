@@ -26,86 +26,49 @@ Graph<Operand>* IGBuilder::run() {
 	return G;
 }
 
+/*
+Inference rule for interference relation on operands
 
+isTmpOrReg(d)
+isTmpOrReg(u)
+succ(l, l')
+def(l, d)
+live(l+1, u)
+------------
+inter(d, u)
+*/
 void IGBuilder::visit(X86Asm& as, uint l) {
-	switch (as.opcode) {
-		case X86Asm::LBL:
-			return;
-		case X86Asm::MOV:
-			return visitMov(as, l);
-		default:
-			break;
-	}
+	if (as.opcode == X86Asm::LBL)
+		return;
 
-	switch (as.parity) {
-		case 0:
-			return visitNullary(as, l);
-		case 1:
-			return visitUnary(as, l);
-		case 2:
-			return visitBinary(as, l);
-		default:
-			throw 1;  // TODO: we should never get here
-	}
-}
-
-
-void IGBuilder::visitNullary(X86Asm& as, uint l) {
-	Set<Operand>& live = liveness.get(l);
-	addVertices(live);
-	addEdges(live);
-}
-
-
-void IGBuilder::visitUnary(X86Asm& as, uint l) {
-	Set<Operand>& live = liveness.get(l);
-	addVertices(live | Set<Operand>({ as.dst }));
-	addEdges(live);
-}
-
-
-void IGBuilder::visitBinary(X86Asm& as, uint l) {
-	Set<Operand>& live = liveness.get(l);
-	addVertices(live | Set<Operand>({ as.dst, as.src }));
-	addEdges(live);
-}
-
-
-void IGBuilder::visitMov(X86Asm& as, uint l) {
-	bool isJoined = false;
-	bool bothTmps = as.dst.is(Operand::TMP) && as.src.is(Operand::TMP);
-	if (bothTmps)
-		isJoined = G->hasEdge(as.dst, as.src);
-
-	Set<Operand>& live = liveness.get(l);
-	addVertices(live | Set<Operand>({ as.dst, as.src }));
-	addEdges(live);
-
-	if (bothTmps && !isJoined)
-		G->removeEdge(as.dst, as.src);
-}
-
-
-void IGBuilder::addVertices(Set<Operand> ops) {
-	for (const auto& op : ops) {
-		if (op.is(Operand::REG) || op.is(Operand::TMP))
-			G->addVertex(op);
-	}
-}
-
-
-void IGBuilder::addEdges(Set<Operand>& live) {
-	// TODO reduce unnecessary loops
-	for (const auto& u : live) {
-		if (!u.is(Operand::REG) && !u.is(Operand::TMP))
+	for (const uint i : liveness.getSucc(l)) {
+		if (i >= n-1)
 			continue;
 
-		for (const auto& v : live) {
-			if (!v.is(Operand::REG) && !v.is(Operand::TMP))
-				continue;
+		for (const Operand& d : liveness.getDef(i)) {
+			for (const Operand& u : liveness.get(i)) {
+				// mov optimization
+				if (as.opcode == X86Asm::MOV && u == as.src)
+					continue;
 
-			if (u != v)
-				G->addEdge(u, v);
+				addEdge(d, u);
+			}
 		}
 	}
+}
+
+
+void IGBuilder::addEdge(const Operand& u, const Operand& v) {
+	if (!u.is(Operand::REG) && !u.is(Operand::TMP))
+		return;
+
+	if (!v.is(Operand::REG) && !v.is(Operand::TMP))
+		return;
+
+	if (u == v)
+		return;
+
+	G->addVertex(u);
+	G->addVertex(v);
+	G->addEdge(u, v);
 }

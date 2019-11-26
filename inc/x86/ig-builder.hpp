@@ -6,22 +6,17 @@
 
 class IGBuilder {
 private:
+	const uint n;
 	std::vector<X86Asm>& code;
 	LivenessAnalyser liveness;
 	Graph<Operand>* G;
 
 	void visit(X86Asm& as, uint l);
-	void visitNullary(X86Asm& as, uint l);
-	void visitUnary(X86Asm& as, uint l);
-	void visitBinary(X86Asm& as, uint l);
-	void visitMov(X86Asm& as, uint l);
-
-	void addVertices(Set<Operand> ops);
-	void addEdges(Set<Operand>& live);
+	void addEdge(const Operand& u, const Operand& v);
 
 public:
 	IGBuilder(std::vector<X86Asm>& code)
-		: code(code), liveness(code), G(new Graph<Operand>()) {}
+		: n(code.size()), code(code), liveness(code), G(new Graph<Operand>()) {}
 
 	Graph<Operand>* run();
 };
