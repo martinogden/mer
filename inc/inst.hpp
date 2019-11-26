@@ -5,27 +5,13 @@
 struct Inst {
 public:
 	enum OpCode {
-		ADD,
-		SUB,
-		MUL,
-		DIV,
-		MOD,
-
-		AND,
-		OR,
-		XOR,
-
-		MOV,
-
 		LBL,
-		JMP,
-		JEQ,
-		JNE,
-		JLT,
-		JLE,
-		JGT,
-		JGE,
 
+		ADD, SUB, MUL,
+		DIV, MOD,
+		AND, OR, XOR,
+		MOV,
+		JMP, JEQ, JNE, JLT, JLE, JGT, JGE,
 		RET,
 	};
 
