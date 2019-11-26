@@ -95,11 +95,13 @@ void ExprTranslator::visit(UnaryExpr* unary) {
 	assert(unary->type == Type::INT);
 	CmdExpr* e = get(unary->expr);
 	IRTExpr* expr;
+	IRTExpr* neg = new PairExpr(BinOp::SUB, new IntExpr(0), e->expr);
 
 	if (unary->op == UnOp::NEG)
-		expr = new PairExpr(BinOp::SUB, new IntExpr(0), e->expr);
+		expr = neg;
 	else if (unary->op == UnOp::BIT_NOT)
-		expr = new PairExpr(BinOp::XOR, new IntExpr(INT32_MAX), e->expr);
+		// ~x = -x - 1
+		expr = new PairExpr(BinOp::SUB, neg, new IntExpr(1));
 	else
 		throw 1;  // we should never get here
 
