@@ -20,4 +20,7 @@ public:
 
 	void run();
 	Set<Operand>& get(uint l);
+	Set<Operand>& getDef(uint l);
+	Set<Operand>& getUse(uint l);
+	Set<uint>& getSucc(uint l);
 };

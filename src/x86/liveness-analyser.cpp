@@ -65,6 +65,24 @@ void LivenessAnalyser::run() {
 
 
 Set<Operand>& LivenessAnalyser::get(uint l) {
-	assert(l < n);
+	assert(l <= n);
 	return live[l];
+}
+
+
+Set<Operand>& LivenessAnalyser::getDef(uint l) {
+	assert(l <= n);
+	return dua.getDef(l);
+}
+
+
+Set<Operand>& LivenessAnalyser::getUse(uint l) {
+	assert(l <= n);
+	return dua.getUse(l);
+}
+
+
+Set<uint>& LivenessAnalyser::getSucc(uint l) {
+	assert(l <= n);
+	return dua.getSucc(l);
 }
