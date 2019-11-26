@@ -81,7 +81,7 @@ void BoolExprTranslator::visit(UnaryExpr* unary) {
 	std::string t = getTrueLabel();
 	std::string f = getFalseLabel();
 
-	assert(unary->op == UnOp::NEG);
+	assert(unary->op == UnOp::LOG_NOT);
 	ret( get(unary->expr, f, t) );
 }
 
