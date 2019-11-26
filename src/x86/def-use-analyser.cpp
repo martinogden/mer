@@ -27,6 +27,7 @@ void DefUseAnalyser::visit(X86Asm& as, uint l) {
 			setUse(l, {{ Reg::EAX, Reg::EDX, as.dst }});
 			break;
 		case X86Asm::CDQ:
+			setUse(l, {{ Reg::EAX }});
 			setDef(l, {{ Reg::EDX }});
 			break;
 		case X86Asm::MOV:
@@ -34,7 +35,7 @@ void DefUseAnalyser::visit(X86Asm& as, uint l) {
 			setUse(l, {{ as.src }});
 			break;
 		case X86Asm::JMP:
-			succ[l] = succ[l] | Set<uint>({ label2Line(as.dst) });
+			succ[l] = Set<uint>({ label2Line(as.dst) });
 			break;
 		case X86Asm::JE:
 		case X86Asm::JNE:
@@ -47,8 +48,10 @@ void DefUseAnalyser::visit(X86Asm& as, uint l) {
 			break;
 		case X86Asm::RET:
 			setUse(l, {{ Reg::EAX }});
+			succ[l] = {};
 			break;
 		case X86Asm::PUSH:
+			setUse(l, {{ as.dst }});
 			break;
 		case X86Asm::POP:
 			setDef(l, {{ as.dst }});
@@ -95,7 +98,7 @@ void DefUseAnalyser::loadLabels() {
 	uint l = 0;
 	for(auto& as : code) {
 		if (as.opcode == X86Asm::LBL)
-			line[as.dst.to_string()] = l;
+			line[as.dst.to_string()] = nextLine(l);
 		l++;
 	}
 }
