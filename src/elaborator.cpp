@@ -78,13 +78,21 @@ void Elaborator::visit(WhileStmt* stmt) {
 
 
 void Elaborator::visit(ForStmt* stmt) {
-	if (dynamic_cast<DeclStmt*>(stmt->step))
-		errors.add("Cannot declare a variable here.", stmt->step->token);
-	ASTNode* body = new SeqNode(stmt->token, get(stmt->body), get(stmt->step));
+	ASTNode* body = get(stmt->body);
+
+	if (stmt->step) {
+		if (dynamic_cast<DeclStmt*>(stmt->step))
+			errors.add("Cannot declare a variable here.", stmt->step->token);
+		body = new SeqNode(stmt->token, body, get(stmt->step));
+	}
+
 	ASTNode* node = new WhileNode(stmt->token, stmt->cond, body);
 
-	// lift up to a declNode if stmt->init is a decl
-	ret( seq(stmt->init, node) );
+	if (stmt->init)
+		// lift up to a declNode if stmt->init is a decl
+		ret( seq(stmt->init, node) );
+	else
+		ret(node);
 }
 
 
