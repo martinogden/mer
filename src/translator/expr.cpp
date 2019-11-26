@@ -108,23 +108,25 @@ void ExprTranslator::visit(UnaryExpr* unary) {
 
 
 void ExprTranslator::visit(LiteralExpr* expr) {
-	if (expr->type == Type::BOOL) {
-		ret( transBool(expr) );
-		return;
+	int value;
+
+	switch (expr->type) {
+		case Type::INT:
+			value = expr->as.i;
+			break;
+		case Type::BOOL:
+			value = static_cast<int>(expr->as.b);
+			break;
+		default:
+			throw 1;  // we should never get here
 	}
 
-	assert(expr->type == Type::INT);
-	ret(new NopCmd(), new IntExpr(expr->as.i));
+	ret(new NopCmd(), new IntExpr(value));
 }
 
 
 void ExprTranslator::visit(IdExpr* expr) {
-	if (expr->type == Type::BOOL) {
-		ret( transBool(expr) );
-		return;
-	}
-
-	assert(expr->type == Type::INT);
+	assert(expr->type == Type::INT || expr->type == Type::BOOL);
 	ret(new NopCmd(), new VarExpr(expr->identifier));
 }
 
