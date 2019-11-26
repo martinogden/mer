@@ -49,12 +49,9 @@ void DefUseAnalyser::visit(X86Asm& as, uint l) {
 			setUse(l, {{ Reg::EAX }});
 			break;
 		case X86Asm::PUSH:
-			setDef(l, {{ Reg::RSP }});
-			setUse(l, {{ Reg::RSP }});
 			break;
 		case X86Asm::POP:
-			setDef(l, {{ Reg::RSP, as.dst }});
-			setUse(l, {{ Reg::RSP }});
+			setDef(l, {{ as.dst }});
 			break;
 		case X86Asm::CMP:
 			setUse(l, {{ as.dst, as.src }});
