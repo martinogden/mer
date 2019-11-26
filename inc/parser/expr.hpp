@@ -40,6 +40,7 @@ class TernaryParser : public LeftParser {
 public:
 	TernaryParser(int lbp=TERN);
 	Expr* parse(Expr* cond, Token& token, PrattParser& parser);
+	int getRBP();
 };
 
 

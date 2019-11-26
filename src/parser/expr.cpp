@@ -16,6 +16,11 @@ Expr* TernaryParser::parse(Expr* cond, Token& token, PrattParser& parser) {
 }
 
 
+int TernaryParser::getRBP() {
+	return rbp - 1;  // ? is right assoc
+}
+
+
 BinaryParser::BinaryParser(int lbp, Assoc assoc) :
 	LeftParser(lbp),
 	assoc(assoc)
