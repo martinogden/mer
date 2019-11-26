@@ -23,8 +23,6 @@ OpType getOpType(BinOp op) {
 		case BinOp::BIT_AND:
 		case BinOp::BIT_OR:
 		case BinOp::XOR:
-		case BinOp::LS:
-		case BinOp::RS:
 			return OpType::BITWISE;
 	}
 }

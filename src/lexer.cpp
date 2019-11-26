@@ -43,20 +43,10 @@ Token Lexer::nextToken() {
 
 			// operators + special cases
 			case '>':
-				if (accept('>')) {
-					if (accept('='))
-						return emit(TokenType::GT_GT_EQL);
-					return emit(TokenType::GT_GT);
-				}
 				if (accept('='))
 					return emit(TokenType::GT_EQL);
 				return emit(TokenType::GT);
 			case '<':
-				if (accept('<')) {
-					if (accept('='))
-						return emit(TokenType::LT_LT_EQL);
-					return emit(TokenType::LT_LT);
-				}
 				if (accept('='))
 					return emit(TokenType::LT_EQL);
 				return emit(TokenType::LT);

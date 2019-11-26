@@ -33,8 +33,6 @@ enum class BinOp {
 	BIT_AND,
 	BIT_OR,
 	XOR,
-	LS,
-	RS,
 };
 
 

@@ -68,10 +68,6 @@ std::ostream& operator<<(std::ostream& output, const TokenType& type) {
 			str = "LT"; break;
 		case TokenType::GT:
 			str = "GT"; break;
-		case TokenType::LT_LT:
-			str = "LT_LT"; break;
-		case TokenType::GT_GT:
-			str = "GT_GT"; break;
 		case TokenType::AMP_AMP:
 			str = "AMP_AMP"; break;
 		case TokenType::PIPE_PIPE:
@@ -107,10 +103,6 @@ std::ostream& operator<<(std::ostream& output, const TokenType& type) {
 			str = "LT_EQL"; break;
 		case TokenType::GT_EQL:
 			str = "GT_EQL"; break;
-		case TokenType::LT_LT_EQL:
-			str = "LT_LT_EQL"; break;
-		case TokenType::GT_GT_EQL:
-			str = "GT_GT_EQL"; break;
 
 		case TokenType::QUESTION:
 			str = "QUESTION"; break;
@@ -204,10 +196,6 @@ std::ostream& operator<<(std::ostream& output, const BinOp& op) {
 			str = "|"; break;
 		case BinOp::XOR:
 			str = "^"; break;
-		case BinOp::LS:
-			str = "<<"; break;
-		case BinOp::RS:
-			str = ">>"; break;
 	}
 
 	output << str;

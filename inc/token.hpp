@@ -32,8 +32,6 @@ enum struct TokenType {
 	CARET,
 	LT,
 	GT,
-	LT_LT,
-	GT_GT,
 	AMP_AMP,
 	PIPE_PIPE,
 	SUB_SUB,
@@ -52,8 +50,6 @@ enum struct TokenType {
 	CARET_EQL,
 	LT_EQL,
 	GT_EQL,
-	LT_LT_EQL,
-	GT_GT_EQL,
 
 	// punctuation
 	QUESTION,

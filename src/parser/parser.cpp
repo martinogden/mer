@@ -10,7 +10,6 @@ std::set<TokenType> asnOps = {
 	TokenType::ADD_EQL, TokenType::SUB_EQL,
 	TokenType::MUL_EQL, TokenType::DIV_EQL, TokenType::MOD_EQL,
 	TokenType::AMP_EQL, TokenType::PIPE_EQL, TokenType::CARET_EQL,
-	TokenType::LT_LT_EQL, TokenType::GT_GT_EQL,
 };
 
 
@@ -241,7 +240,6 @@ ParserSpec createParserSpec() {
 	// left parsers
 	spec.add({TokenType::MUL, TokenType::DIV, TokenType::MOD}, new BinaryParser(MUL));
 	spec.add({TokenType::ADD, TokenType::SUB}, new BinaryParser(ADD));
-	spec.add({TokenType::LT_LT, TokenType::GT_GT}, new BinaryParser(SHIFT));
 	spec.add({TokenType::LT, TokenType::LT_EQL, TokenType::GT, TokenType::GT_EQL}, new BinaryParser(COMP));
 	spec.add({TokenType::EQL_EQL, TokenType::BANG_EQL}, new BinaryParser(EQUAL));
 	spec.add( TokenType::AMP, new BinaryParser(BWAND));

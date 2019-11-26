@@ -17,8 +17,6 @@ bool isPureOp(BinOp op) {
 	switch (op) {
 		case BinOp::DIV:
 		case BinOp::MOD:
-		case BinOp::LS:
-		case BinOp::RS:
 			return false;
 		default:
 			return true;

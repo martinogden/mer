@@ -20,12 +20,11 @@ enum Precedence {
 	LAND    =  80,
 	EQUAL   =  90,
 	COMP    = 100,
-	SHIFT   = 110,
-	ADD     = 120,
-	MUL     = 130,
-	CALL    = 140,
-	UNARY   = 150,
-	LPAREN  = 160,
+	ADD     = 110,
+	MUL     = 120,
+	CALL    = 130,
+	UNARY   = 140,
+	LPAREN  = 150,
 };
 
 

@@ -56,10 +56,6 @@ BinOp toBinOp(TokenType type) {
 			return BinOp::BIT_OR;
 		case TokenType::CARET:
 			return BinOp::XOR;
-		case TokenType::LT_LT:
-			return BinOp::LS;
-		case TokenType::GT_GT:
-			return BinOp::RS;
 
 		default:
 			throw 1;  // TODO: we should never get here
@@ -91,10 +87,6 @@ BinOp asnOpToBinOp(TokenType type) {
 			return BinOp::BIT_OR;
 		case TokenType::CARET_EQL:
 			return BinOp::XOR;
-		case TokenType::LT_LT_EQL:
-			return BinOp::LS;
-		case TokenType::GT_GT_EQL:
-			return BinOp::RS;
 
 		default:
 			throw 1;  // TODO: we should never get here
