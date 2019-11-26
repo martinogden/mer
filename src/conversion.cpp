@@ -151,9 +151,9 @@ Inst::OpCode toOpCode(BinOp op) {
 		case BinOp::GT_EQL:
 			return Inst::JGE;
 
-		default:
-			assert(false && "TODO: finish BinOp -> OpCode");
-			throw 1;
+		case BinOp::LOG_AND:
+		case BinOp::LOG_OR:
+			throw 1;  // TODO: we should never get here
 	}
 }
 
