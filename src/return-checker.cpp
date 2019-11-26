@@ -18,7 +18,7 @@ void ReturnChecker::visit(AssignNode* node) {
 
 
 void ReturnChecker::visit(IfNode* node) {
-	ret( get(node->then) & get(node->otherwise) );
+	ret( get(node->then) && get(node->otherwise) );
 }
 
 
@@ -38,12 +38,17 @@ void ReturnChecker::visit(NopNode* node) {
 
 
 void ReturnChecker::visit(SeqNode* node) {
-	ret( get(node->head) | get(node->rest) );
+	ret( get(node->head) || get(node->rest) );
 }
 
 
 void ReturnChecker::visit(DeclNode* node) {
 	ret( get(node->scope) );
+}
+
+
+void ReturnChecker::visit(ExprNode* node) {
+	ret(false);
 }
 
 

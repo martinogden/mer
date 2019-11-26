@@ -16,6 +16,7 @@ private:
 	virtual void visit(NopNode*);
 	virtual void visit(SeqNode*);
 	virtual void visit(DeclNode*);
+	virtual void visit(ExprNode*);
 
 	void ret(bool b);
 
