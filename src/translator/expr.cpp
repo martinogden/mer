@@ -51,7 +51,7 @@ void ExprTranslator::visit(TernaryExpr* expr) {
 	CmdExpr* otherwise = get(expr->otherwise);
 
 	IRTCmd* cmd = concat({
-		btr.get(expr, l1, l2),
+		btr.get(expr->cond, l1, l2),
 		new LabelCmd(l1), then->cmd, new AssignCmd(t, then->expr), new GotoCmd(l3),
 		new LabelCmd(l2), otherwise->cmd, new AssignCmd(t, otherwise->expr), new GotoCmd(l3),
 		new LabelCmd(l3)
