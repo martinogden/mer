@@ -1,6 +1,15 @@
 #include "x86/def-use-analyser.hpp"
 
 
+DefUseAnalyser::DefUseAnalyser(std::vector<X86Asm>& code) :
+	n(code.size()),
+	code(code),
+	def(n),
+	use(n),
+	succ(n)
+{}
+
+
 void DefUseAnalyser::visit(X86Asm& as, uint l) {
 	succ[l] = {{ nextLine(l) }};
 

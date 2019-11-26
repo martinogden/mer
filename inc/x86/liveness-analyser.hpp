@@ -15,9 +15,7 @@ private:
 	void update(uint i, Set<Operand> opnds);
 
 public:
-	LivenessAnalyser(std::vector<X86Asm>& code)
-		: n(code.size()), code(code), dua(code), live(n) {}
-
+	LivenessAnalyser(std::vector<X86Asm>& code);
 	void run();
 	Set<Operand>& get(uint l);
 	Set<Operand>& getDef(uint l);

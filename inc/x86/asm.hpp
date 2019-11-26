@@ -27,14 +27,10 @@ struct X86Asm {
 	Operand src;
 	uint parity;
 
-	X86Asm(std::string label)
-		: opcode(LBL), dst(label), parity(1) {}
-	X86Asm(OpCode opcode)
-		: opcode(opcode), parity(0) {}
-	X86Asm(OpCode opcode, Operand dst)
-		: opcode(opcode), dst(dst), parity(1) {}
-	X86Asm(OpCode opcode, Operand dst, Operand src)
-		: opcode(opcode), dst(dst), src(src), parity(2) {}
+	X86Asm(std::string label);
+	X86Asm(OpCode opcode);
+	X86Asm(OpCode opcode, Operand dst);
+	X86Asm(OpCode opcode, Operand dst, Operand src);
 
 	friend std::ostream& operator<<(std::ostream& output, const X86Asm& as);
 	friend std::ostream& operator<<(std::ostream& output, const OpCode& op);

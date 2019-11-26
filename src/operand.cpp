@@ -1,6 +1,37 @@
 #include "operand.hpp"
 
 
+Mem::Mem(Reg reg, int offset) :
+	reg(reg), offset(offset)
+{}
+
+
+Operand::Operand() {}
+
+
+Operand::Operand(Tmp tmp) :
+	Operand(TMP, tmp)
+{}
+
+
+Operand::Operand(Imm imm) :
+	type(IMM),
+	imm(imm)
+{}
+
+
+Operand::Operand(Reg reg) :
+	type(REG),
+	reg(reg)
+{}
+
+
+Operand::Operand(Reg reg, int off) :
+	type(MEM),
+	mem({reg, off})
+{}
+
+
 Operand::Type Operand::getType() const {
 	return type;
 }

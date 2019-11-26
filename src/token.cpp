@@ -2,6 +2,15 @@
 #include "token.hpp"
 
 
+Token::Token(TokenType type, std::string lexeme, uint value, uint line, uint col) :
+	type(type),
+	lexeme(lexeme),
+	value(value),
+	line(line),
+	col(col)
+{}
+
+
 std::unordered_set<std::string> reserved = {
 	"struct",
 	"typedef",

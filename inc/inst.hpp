@@ -24,12 +24,9 @@ public:
 		CJMP,
 	};
 
-	Inst(OpCode opcode, Operand dst)
-		: parity(1), opcode(opcode), dst(dst), src1(0), src2(0) {}
-	Inst(OpCode opcode, Operand dst, Operand src1)
-		: parity(2), opcode(opcode), dst(dst), src1(src1), src2(0) {}
-	Inst(OpCode opcode, Operand dst, Operand src1, Operand src2)
-		: parity(3), opcode(opcode), dst(dst), src1(src1), src2(src2) {}
+	Inst(OpCode opcode, Operand dst);
+	Inst(OpCode opcode, Operand dst, Operand src1);
+	Inst(OpCode opcode, Operand dst, Operand src1, Operand src2);
 
 	Type getType() const;
 	uint getParity() const;

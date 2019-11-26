@@ -31,8 +31,6 @@ private:
 	void visitCJmp(X86Asm::OpCode opcode, Operand&& op, Operand&& t, Operand&& f);
 
 public:
-	X86CodeGen(std::vector<Inst>& insts, Generator& gen)
-		: insts(insts), gen(gen) {}
-
+	X86CodeGen(std::vector<Inst>& insts, Generator& gen);
 	std::vector<X86Asm>& run();
 };

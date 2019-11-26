@@ -1,6 +1,33 @@
 #include "inst.hpp"
 
 
+Inst::Inst(OpCode opcode, Operand dst) :
+	parity(1),
+	opcode(opcode),
+	dst(dst),
+	src1(0),
+	src2(0)
+{}
+
+
+Inst::Inst(OpCode opcode, Operand dst, Operand src1) :
+	parity(2),
+	opcode(opcode),
+	dst(dst),
+	src1(src1),
+	src2(0)
+{}
+
+
+Inst::Inst(OpCode opcode, Operand dst, Operand src1, Operand src2) :
+	parity(3),
+	opcode(opcode),
+	dst(dst),
+	src1(src1),
+	src2(src2)
+{}
+
+
 Inst::Type Inst::getType() const {
 	switch (getOpcode()) {
 		case ADD:

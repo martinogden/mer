@@ -44,8 +44,7 @@ std::ostream& operator<<(std::ostream&, const Reg&);
 struct Mem {
 	Reg reg;
 	int offset;
-	Mem(Reg reg, int offset)
-		: reg(reg), offset(offset) {}
+	Mem(Reg reg, int offset);
 };
 
 
@@ -59,15 +58,11 @@ public:
 		LBL,
 	};
 
-	Operand() {}  // TODO: get rid of this
-	Operand(Tmp tmp)
-		: Operand(TMP, tmp) {}
-	Operand(Imm imm)
-		: type(IMM), imm(imm) {}
-	Operand(Reg reg)
-		: type(REG), reg(reg) {}
-	Operand(Reg reg, int off)
-		: type(MEM), mem({reg, off}) {}
+	Operand();  // TODO: get rid of this
+	Operand(Tmp tmp);
+	Operand(Imm imm);
+	Operand(Reg reg);
+	Operand(Reg reg, int off);
 
 	static Operand label(Lbl lbl) {
 		return Operand(LBL, lbl);

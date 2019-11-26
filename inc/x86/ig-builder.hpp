@@ -15,8 +15,6 @@ private:
 	void addEdge(const Operand& u, const Operand& v);
 
 public:
-	IGBuilder(std::vector<X86Asm>& code)
-		: n(code.size()), code(code), liveness(code), G(new Graph<Operand>()) {}
-
+	IGBuilder(std::vector<X86Asm>& code);
 	Graph<Operand>* run();
 };

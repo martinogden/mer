@@ -18,7 +18,7 @@ enum struct TokenType {
 	RESERVED,
 
 	// ops
-	// maybe sure these...
+	// make sure these...
 	ADD,
 	SUB,
 	MUL,
@@ -80,14 +80,7 @@ struct Token {
 	uint line;
 	uint col;
 
-	Token(TokenType type, std::string lexeme, uint value, uint line, uint col) :
-		type(type),
-		lexeme(lexeme),
-		value(value),
-		line(line),
-		col(col)
-	{}
-
+	Token(TokenType type, std::string lexeme, uint value, uint line, uint col);
 	bool operator==(const Token& other) const;
 	friend std::ostream& operator<<(std::ostream& output, const Token& token);
 };

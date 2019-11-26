@@ -1,6 +1,14 @@
 #include "x86/liveness-analyser.hpp"
 
 
+LivenessAnalyser::LivenessAnalyser(std::vector<X86Asm>& code) :
+	n(code.size()),
+	code(code),
+	dua(code),
+	live(n)
+{}
+
+
 void LivenessAnalyser::visit(X86Asm& as, uint l) {
 	update(l, dua.getUse(l));
 

@@ -2,6 +2,12 @@
 #include "conversion.hpp"
 
 
+X86CodeGen::X86CodeGen(std::vector<Inst>& insts, Generator& gen) :
+	insts(insts),
+	gen(gen)
+{}
+
+
 void X86CodeGen::emitLabel(std::string label) {
 	as.push_back(label);
 }

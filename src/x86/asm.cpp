@@ -1,6 +1,34 @@
 #include "x86/asm.hpp"
 
 
+X86Asm::X86Asm(std::string label) :
+	opcode(LBL),
+	dst(label),
+	parity(1)
+{}
+
+
+X86Asm::X86Asm(OpCode opcode) :
+	opcode(opcode),
+	parity(0)
+{}
+
+
+X86Asm::X86Asm(OpCode opcode, Operand dst) :
+	opcode(opcode),
+	dst(dst),
+	parity(1)
+{}
+
+
+X86Asm::X86Asm(OpCode opcode, Operand dst, Operand src) :
+	opcode(opcode),
+	dst(dst),
+	src(src),
+	parity(2)
+{}
+
+
 std::ostream& operator<<(std::ostream& output, const X86Asm& as) {
 	if (as.opcode == X86Asm::LBL) {
 		output << as.dst << ":";

@@ -26,9 +26,7 @@ private:
 	uint nextLine(uint i);
 
 public:
-	DefUseAnalyser(std::vector<X86Asm>& code)
-		: n(code.size()), code(code), def(n), use(n), succ(n) {}
-
+	DefUseAnalyser(std::vector<X86Asm>& code);
 	void run();
 
 	Set<Operand>& getDef(uint l);

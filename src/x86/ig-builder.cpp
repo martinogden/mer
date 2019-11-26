@@ -1,6 +1,14 @@
 #include "x86/ig-builder.hpp"
 
 
+IGBuilder::IGBuilder(std::vector<X86Asm>& code) :
+	n(code.size()),
+	code(code),
+	liveness(code),
+	G(new Graph<Operand>())
+{}
+
+
 Graph<Operand>* IGBuilder::run() {
 	liveness.run();
 
