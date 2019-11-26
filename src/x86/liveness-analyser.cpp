@@ -22,8 +22,29 @@ void LivenessAnalyser::update(uint i, Set<Operand> opnds) {
 void LivenessAnalyser::run() {
 	dua.run();
 
-	#ifdef __DEBUG__
+	#ifdef DEBUG
+	std::cout << "def\n====" << std::endl;
 	uint i = 0;
+	for (auto& as : code) {
+		if (as.opcode == X86Asm::LBL)
+			std::cout << as << std::endl;
+		else
+			std::cout << i << ' ' << dua.getDef(i) << std::endl;
+		i++;
+	}
+	std::cout << "\nuse\n====" << std::endl;
+
+	i = 0;
+	for (auto& as : code) {
+		if (as.opcode == X86Asm::LBL)
+			std::cout << as << std::endl;
+		else
+			std::cout << i << ' ' << dua.getUse(i) << std::endl;
+		i++;
+	}
+	std::cout << "\nsucc\n====" << std::endl;
+
+	i = 0;
 	for (auto& as : code) {
 		if (as.opcode == X86Asm::LBL)
 			std::cout << as << std::endl;

@@ -7,7 +7,8 @@ Graph<Operand>* IGBuilder::run() {
 	for (uint i=0; i<MAX_REG; ++i)
 		G->addVertex(static_cast<Reg>(i));
 
-	#ifdef __DEBUG__
+	#ifdef DEBUG
+	std::cout << "liveness\n========" << std::endl;
 	uint i = 0;
 	for (auto& as : code) {
 		if (as.opcode == X86Asm::LBL)
