@@ -1,0 +1,6 @@
+//test div-by-zero
+int main() {
+  bool cond = (true && (false || true)) && (true || false) || false;
+  int x = cond && !cond ? 1 : 0;
+  return x/x;
+}

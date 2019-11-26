@@ -1,0 +1,9 @@
+//test div-by-zero 8
+int main(){
+	int x;
+	int y;
+	x=0;
+	y=5;
+	return y%x;
+
+}

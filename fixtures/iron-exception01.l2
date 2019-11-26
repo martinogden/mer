@@ -1,0 +1,8 @@
+//test div-by-zero
+// dead code trap
+
+int main ()
+{  
+  int x = 1/0;
+  return 0;
+}

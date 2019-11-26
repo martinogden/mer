@@ -1,0 +1,7 @@
+//test return 1
+
+
+int main() {
+    bool cond = true;
+    return cond ? 1 : 2;
+}

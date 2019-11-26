@@ -1,0 +1,4 @@
+//test div-by-zero 8
+int main() {
+  return 3 / ((-2<=-2)?4/5:1);
+}

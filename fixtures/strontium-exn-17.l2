@@ -1,0 +1,7 @@
+//test div-by-zero 8
+//simple divide by zero.
+
+int main()
+{
+    return 1/0;
+}

@@ -1,0 +1,6 @@
+//test div-by-zero
+// Strange operator stuff.
+
+int main() {
+    return ~1 / (!!!!!!!!!!true ? ~~0 : ~1);
+}

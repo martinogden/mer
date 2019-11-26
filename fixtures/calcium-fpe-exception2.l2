@@ -1,0 +1,7 @@
+//test div-by-zero
+// division error due to 0 mod 0
+int main()
+{
+  int x = 0%0;
+  return 3;
+}
