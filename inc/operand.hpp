@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -35,10 +36,15 @@ r15             | r15d          | r15w          | r15b
  */
 enum class Reg {
 	EAX, EDI, ESI, EDX, ECX, R8D, R9D, R10D, R11D,  // caller-saved
-	EBX, R12D, R13D, R14D, R15D, RSP, RBP, // callee-saved
+	EBX, R12D, R13D, R14D, R15D, // callee-saved
+	RSP, RBP,  // stack
 };
 
 std::ostream& operator<<(std::ostream&, const Reg&);
+
+
+extern std::vector<Reg> callerSaved;
+extern std::vector<Reg> calleeSaved;
 
 
 std::string promote(Reg reg);

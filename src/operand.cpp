@@ -1,6 +1,22 @@
 #include "operand.hpp"
 
 
+std::vector<Reg> callerSaved = {
+	Reg::EAX, Reg::EDI, Reg::ESI,
+	Reg::EDX, Reg::ECX, Reg::R8D,
+	Reg::R9D, Reg::R10D, Reg::R11D,
+};
+
+
+std::vector<Reg> calleeSaved = {
+	Reg::EDI, Reg::ESI,
+	Reg::EDX, Reg::ECX, Reg::R8D,
+	Reg::R9D, Reg::R10D, Reg::R11D,
+	Reg::EBX, Reg::R12D, Reg::R13D,
+	Reg::R14D, Reg::R15D,
+};
+
+
 std::string promote(Reg reg) {
 	switch(reg) {
 		case Reg::EAX:
