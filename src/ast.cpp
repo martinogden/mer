@@ -2,22 +2,22 @@
 
 
 Param::Param(std::string name, Type type) :
-	name(name),
+	name(std::move(name)),
 	type(type)
 {}
 
 
 ASTNode::ASTNode(Token token) :
-	token(token)
+	token(std::move(token))
 {}
 
 
 FunNode::FunNode(Token token, std::string id, Type type,
 	             std::vector<Param> params, ASTNode* body) :
-	ASTNode(token),
-	id(id),
+	ASTNode(std::move(token)),
+	id(std::move(id)),
 	type(type),
-	params(params),
+	params(std::move(params)),
 	body(body)
 {}
 
@@ -32,8 +32,8 @@ void FunNode::accept(ASTVisitor& visitor) {
 
 
 AssignNode::AssignNode(Token token, std::string id, Expr* expr) :
-	ASTNode(token),
-	id(id),
+	ASTNode(std::move(token)),
+	id(std::move(id)),
 	expr(expr)
 {}
 
@@ -49,7 +49,7 @@ void AssignNode::accept(ASTVisitor& visitor) {
 
 
 IfNode::IfNode(Token token, Expr* cond, ASTNode* then, ASTNode* otherwise) :
-	ASTNode(token),
+	ASTNode(std::move(token)),
 	cond(cond),
 	then(then),
 	otherwise(otherwise)
@@ -69,7 +69,7 @@ void IfNode::accept(ASTVisitor& visitor) {
 
 
 WhileNode::WhileNode(Token token, Expr* cond, ASTNode* body) :
-	ASTNode(token),
+	ASTNode(std::move(token)),
 	cond(cond),
 	body(body)
 {}
@@ -87,7 +87,7 @@ void WhileNode::accept(ASTVisitor& visitor) {
 
 
 ReturnNode::ReturnNode(Token token, Expr* expr) :
-	ASTNode(token),
+	ASTNode(std::move(token)),
 	expr(expr)
 {}
 
@@ -103,7 +103,7 @@ void ReturnNode::accept(ASTVisitor& visitor) {
 
 
 NopNode::NopNode(Token token) :
-	ASTNode(token)
+	ASTNode(std::move(token))
 {}
 
 
@@ -113,7 +113,7 @@ void NopNode::accept(ASTVisitor& visitor) {
 
 
 SeqNode::SeqNode(Token token, ASTNode* head, ASTNode* rest) :
-	ASTNode(token),
+	ASTNode(std::move(token)),
 	head(head),
 	rest(rest)
 {}
@@ -131,8 +131,8 @@ void SeqNode::accept(ASTVisitor& visitor) {
 
 
 DeclNode::DeclNode(Token token, std::string id, Type type, ASTNode* scope) :
-	ASTNode(token),
-	id(id),
+	ASTNode(std::move(token)),
+	id(std::move(id)),
 	type(type),
 	scope(scope)
 {}
@@ -149,7 +149,7 @@ void DeclNode::accept(ASTVisitor& visitor) {
 
 
 ExprNode::ExprNode(Token token, Expr* expr) :
-	ASTNode(token),
+	ASTNode(std::move(token)),
 	expr(expr)
 {}
 

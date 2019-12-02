@@ -11,7 +11,7 @@ inline std::string to_string(BinOp op) {
 
 
 void IRTPrinter::ret(std::string str) {
-	retval = str;
+	retval = std::move(str);
 }
 
 

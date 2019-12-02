@@ -96,7 +96,7 @@ void ASTPrinter::visit(ExprNode* node) {
 
 
 void ASTPrinter::ret(std::string s) {
-	retval = s;
+	retval = std::move(s);
 }
 
 

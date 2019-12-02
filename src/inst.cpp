@@ -4,7 +4,7 @@
 Inst::Inst(OpCode opcode, Operand dst) :
 	parity(1),
 	opcode(opcode),
-	dst(dst),
+	dst(std::move(dst)),
 	src1(0),
 	src2(0)
 {}
@@ -13,8 +13,8 @@ Inst::Inst(OpCode opcode, Operand dst) :
 Inst::Inst(OpCode opcode, Operand dst, Operand src1) :
 	parity(2),
 	opcode(opcode),
-	dst(dst),
-	src1(src1),
+	dst(std::move(dst)),
+	src1(std::move(src1)),
 	src2(0)
 {}
 
@@ -22,9 +22,9 @@ Inst::Inst(OpCode opcode, Operand dst, Operand src1) :
 Inst::Inst(OpCode opcode, Operand dst, Operand src1, Operand src2) :
 	parity(3),
 	opcode(opcode),
-	dst(dst),
-	src1(src1),
-	src2(src2)
+	dst(std::move(dst)),
+	src1(std::move(src1)),
+	src2(std::move(src2))
 {}
 
 
@@ -69,11 +69,8 @@ bool Inst::is(std::set<OpCode> ops) const {
 }
 
 
-InstFun::InstFun(
-	std::string id,
-	std::vector<std::string> params,
-	std::vector<Inst> insts) :
-		id(id),
-		params(params),
-		insts(insts)
+InstFun::InstFun(std::string id, std::vector<std::string> params, std::vector<Inst> insts) :
+	id(std::move(id)),
+	params(std::move(params)),
+	insts(std::move(insts))
 {}

@@ -23,13 +23,13 @@ void BoolExprTranslator::ret(IRTCmd* val) {
 
 
 void BoolExprTranslator::ret(std::vector<IRTCmd*> val) {
-	retval = concat(val);
+	retval = concat(std::move(val));
 }
 
 
 IRTCmd* BoolExprTranslator::get(Expr* expr, std::string t, std::string f) {
-	l1 = t;
-	l2 = f;
+	l1 = std::move(t);
+	l2 = std::move(f);
 	expr->accept(*this);
 	return retval;
 }

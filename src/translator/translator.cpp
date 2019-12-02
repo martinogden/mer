@@ -17,7 +17,7 @@ void Translator::ret(IRTCmd* val) {
 
 
 void Translator::ret(std::vector<IRTCmd*> val) {
-	retval = concat(val);
+	retval = concat(std::move(val));
 }
 
 

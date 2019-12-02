@@ -2,7 +2,7 @@
 
 
 Errors::Errors(std::string label) :
-	label(label)
+	label(std::move(label))
 {}
 
 

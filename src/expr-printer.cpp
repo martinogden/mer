@@ -73,7 +73,7 @@ void ExprPrinter::visit(LiteralExpr* expr) {
 
 
 void ExprPrinter::ret(std::string s) {
-	retval = s;
+	retval = std::move(s);
 }
 
 

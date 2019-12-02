@@ -2,22 +2,22 @@
 
 
 Expr::Expr(Token token, Type type) :
-	token(token),
+	token(std::move(token)),
 	type(type)
 {}
 
 
 Stmt::Stmt(Token token) :
-	token(token)
+	token(std::move(token))
 {}
 
 
 FunDecl::FunDecl(Token token, std::string identifier,
                  Token type, std::vector<DeclStmt*> params) :
-	Stmt(token),
-	type(type),
-	identifier(identifier),
-	params(params)
+	Stmt(std::move(token)),
+	type(std::move(type)),
+	identifier(std::move(identifier)),
+	params(std::move(params))
 {}
 
 
@@ -33,7 +33,7 @@ void FunDecl::accept(Visitor& visitor) {
 
 
 FunDefn::FunDefn(Token token, FunDecl* decl, Stmt* body) :
-	Stmt(token),
+	Stmt(std::move(token)),
 	decl(decl),
 	body(body)
 {}
@@ -51,9 +51,9 @@ void FunDefn::accept(Visitor& visitor) {
 
 
 TypedefStmt::TypedefStmt(Token token, Token type, Token alias) :
-	Stmt(token),
-	type(type),
-	alias(alias)
+	Stmt(std::move(token)),
+	type(std::move(type)),
+	alias(std::move(alias))
 {}
 
 
@@ -67,9 +67,9 @@ void TypedefStmt::accept(Visitor& visitor) {
 
 
 DeclStmt::DeclStmt(Token token, std::string identifier, Token type, Expr* expr) :
-	Stmt(token),
-	type(type),
-	identifier(identifier),
+	Stmt(std::move(token)),
+	type(std::move(type)),
+	identifier(std::move(identifier)),
 	expr(expr)
 {}
 
@@ -85,7 +85,7 @@ void DeclStmt::accept(Visitor& visitor) {
 
 
 IfStmt::IfStmt(Token token, Expr* cond, Stmt* then, Stmt* otherwise) :
-	Stmt(token),
+	Stmt(std::move(token)),
 	cond(cond),
 	then(then),
 	otherwise(otherwise)
@@ -105,7 +105,7 @@ void IfStmt::accept(Visitor& visitor) {
 
 
 WhileStmt::WhileStmt(Token token, Expr* cond, Stmt* body) :
-	Stmt(token),
+	Stmt(std::move(token)),
 	cond(cond),
 	body(body)
 {}
@@ -123,7 +123,7 @@ void WhileStmt::accept(Visitor& visitor) {
 
 
 ForStmt::ForStmt(Token token, Stmt* init, Expr* cond, Stmt* step, Stmt* body) :
-	Stmt(token),
+	Stmt(std::move(token)),
 	init(init),
 	cond(cond),
 	step(step),
@@ -145,7 +145,7 @@ void ForStmt::accept(Visitor& visitor) {
 
 
 ReturnStmt::ReturnStmt(Token token, Expr* expr) :
-	Stmt(token),
+	Stmt(std::move(token)),
 	expr(expr)
 {}
 
@@ -161,8 +161,8 @@ ReturnStmt::~ReturnStmt() {
 
 
 BlockStmt::BlockStmt(Token token, std::vector<Stmt*> statements) :
-	Stmt(token),
-	statements(statements)
+	Stmt(std::move(token)),
+	statements(std::move(statements))
 {}
 
 
@@ -178,7 +178,7 @@ void BlockStmt::accept(Visitor& visitor) {
 
 
 ExprStmt::ExprStmt(Token token, Expr* expr) :
-	Stmt(token),
+	Stmt(std::move(token)),
 	expr(expr)
 {}
 
@@ -189,7 +189,7 @@ ExprStmt::~ExprStmt() {
 
 
 AssignStmt::AssignStmt(Token token, BinOp op, Expr* lvalue, Expr* rvalue) :
-	Stmt(token),
+	Stmt(std::move(token)),
 	op(op),
 	lvalue(lvalue),
 	rvalue(rvalue)
@@ -208,7 +208,7 @@ void AssignStmt::accept(Visitor& visitor) {
 
 
 PostOpStmt::PostOpStmt(Token token, BinOp op, Expr* expr) :
-	Stmt(token),
+	Stmt(std::move(token)),
 	op(op),
 	expr(expr)
 {}
@@ -230,9 +230,9 @@ void ExprStmt::accept(Visitor& visitor) {
 
 
 CallExpr::CallExpr(Token token, std::string identifier, std::vector<Expr*> args) :
-	Expr(token),
-	identifier(identifier),
-	args(args),
+	Expr(std::move(token)),
+	identifier(std::move(identifier)),
+	args(std::move(args)),
 	decl(nullptr)
 {}
 
@@ -249,7 +249,7 @@ void CallExpr::accept(Visitor& visitor) {
 
 
 TernaryExpr::TernaryExpr(Token token, Expr* cond, Expr* then, Expr* otherwise) :
-	Expr(token),
+	Expr(std::move(token)),
 	cond(cond),
 	then(then),
 	otherwise(otherwise)
@@ -269,7 +269,7 @@ void TernaryExpr::accept(Visitor& visitor) {
 
 
 BinaryExpr::BinaryExpr(Token token, BinOp op, Expr* left, Expr* right) :
-	Expr(token),
+	Expr(std::move(token)),
 	op(op),
 	left(left),
 	right(right)
@@ -288,7 +288,7 @@ void BinaryExpr::accept(Visitor& visitor) {
 
 
 UnaryExpr::UnaryExpr(Token token, UnOp op, Expr* expr) :
-	Expr(token),
+	Expr(std::move(token)),
 	op(op),
 	expr(expr)
 {}
@@ -305,13 +305,13 @@ void UnaryExpr::accept(Visitor& visitor) {
 
 
 LiteralExpr::LiteralExpr(Token token, int value) :
-	Expr(token, Type::INT),
+	Expr(std::move(token), Type::INT),
 	as({.i = value})
 {}
 
 
 LiteralExpr::LiteralExpr(Token token, bool value) :
-	Expr(token, Type::BOOL),
+	Expr(std::move(token), Type::BOOL),
 	as({.b = value})
 {}
 
@@ -322,8 +322,8 @@ void LiteralExpr::accept(Visitor& visitor) {
 
 
 IdExpr::IdExpr(Token token, std::string lexeme) :
-	Expr(token),
-	identifier(lexeme)
+	Expr(std::move(token)),
+	identifier(std::move(lexeme))
 {}
 
 

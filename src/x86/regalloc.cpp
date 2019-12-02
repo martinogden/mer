@@ -171,19 +171,19 @@ std::vector<X86Asm> regAssign(std::vector<X86Asm>& code, Alloc& regs) {
 
 	for (auto& as : code) {
 		if (as.opcode == X86Asm::LBL) {
-			out.push_back(as);
+			out.emplace_back(as);
 			continue;
 		}
 
 		switch (as.parity) {
 			case 0:
-				out.push_back(as);
+				out.emplace_back(as);
 				break;
 			case 1:
-				out.push_back({ as.opcode, assign(as.dst, regs) });
+				out.emplace_back( as.opcode, assign(as.dst, regs) );
 				break;
 			case 2:
-				out.push_back({ as.opcode, assign(as.dst, regs), assign(as.src, regs) });
+				out.emplace_back( as.opcode, assign(as.dst, regs), assign(as.src, regs) );
 				break;
 			default:
 				throw 1;  // TODO: we should never get here

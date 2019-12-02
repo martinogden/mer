@@ -2,8 +2,8 @@
 
 
 IRTFun::IRTFun(std::string id, std::vector<std::string> params, IRTCmd* body) :
-	id(id),
-	params(params),
+	id(std::move(id)),
+	params(std::move(params)),
 	body(body)
 {}
 
@@ -29,9 +29,9 @@ void NopCmd::accept(IRTVisitor& visitor) {
 
 
 CallCmd::CallCmd(std::string var, std::string label, std::vector<std::string> args) :
-	var(var),
-	label(label),
-	args(args)
+	var(std::move(var)),
+	label(std::move(label)),
+	args(std::move(args))
 {}
 
 
@@ -41,7 +41,7 @@ void CallCmd::accept(IRTVisitor& visitor) {
 
 
 EffAssignCmd::EffAssignCmd(std::string var, BinOp op, IRTExpr* left, IRTExpr* right) :
-	var(var),
+	var(std::move(var)),
 	op(op),
 	left(left),
 	right(right)
@@ -54,7 +54,7 @@ void EffAssignCmd::accept(IRTVisitor& visitor) {
 
 
 AssignCmd::AssignCmd(std::string var, IRTExpr* value) :
-	var(var),
+	var(std::move(var)),
 	value(value)
 {}
 
@@ -65,7 +65,7 @@ void AssignCmd::accept(IRTVisitor& visitor) {
 
 
 LabelCmd::LabelCmd(std::string name) :
-	name(name)
+	name(std::move(name))
 {}
 
 
@@ -83,8 +83,8 @@ Comparison::Comparison(BinOp op, IRTExpr* left, IRTExpr* right) :
 
 IfCmd::IfCmd(Comparison cmp, std::string then, std::string otherwise) :
 	cmp(cmp),
-	then(then),
-	otherwise(otherwise)
+	then(std::move(then)),
+	otherwise(std::move(otherwise))
 {}
 
 
@@ -94,7 +94,7 @@ void IfCmd::accept(IRTVisitor& visitor) {
 
 
 GotoCmd::GotoCmd(std::string label) :
-	label(label)
+	label(std::move(label))
 {}
 
 
@@ -135,7 +135,7 @@ void IntExpr::accept(IRTVisitor& visitor) {
 
 
 VarExpr::VarExpr(std::string name) :
-	name(name)
+	name(std::move(name))
 {}
 
 

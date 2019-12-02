@@ -48,7 +48,7 @@ std::vector<Reg> getRegs(const std::vector<X86Asm>& code, const std::vector<Reg>
 
 
 std::pair<bool, std::string> compile(std::string src, Stage stage) {
-	Lexer lexer(src);
+	Lexer lexer(std::move(src));
 
 	Parser parser(lexer);
 	ParseTree* tree = parser.run();

@@ -3,7 +3,7 @@
 
 X86Asm::X86Asm(std::string label) :
 	opcode(LBL),
-	dst(label),
+	dst(std::move(label)),
 	parity(1)
 {}
 
@@ -16,15 +16,15 @@ X86Asm::X86Asm(OpCode opcode) :
 
 X86Asm::X86Asm(OpCode opcode, Operand dst) :
 	opcode(opcode),
-	dst(dst),
+	dst(std::move(dst)),
 	parity(1)
 {}
 
 
 X86Asm::X86Asm(OpCode opcode, Operand dst, Operand src) :
 	opcode(opcode),
-	dst(dst),
-	src(src),
+	dst(std::move(dst)),
+	src(std::move(src)),
 	parity(2)
 {}
 

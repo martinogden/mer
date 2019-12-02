@@ -74,7 +74,7 @@ public:
 	Operand(Reg reg, int off);
 
 	static Operand label(Lbl lbl) {
-		return Operand(LBL, lbl);
+		return Operand(LBL, std::move(lbl));
 	}
 
 	Type getType() const;
@@ -91,7 +91,10 @@ public:
 	std::string to_string() const;
 
 private:
-	Operand(Type type, std::string tmp) : type(type), tmp(tmp) {}
+	Operand(Type type, std::string tmp) :
+		type(type),
+		tmp(std::move(tmp))
+	{}
 
 	Type type;
 	Tmp tmp;

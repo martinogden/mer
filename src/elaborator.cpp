@@ -75,7 +75,7 @@ void Elaborator::visit(FunDefn* defn) {
 
 	std::vector<Param> params;
 	for (auto const& param : defn->decl->params)
-		params.push_back({ param->identifier, resolveType(param->type) });
+		params.emplace_back( param->identifier, resolveType(param->type) );
 
 	emit( new FunNode(defn->token, id, type, params, body) );
 }

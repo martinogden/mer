@@ -4,7 +4,7 @@
 
 Token::Token(TokenType type, std::string lexeme, int value, uint line, uint col) :
 	type(type),
-	lexeme(lexeme),
+	lexeme(std::move(lexeme)),
 	value(value),
 	line(line),
 	col(col)

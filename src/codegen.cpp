@@ -20,7 +20,7 @@ void CodeGen::emit(const Inst& inst) {
 
 
 void CodeGen::ret(Operand op) {
-	retval = op;
+	retval = std::move(op);
 }
 
 

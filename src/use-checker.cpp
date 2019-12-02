@@ -114,12 +114,12 @@ void UseChecker::check(Expr* expr) {
 
 
 void UseChecker::setInit(VarSet set) {
-	init = set;
+	init = std::move(set);
 }
 
 
 void UseChecker::setDecl(VarSet set) {
-	decl = set;
+	decl = std::move(set);
 }
 
 

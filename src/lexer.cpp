@@ -6,7 +6,7 @@ const int D = static_cast<int>(TokenType::ADD_EQL) - static_cast<int>(TokenType:
 
 
 Lexer::Lexer(std::string src) :
-	src(src),
+	src(std::move(src)),
 	curr(0),
 	line(1),
 	col(1)
@@ -393,12 +393,12 @@ Token Lexer::error(std::string msg) {
 
 Token Lexer::emit(TokenType type, std::string lexeme, uint value) {
 	int length = curr - start;
-	return Token(type, lexeme, value, line, col-length);
+	return Token(type, std::move(lexeme), value, line, col-length);
 }
 
 
 Token Lexer::emit(TokenType type, std::string lexeme) {
-	return emit(type, lexeme, 0);
+	return emit(type, std::move(lexeme), 0);
 }
 
 

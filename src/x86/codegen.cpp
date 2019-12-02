@@ -14,17 +14,17 @@ void X86CodeGen::emitLabel(const std::string& label) {
 
 
 void X86CodeGen::emit(X86Asm::OpCode opcode) {
-	as.push_back(opcode);
+	as.emplace_back(opcode);
 }
 
 
-	as.push_back({ opcode, dst });
 void X86CodeGen::emit(X86Asm::OpCode opcode, const Operand& dst) {
+	as.emplace_back( opcode, dst );
 }
 
 
-	as.push_back({ opcode, dst, src });
 void X86CodeGen::emit(X86Asm::OpCode opcode, const Operand& dst, const Operand& src) {
+	as.emplace_back( opcode, dst, src );
 }
 
 

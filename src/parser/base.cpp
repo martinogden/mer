@@ -97,8 +97,8 @@ void BaseParser::consumeLine() {
 
 
 ParseError::ParseError(std::string msg, Token token) :
-	msg(msg),
-	token(token)
+	msg(std::move(msg)),
+	token(std::move(token))
 {}
 
 
