@@ -17,9 +17,9 @@ public:
 	Token get();
 	Token advance();
 	bool match(TokenType type);
-	bool match(std::set<TokenType> types);
+	bool match(const std::set<TokenType> &types);
 	bool accept(TokenType type);
-	bool accept(std::set<TokenType> types);
+	bool accept(const std::set<TokenType>& types);
 	Token expect(TokenType type);
 	void consumeLine();
 

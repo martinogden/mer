@@ -264,12 +264,12 @@ void TreePrinter::visit(IdExpr* expr) {
 }
 
 
-void TreePrinter::append(std::string str) {
+void TreePrinter::append(const std::string& str) {
 	buffer << str;
 }
 
 
-void TreePrinter::open(std::string atom) {
+void TreePrinter::open(const std::string& atom) {
 	append(LPAREN + atom + SPACE);
 }
 

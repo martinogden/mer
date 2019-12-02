@@ -15,7 +15,7 @@ private:
 	std::vector<Inst> insts;
 	Operand retval;
 
-	void emit(Inst);
+	void emit(const Inst&);
 	void ret(Operand);
 
 public:

@@ -47,7 +47,7 @@ std::unordered_map<std::string, TokenType> keywords = {
 };
 
 
-std::string error(std::string msg, Token& token) {
+std::string error(const std::string& msg, Token& token) {
 	std::stringstream buffer;
 	buffer << "(line " << token.line << ", column " << token.col << ')' << msg;
 	return buffer.str();

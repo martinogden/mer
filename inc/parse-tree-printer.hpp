@@ -9,8 +9,8 @@ private:
 	std::stringstream buffer;
 	ParseTree* tree;
 
-	void append(std::string str);
-	void open(std::string atom);
+	void append(const std::string& str);
+	void open(const std::string& atom);
 	void open();
 	void close();
 	void newline();

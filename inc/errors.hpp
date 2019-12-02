@@ -13,8 +13,8 @@ public:
 	Errors(std::string label="Error");
 
 	void append(Errors&);
-	void add(std::string);
-	void add(std::string, Token&);
+	void add(const std::string&);
+	void add(const std::string&, Token&);
 	std::vector<std::string>& get();
 	bool exist();
 };

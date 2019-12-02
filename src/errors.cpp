@@ -12,12 +12,12 @@ void Errors::append(Errors& other) {
 }
 
 
-void Errors::add(std::string msg) {
+void Errors::add(const std::string& msg) {
 	errors.push_back(msg);
 }
 
 
-void Errors::add(std::string msg, Token& token) {
+void Errors::add(const std::string& msg, Token& token) {
 	std::string str = "[" + label + "] " + msg;
 	add( error(str, token) );
 }

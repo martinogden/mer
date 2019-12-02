@@ -14,7 +14,7 @@ InstFun CodeGen::run() {
 }
 
 
-void CodeGen::emit(Inst inst) {
+void CodeGen::emit(const Inst& inst) {
 	insts.push_back(inst);
 }
 

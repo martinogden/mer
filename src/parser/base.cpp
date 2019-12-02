@@ -42,7 +42,7 @@ bool BaseParser::match(TokenType type) {
 }
 
 
-bool BaseParser::match(std::set<TokenType> types) {
+bool BaseParser::match(const std::set<TokenType>& types) {
 	for (TokenType type : types) {
 		if (match(type))
 			return true;
@@ -62,7 +62,7 @@ bool BaseParser::accept(TokenType type) {
 }
 
 
-bool BaseParser::accept(std::set<TokenType> types) {
+bool BaseParser::accept(const std::set<TokenType>& types) {
 	if (match(types)) {
 		advance();
 		return true;

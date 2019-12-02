@@ -8,8 +8,8 @@ X86CodeGen::X86CodeGen(InstFun& fun, Generator& gen) :
 {}
 
 
-void X86CodeGen::emitLabel(std::string label) {
-	as.push_back(label);
+void X86CodeGen::emitLabel(const std::string& label) {
+	as.emplace_back(label);
 }
 
 
@@ -18,13 +18,13 @@ void X86CodeGen::emit(X86Asm::OpCode opcode) {
 }
 
 
-void X86CodeGen::emit(X86Asm::OpCode opcode, Operand dst) {
 	as.push_back({ opcode, dst });
+void X86CodeGen::emit(X86Asm::OpCode opcode, const Operand& dst) {
 }
 
 
-void X86CodeGen::emit(X86Asm::OpCode opcode, Operand dst, Operand src) {
 	as.push_back({ opcode, dst, src });
+void X86CodeGen::emit(X86Asm::OpCode opcode, const Operand& dst, const Operand& src) {
 }
 
 

@@ -88,7 +88,7 @@ struct Token {
 };
 
 
-std::string error(std::string msg, Token& token);
+std::string error(const std::string& msg, Token& token);
 
 
 std::ostream& operator<<(std::ostream& output, const TokenType& type);

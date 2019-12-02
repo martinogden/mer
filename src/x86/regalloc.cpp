@@ -25,28 +25,28 @@ private:
 	std::unordered_map<Operand, uint> counts;
 
 public:
-	Counter(std::unordered_set<Operand> keys) {
-		for (auto key : keys)
+	Counter(const std::unordered_set<Operand>& keys) {
+		for (auto const& key : keys)
 			counts[key] = 0;
 	}
 
-	void incr(Operand key) {
+	void incr(const Operand& key) {
 		assert(counts.find(key) != counts.end());
 		counts[key]++;
 	}
 
-	void erase(Operand key) {
+	void erase(const Operand& key) {
 		counts.erase(key);
 	}
 
 	Operand getMostCommon() {
 		assert (counts.size() > 0);
 
-		auto& item = *counts.begin();
+		auto const& item = *counts.begin();
 		uint maxCount = item.second;
 		Operand mostCommon = item.first;
 
-		for (auto& item : counts) {
+		for (auto const& item : counts) {
 			if (item.second > maxCount) {
 				maxCount = item.second;
 				mostCommon = item.first;
@@ -68,14 +68,14 @@ std::vector<Operand> mcs(Graph<Operand>* G, Colors& precoloring) {
 
 	for (auto& c : precoloring) {
 		Operand u = c.first;
-		for (auto v : G->getAdj(u))
+		for (auto const& v : G->getAdj(u))
 			weights.incr(v);
 	}
 
 	for (uint i=0; i<n; ++i) {
 		Operand u = weights.getMostCommon();
 
-		for (auto v : G->getAdj(u)) {
+		for (auto const& v : G->getAdj(u)) {
 			if (V.find(v) != V.end())
 				weights.incr(v);
 		}
@@ -100,7 +100,7 @@ inline uint mex(std::unordered_set<uint>& set) {
 
 inline uint leastUnusedColor(std::unordered_set<Operand>& vertices, Colors& colors) {
 	std::unordered_set<uint> usedColors;
-	for (auto v : vertices) {
+	for (auto const& v : vertices) {
 		if (colors.find(v) != colors.end())
 			usedColors.insert(colors[v]);
 	}
@@ -116,7 +116,7 @@ Colors greedyColor(Graph<Operand>* G, std::vector<Operand>& order, Colors& preco
 	for (auto& item : precoloring)
 		colors[item.first] = item.second;
 
-	for (auto u : order) {
+	for (auto const& u : order) {
 		// ignore precolored vertices
 		if (colors.find(u) != colors.end())
 			continue;
@@ -131,10 +131,10 @@ Colors greedyColor(Graph<Operand>* G, std::vector<Operand>& order, Colors& preco
 }
 
 
-Alloc toColoring(Colors colors) {
+Alloc toColoring(const Colors& colors) {
 	Alloc regs;
 
-	for (const auto& pair : colors) {
+	for (auto const& pair : colors) {
 		assert( pair.second <= MAX_REG && "invalid allocation" );
 		regs[pair.first] = static_cast<Reg>(pair.second);
 	}

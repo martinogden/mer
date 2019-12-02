@@ -24,7 +24,7 @@ public:
 		encl(encl)
 	{}
 
-	bool exists(std::string key) {
+	bool exists(const std::string& key) {
 		return find(key) != nullptr;
 	}
 
@@ -34,7 +34,7 @@ public:
 		values[key] = value;
 	}
 
-	T& lookup(std::string key) {
+	T& lookup(const std::string& key) {
 		T* value = find(key);
 		assert (value && "key does not exist");
 		return *value;
@@ -58,15 +58,15 @@ public:
 
 	// the next four procedures are proxies
 	// for those in the scope object
-	bool exists(std::string key) {
+	bool exists(const std::string& key) {
 		return scope->exists(key);
 	}
 
-	void define(std::string key, T value) {
+	void define(const std::string& key, T value) {
 		scope->define(key, value);
 	}
 
-	T& lookup(std::string key) {
+	T& lookup(const std::string& key) {
 		return scope->lookup(key);
 	}
 

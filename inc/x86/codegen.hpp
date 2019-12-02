@@ -13,10 +13,10 @@ private:
 	std::vector<X86Asm> as;
 	Generator& gen;
 
-	void emitLabel(std::string label);
+	void emitLabel(const std::string& label);
 	void emit(X86Asm::OpCode opcode);
-	void emit(X86Asm::OpCode opcode, Operand dst);
-	void emit(X86Asm::OpCode opcode, Operand dst, Operand src);
+	void emit(X86Asm::OpCode opcode, const Operand& dst);
+	void emit(X86Asm::OpCode opcode, const Operand& dst, const Operand& src);
 
 	void prologue();
 	void epilogue();
