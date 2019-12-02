@@ -1,9 +1,18 @@
 #pragma once
 #include <string>
+#include <utility>
 #include "token.hpp"
 #include "ast-visitor.hpp"
 #include "type.hpp"
 #include "parse-tree.hpp"
+
+
+struct Param {
+	std::string name;
+	Type type;
+
+	Param(std::string name, Type type);
+};
 
 
 class ASTNode {
@@ -12,6 +21,20 @@ public:
 	ASTNode(Token token);
 	virtual ~ASTNode() = default;
 	virtual void accept(ASTVisitor& visitor) = 0;
+};
+
+
+class FunNode : public ASTNode {
+public:
+	std::string id;
+	Type type;
+	std::vector<Param> params;
+	ASTNode* body;
+
+	FunNode(Token token, std::string id, Type type,
+	        std::vector<Param> params, ASTNode* body);
+	~FunNode();
+	void accept(ASTVisitor& visitor) override;
 };
 
 

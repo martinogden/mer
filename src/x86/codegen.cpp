@@ -2,8 +2,8 @@
 #include "conversion.hpp"
 
 
-X86CodeGen::X86CodeGen(std::vector<Inst>& insts, Generator& gen) :
-	insts(insts),
+X86CodeGen::X86CodeGen(InstFun& fun, Generator& gen) :
+	fun(fun),
 	gen(gen)
 {}
 
@@ -29,10 +29,15 @@ void X86CodeGen::emit(X86Asm::OpCode opcode, Operand dst, Operand src) {
 
 
 void X86CodeGen::prologue() {
-	emit(X86Asm::PUSH, Reg::RBP);
-	emit(X86Asm::MOV, Reg::RBP, Reg::RSP);
+	int i = 1;
+	for (const auto &param : fun.params) {
+		Reg reg = static_cast<Reg>(i++);
+		emit(X86Asm::MOV, param, reg);
+	}
+}
 
-	// TODO calculate used regs and push any callee saved regs on to stack
+
+void X86CodeGen::epilogue() {
 }
 
 
@@ -67,6 +72,11 @@ void X86CodeGen::visit(Inst& inst) {
 			return visitCJmp(opcode, inst.getDst(), inst.getSrc1(), inst.getSrc2());
 		case Inst::RET:
 			return visitRet(inst.getDst());
+		case Inst::CALL:
+			return visitCall(inst.getDst(), inst.getSrc1());
+		case Inst::ARG:
+			return visitParam(inst.getDst(), inst.getSrc1());
+
 	}
 }
 
@@ -132,11 +142,24 @@ void X86CodeGen::visitJmp(Operand&& op) {
 
 
 void X86CodeGen::visitRet(Operand&& op) {
-	// TODO: restore saved regs
-	// restore stack pointer
 	emit(X86Asm::MOV, Reg::EAX, op);
-	emit(X86Asm::POP, Reg::RBP);
-	emit(X86Asm::RET);
+}
+
+
+void X86CodeGen::visitCall(Operand&& name, Operand&& n) {
+	// for (auto it=callerSaved.rbegin(); it!=callerSaved.rend(); ++it)
+	// 	emit(X86Asm::PUSH, *it);
+	std::string label = "_" + name.getLabel();
+	emit(X86Asm::CALL, Operand::label(label), n);
+
+	// for (auto it=callerSaved.begin(); it!=callerSaved.end(); ++it)
+		// emit(X86Asm::POP, *it);
+}
+
+
+void X86CodeGen::visitParam(Operand&& i, Operand&& op) {
+	Reg reg = static_cast<Reg>(i.getImm());
+	emit(X86Asm::MOV, reg, op);
 }
 
 
@@ -162,8 +185,10 @@ void X86CodeGen::visitCJmp(X86Asm::OpCode opcode, Operand&& op, Operand&& t, Ope
 std::vector<X86Asm>& X86CodeGen::run() {
 	prologue();
 
-	for (auto& inst : insts)
+	for (auto& inst : fun.insts)
 		visit(inst);
+
+	epilogue();
 
 	return as;
 }

@@ -11,6 +11,13 @@ public:
 };
 
 
+class IRTExpr : public IRTNode {
+public:
+	virtual ~IRTExpr() = default;
+	virtual void accept(IRTVisitor& visitor) = 0;
+};
+
+
 class IRTCmd : public IRTNode {
 public:
 	virtual ~IRTCmd() = default;
@@ -18,10 +25,14 @@ public:
 };
 
 
-class IRTExpr : public IRTNode {
+class IRTFun {
 public:
-	virtual ~IRTExpr() = default;
-	virtual void accept(IRTVisitor& visitor) = 0;
+	std::string id;
+	std::vector<std::string> params;
+	IRTCmd* body;
+
+	IRTFun(std::string id, std::vector<std::string> params, IRTCmd* body);
+	void accept(IRTVisitor& visitor);
 };
 
 
@@ -36,6 +47,17 @@ public:
 
 
 class NopCmd : public IRTCmd {
+	void accept(IRTVisitor& visitor);
+};
+
+
+class CallCmd : public IRTCmd {
+public:
+	std::string var;
+	std::string label;
+	std::vector<std::string> args;
+
+	CallCmd(std::string var, std::string label, std::vector<std::string> args);
 	void accept(IRTVisitor& visitor);
 };
 

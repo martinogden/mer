@@ -12,6 +12,7 @@ private:
 	ASTNode* node;
 	Set<std::string> scope;
 
+	void visit(FunNode*);
 	void visit(AssignNode*);
 	void visit(IfNode*);
 	void visit(WhileNode*);

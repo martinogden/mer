@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "operand.hpp"
 
 
@@ -12,7 +13,7 @@ public:
 		AND, OR, XOR,
 		MOV,
 		JMP, JEQ, JNE, JLT, JLE, JGT, JGE,
-		RET,
+		RET, CALL, ARG,
 	};
 
 	enum class Type {
@@ -20,6 +21,7 @@ public:
 		BINARY,
 		UNARY,
 		RET,
+		CALL,
 		JMP,
 		CJMP,
 	};
@@ -46,4 +48,15 @@ private:
 	Operand dst;
 	Operand src1;
 	Operand src2;
+};
+
+
+// TODO: better name
+struct InstFun {
+public:
+	std::string id;
+	std::vector<std::string> params;
+	std::vector<Inst> insts;
+
+	InstFun(std::string id, std::vector<std::string> params, std::vector<Inst> insts);
 };

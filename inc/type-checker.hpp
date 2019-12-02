@@ -8,9 +8,11 @@
 
 class TypeChecker : public ASTVisitor {
 private:
-	ASTNode* node;
+	FunNode* func;
+	SymTab<FunType>& decls;
 	SymTab<Type> env;
 
+	void visit(FunNode*);
 	void visit(AssignNode*);
 	void visit(IfNode*);
 	void visit(WhileNode*);
@@ -25,6 +27,6 @@ private:
 public:
 	Errors errors;
 
-	TypeChecker(ASTNode* node);
+	TypeChecker(FunNode* node, SymTab<FunType>& decls);
 	void run();
 };

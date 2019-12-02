@@ -12,7 +12,61 @@ Stmt::Stmt(Token token) :
 {}
 
 
-DeclStmt::DeclStmt(Token token, std::string identifier, Type type, Expr* expr) :
+FunDecl::FunDecl(Token token, std::string identifier,
+                 Token type, std::vector<DeclStmt*> params) :
+	Stmt(token),
+	type(type),
+	identifier(identifier),
+	params(params)
+{}
+
+
+FunDecl::~FunDecl() {
+	for (auto const& param : params)
+		delete param;
+}
+
+
+void FunDecl::accept(Visitor& visitor) {
+	visitor.visit(this);
+};
+
+
+FunDefn::FunDefn(Token token, FunDecl* decl, Stmt* body) :
+	Stmt(token),
+	decl(decl),
+	body(body)
+{}
+
+
+FunDefn::~FunDefn() {
+	delete decl;
+	delete body;
+}
+
+
+void FunDefn::accept(Visitor& visitor) {
+	visitor.visit(this);
+};
+
+
+TypedefStmt::TypedefStmt(Token token, Token type, Token alias) :
+	Stmt(token),
+	type(type),
+	alias(alias)
+{}
+
+
+TypedefStmt::~TypedefStmt() {}
+
+
+void TypedefStmt::accept(Visitor& visitor) {
+	visitor.visit(this);
+};
+
+
+
+DeclStmt::DeclStmt(Token token, std::string identifier, Token type, Expr* expr) :
 	Stmt(token),
 	type(type),
 	identifier(identifier),
@@ -171,6 +225,25 @@ void PostOpStmt::accept(Visitor& visitor) {
 
 
 void ExprStmt::accept(Visitor& visitor) {
+	visitor.visit(this);
+};
+
+
+CallExpr::CallExpr(Token token, std::string identifier, std::vector<Expr*> args) :
+	Expr(token),
+	identifier(identifier),
+	args(args),
+	decl(nullptr)
+{}
+
+
+CallExpr::~CallExpr() {
+	for (auto const& arg : args)
+		delete arg;
+}
+
+
+void CallExpr::accept(Visitor& visitor) {
 	visitor.visit(this);
 };
 

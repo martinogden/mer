@@ -1,5 +1,6 @@
 #include <sstream>
 #include "expr-printer.hpp"
+#include "print-utils.hpp"
 
 
 ExprPrinter::ExprPrinter(Expr* expr) :
@@ -10,6 +11,20 @@ ExprPrinter::ExprPrinter(Expr* expr) :
 std::string ExprPrinter::run() {
 	assert(expr);
 	return get(expr);
+}
+
+
+void ExprPrinter::visit(CallExpr* expr) {
+	std::stringstream buf;
+	buf << "(call " << expr->identifier << " ";
+
+	std::vector<std::string> args;
+	for (Expr* arg : expr->args)
+		args.push_back( get(arg) );
+	buf << join(args, " ");
+
+	buf << ")";
+	ret(buf.str());
 }
 
 

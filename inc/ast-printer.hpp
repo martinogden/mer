@@ -1,14 +1,15 @@
 #pragma once
 #include "ast-visitor.hpp"
-#include "tree-printer.hpp"
+#include "parse-tree-printer.hpp"
 #include "ast.hpp"
 
 
 class ASTPrinter : public ASTVisitor {
 private:
-	ASTNode* node;
+	std::vector<FunNode*>& nodes;
 	std::string retval;
 
+	void visit(FunNode*);
 	void visit(AssignNode*);
 	void visit(IfNode*);
 	void visit(WhileNode*);
@@ -23,6 +24,6 @@ private:
 	std::string get(Expr* expr);
 
 public:
-	ASTPrinter(ASTNode* node);
+	ASTPrinter(std::vector<FunNode*>& nodes);
 	std::string run();
 };

@@ -2,8 +2,10 @@
 #include "irt.hpp"
 
 
+void IRTVisitor::visit(IRTFun* cmd) {}
 void IRTVisitor::visit(SeqCmd* cmd) {}
 void IRTVisitor::visit(NopCmd* cmd) {}
+void IRTVisitor::visit(CallCmd* cmd) {}
 void IRTVisitor::visit(AssignCmd* cmd) {}
 void IRTVisitor::visit(EffAssignCmd* cmd) {}
 void IRTVisitor::visit(LabelCmd* cmd) {}

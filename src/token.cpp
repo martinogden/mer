@@ -21,7 +21,6 @@ std::unordered_set<std::string> reserved = {
 	"continue",
 	"break",
 	"return",
-	"assert",
 	"true",
 	"false",
 	"NULL",
@@ -32,6 +31,7 @@ std::unordered_set<std::string> reserved = {
 	"void",
 	"char",
 	"string",
+	"typedef",
 };
 
 
@@ -43,6 +43,7 @@ std::unordered_map<std::string, TokenType> keywords = {
 	{"for", TokenType::FOR},
 	{"true", TokenType::TRUE},
 	{"false", TokenType::FALSE},
+	{"typedef", TokenType::TYPEDEF},
 };
 
 

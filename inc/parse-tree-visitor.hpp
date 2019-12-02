@@ -1,12 +1,16 @@
 #pragma once
 
 
+class CallExpr;
 class TernaryExpr;
 class BinaryExpr;
 class UnaryExpr;
 class LiteralExpr;
 class IdExpr;
 
+class FunDecl;
+class FunDefn;
+class TypedefStmt;
 class DeclStmt;
 class IfStmt;
 class WhileStmt;
@@ -23,12 +27,16 @@ class PostOpStmt;
 // implemented in visitor.cpp
 class Visitor {
 public:
+	virtual void visit(CallExpr*);
 	virtual void visit(TernaryExpr*);
 	virtual void visit(BinaryExpr*);
 	virtual void visit(UnaryExpr*);
 	virtual void visit(LiteralExpr*);
 	virtual void visit(IdExpr*);
 
+	virtual void visit(FunDecl*);
+	virtual void visit(FunDefn*);
+	virtual void visit(TypedefStmt*);
 	virtual void visit(DeclStmt*);
 	virtual void visit(IfStmt*);
 	virtual void visit(WhileStmt*);

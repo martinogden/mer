@@ -50,4 +50,5 @@ public:
 	Lexer(std::string src);
 	Token nextToken();
 	bool isAtEnd();
+	void addType(std::string type);
 };

@@ -10,8 +10,11 @@ private:
 	void ret(std::string);
 
 public:
+	void visit(IRTFun*);
+
 	void visit(SeqCmd*);
 	void visit(NopCmd*);
+	void visit(CallCmd*);
 	void visit(AssignCmd*);
 	void visit(EffAssignCmd*);
 	void visit(LabelCmd*);
@@ -24,6 +27,7 @@ public:
 	void visit(VarExpr*);
 	void visit(PairExpr*);
 
+	std::string get(IRTFun*);
 	std::string get(IRTCmd*);
 	std::string get(IRTExpr*);
 };

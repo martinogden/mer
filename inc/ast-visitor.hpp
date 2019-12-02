@@ -1,6 +1,7 @@
 #pragma once
 
 
+class FunNode;
 class AssignNode;
 class IfNode;
 class WhileNode;
@@ -13,6 +14,7 @@ class ExprNode;
 
 class ASTVisitor {
 public:
+	virtual void visit(FunNode*);
 	virtual void visit(AssignNode*);
 	virtual void visit(IfNode*);
 	virtual void visit(WhileNode*);

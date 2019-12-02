@@ -30,10 +30,25 @@ X86Asm::X86Asm(OpCode opcode, Operand dst, Operand src) :
 
 
 std::ostream& operator<<(std::ostream& output, const X86Asm& as) {
-	if (as.opcode == X86Asm::LBL) {
-		output << as.dst << ":";
-		return output;
+	switch (as.opcode) {
+		case X86Asm::LBL:
+			output << as.dst << ":";
+			return output;
+		case X86Asm::CALL:
+			output << '\t' << as.opcode << " " << as.dst;
+			return output;
+		case X86Asm::PUSH:
+		case X86Asm::POP:
+			if (as.dst.getType() == Operand::REG) {
+				output << '\t' << as.opcode << " " << promote(as.dst.getReg());
+				return output;
+			}
+			else
+				break;
+		default:
+			break;
 	}
+
 
 	switch (as.parity) {
 		case 0:
@@ -93,6 +108,8 @@ std::ostream& operator<<(std::ostream& output, const X86Asm::OpCode& op) {
 			output << "jge"; break;
 		case X86Asm::RET:
 			output << "ret"; break;
+		case X86Asm::CALL:
+			output << "call"; break;
 		case X86Asm::PUSH:
 			output << "push"; break;
 		case X86Asm::POP:

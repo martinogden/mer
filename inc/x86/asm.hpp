@@ -17,7 +17,7 @@ struct X86Asm {
 		AND, OR, XOR,
 		MOV,
 		JMP, JE, JNE, JL, JLE, JG, JGE,
-		RET,
+		RET, CALL,
 		PUSH, POP,
 		CMP,
 	};

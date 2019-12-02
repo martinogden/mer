@@ -13,6 +13,20 @@ void UseChecker::run() {
 }
 
 
+void UseChecker::visit(FunNode* node) {
+	std::unordered_set<std::string> ids;
+
+	for (Param& param : node->params)
+		ids.insert(param.name);
+
+	VarSet vars(std::move(ids));
+
+	setDecl(vars);
+	setInit(vars);
+	node->body->accept(*this);
+}
+
+
 void UseChecker::visit(AssignNode* node) {
 	VarSet init = getInit();
 
@@ -56,7 +70,10 @@ void UseChecker::visit(WhileNode* node) {
 
 void UseChecker::visit(ReturnNode* node) {
 	VarSet decl = getDecl();
-	check(node->expr);
+
+	if (node->expr)
+		check(node->expr);
+
 	setInit(decl);
 }
 

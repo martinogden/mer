@@ -11,16 +11,20 @@
 class Translator : public ASTVisitor {
 private:
 	IRTCmd* retval;
+	std::string returnLabel;
+	std::string returnTmp;
 
 	ExprTranslator tr;
 
 	void ret(IRTCmd*);
 	void ret(std::vector<IRTCmd*>);
 	CmdExpr* get(Expr*);
+	IRTCmd* get(ASTNode*);
 
 public:
 	Translator(Generator& gen);
 
+	void visit(FunNode*);
 	void visit(AssignNode*);
 	void visit(IfNode*);
 	void visit(WhileNode*);
@@ -30,5 +34,5 @@ public:
 	void visit(DeclNode*);
 	void visit(ExprNode*);
 
-	IRTCmd* get(ASTNode*);
+	IRTFun* get(FunNode*);
 };

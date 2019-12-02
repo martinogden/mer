@@ -1,14 +1,36 @@
+#include <sstream>
 #include "expr-printer.hpp"
 #include "ast-printer.hpp"
+#include "print-utils.hpp"
 
 
-ASTPrinter::ASTPrinter(ASTNode* node) :
-	node(node)
+ASTPrinter::ASTPrinter(std::vector<FunNode*>& nodes) :
+	nodes(nodes)
 {}
 
 
 std::string ASTPrinter::run() {
-	return get(node);
+	std::stringstream buf;
+	for (auto const& node : nodes)
+		buf << get(node) << std::endl;
+	return buf.str();
+}
+
+
+void ASTPrinter::visit(FunNode* node) {
+	std::stringstream buf;
+
+	buf << "<(";
+	std::vector<std::string> pairs;
+	for (Param& param : node->params) {
+		std::stringstream b;
+		b << param.name << ":" << param.type;
+		pairs.push_back(b.str());
+	}
+	buf << join(pairs, ", ");
+	buf << ") -> " << node->type << ">";
+
+	ret("fun(" + node->id + " " + buf.str() + " " + get(node->body) + ")");
 }
 
 
@@ -54,6 +76,9 @@ void ASTPrinter::visit(DeclNode* node) {
 			break;
 		case Type::INT:
 			type = "int";
+			break;
+		case Type::VOID:
+			type = "void";
 			break;
 		case Type::UNKNOWN:
 			type = "unknown";

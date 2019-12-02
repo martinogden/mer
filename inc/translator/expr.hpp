@@ -18,6 +18,7 @@ private:
 public:
 	ExprTranslator(Generator& gen);
 
+	void visit(CallExpr*);
 	void visit(TernaryExpr*);
 	void visit(BinaryExpr*);
 	void visit(UnaryExpr*);

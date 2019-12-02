@@ -9,6 +9,7 @@ private:
 	Expr* expr;
 	std::string retval;
 
+	void visit(CallExpr*);
 	void visit(TernaryExpr*);
 	void visit(BinaryExpr*);
 	void visit(UnaryExpr*);

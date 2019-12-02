@@ -9,7 +9,7 @@
 
 class CodeGen : public IRTVisitor {
 private:
-	IRTCmd* cmd;
+	IRTFun* fun;
 	Generator& gen;
 
 	std::vector<Inst> insts;
@@ -19,10 +19,12 @@ private:
 	void ret(Operand);
 
 public:
-	CodeGen(IRTCmd* cmd, Generator& gen);
+	CodeGen(IRTFun* fun, Generator& gen);
 
+	void visit(IRTFun*);
 	void visit(SeqCmd*);
 	void visit(NopCmd*);
+	void visit(CallCmd*);
 	void visit(AssignCmd*);
 	void visit(EffAssignCmd*);
 	void visit(LabelCmd*);
@@ -36,5 +38,5 @@ public:
 	void visit(PairExpr*);
 
 	Operand& get(IRTExpr*);
-	std::vector<Inst>& run();
+	InstFun run();
 };

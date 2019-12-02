@@ -55,6 +55,7 @@ enum struct TokenType {
 	QUESTION,
 	COLON,
 	SEMICOLON,
+	COMMA,
 	LPAREN,
 	RPAREN,
 	LBRACE,
@@ -69,6 +70,7 @@ enum struct TokenType {
 	TRUE,
 	FALSE,
 
+	TYPEDEF,
 	TYPE,
 };
 

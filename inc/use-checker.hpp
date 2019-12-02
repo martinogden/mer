@@ -16,6 +16,7 @@ private:
 	VarSet init;
 	VarSet decl;
 
+	void visit(FunNode*);
 	void visit(AssignNode*);
 	void visit(IfNode*);
 	void visit(WhileNode*);

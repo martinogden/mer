@@ -1,6 +1,18 @@
 #include "irt.hpp"
 
 
+IRTFun::IRTFun(std::string id, std::vector<std::string> params, IRTCmd* body) :
+	id(id),
+	params(params),
+	body(body)
+{}
+
+
+void IRTFun::accept(IRTVisitor& visitor) {
+	visitor.visit(this);
+}
+
+
 SeqCmd::SeqCmd(IRTCmd* head, IRTCmd* rest) :
 	head(head),
 	rest(rest)
@@ -12,6 +24,18 @@ void SeqCmd::accept(IRTVisitor& visitor) {
 
 
 void NopCmd::accept(IRTVisitor& visitor) {
+	visitor.visit(this);
+}
+
+
+CallCmd::CallCmd(std::string var, std::string label, std::vector<std::string> args) :
+	var(var),
+	label(label),
+	args(args)
+{}
+
+
+void CallCmd::accept(IRTVisitor& visitor) {
 	visitor.visit(this);
 }
 

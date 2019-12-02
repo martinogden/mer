@@ -1,5 +1,6 @@
 #include <sstream>
 #include "irt-printer.hpp"
+#include "print-utils.hpp"
 
 
 inline std::string to_string(BinOp op) {
@@ -11,6 +12,12 @@ inline std::string to_string(BinOp op) {
 
 void IRTPrinter::ret(std::string str) {
 	retval = str;
+}
+
+
+std::string IRTPrinter::get(IRTFun* cmd) {
+	cmd->accept(*this);
+	return retval;
 }
 
 
@@ -26,6 +33,12 @@ std::string IRTPrinter::get(IRTExpr* e) {
 }
 
 
+void IRTPrinter::visit(IRTFun* fun) {
+	std::string label = "." + fun->id + "(" + join(fun->params, ", ") + "):\n";
+	ret( label + get(fun->body) );
+}
+
+
 void IRTPrinter::visit(SeqCmd* cmd) {
 	ret( get(cmd->head) + get(cmd->rest) );
 }
@@ -33,6 +46,11 @@ void IRTPrinter::visit(SeqCmd* cmd) {
 
 void IRTPrinter::visit(NopCmd* cmd) {
 	ret("");
+}
+
+
+void IRTPrinter::visit(CallCmd* cmd) {
+	ret( "\t" + cmd->var + " <- call " + cmd->label + "(" + join(cmd->args, ", ") + ")\n" );
 }
 
 

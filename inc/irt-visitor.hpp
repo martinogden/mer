@@ -1,8 +1,11 @@
 #pragma once
 
 
+class IRTFun;
+
 class SeqCmd;
 class NopCmd;
+class CallCmd;
 class AssignCmd;
 class EffAssignCmd;
 class LabelCmd;
@@ -18,8 +21,11 @@ class PairExpr;
 
 class IRTVisitor {
 public:
+	virtual void visit(IRTFun*);
+
 	virtual void visit(SeqCmd*);
 	virtual void visit(NopCmd*);
+	virtual void visit(CallCmd*);
 	virtual void visit(AssignCmd*);
 	virtual void visit(EffAssignCmd*);
 	virtual void visit(LabelCmd*);

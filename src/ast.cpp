@@ -1,9 +1,34 @@
 #include "ast.hpp"
 
 
+Param::Param(std::string name, Type type) :
+	name(name),
+	type(type)
+{}
+
+
 ASTNode::ASTNode(Token token) :
 	token(token)
 {}
+
+
+FunNode::FunNode(Token token, std::string id, Type type,
+	             std::vector<Param> params, ASTNode* body) :
+	ASTNode(token),
+	id(id),
+	type(type),
+	params(params),
+	body(body)
+{}
+
+FunNode::~FunNode() {
+	delete body;
+}
+
+
+void FunNode::accept(ASTVisitor& visitor) {
+	visitor.visit(this);
+};
 
 
 AssignNode::AssignNode(Token token, std::string id, Expr* expr) :

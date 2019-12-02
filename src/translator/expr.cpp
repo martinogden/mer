@@ -34,6 +34,26 @@ CmdExpr* ExprTranslator::get(Expr* expr) {
 }
 
 
+void ExprTranslator::visit(CallExpr* expr) {
+	std::vector<IRTCmd*> cmds;
+	std::vector<std::string> tmps;
+
+	for (Expr* arg : expr->args) {
+		CmdExpr* e = get(arg);
+		std::string tmp = freshTmp();
+
+		cmds.push_back(e->cmd);
+		cmds.push_back(new AssignCmd(tmp, e->expr));
+		tmps.push_back(tmp);
+	}
+
+	std::string t = freshTmp();
+	cmds.push_back( new CallCmd(t, expr->identifier, std::move(tmps)) );
+
+	ret(concat(cmds), new VarExpr(t));
+}
+
+
 void ExprTranslator::visit(TernaryExpr* expr) {
 	if (expr->type == Type::BOOL) {
 		ret( transBool(expr) );

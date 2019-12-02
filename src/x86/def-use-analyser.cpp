@@ -10,6 +10,17 @@ DefUseAnalyser::DefUseAnalyser(std::vector<X86Asm>& code) :
 {}
 
 
+Set<Operand> getNRegs(uint n) {
+	assert(n < 7);
+	std::unordered_set<Operand> regs;
+
+	for (uint i=0; i<n; ++i)
+		regs.insert( static_cast<Reg>(i) );
+
+	return std::move(regs);
+}
+
+
 void DefUseAnalyser::visit(X86Asm& as, uint l) {
 	succ[l] = {{ nextLine(l) }};
 
@@ -58,6 +69,11 @@ void DefUseAnalyser::visit(X86Asm& as, uint l) {
 		case X86Asm::RET:
 			setUse(l, {{ Reg::EAX }});
 			succ[l] = {};
+			break;
+		case X86Asm::CALL:
+			setUse(l, getNRegs( as.src.getImm() ));
+			// TODO remove for void functions
+			setDef(l, {{ Reg::EAX }});
 			break;
 		case X86Asm::PUSH:
 			setUse(l, {{ as.dst }});

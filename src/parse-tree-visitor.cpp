@@ -1,6 +1,12 @@
 #include "parse-tree.hpp"
 
 
+void Visitor::visit(CallExpr* expr) {
+	for (auto const& arg : expr->args)
+		arg->accept(*this);
+}
+
+
 void Visitor::visit(TernaryExpr* expr) {
 	expr->cond->accept(*this);
 	expr->then->accept(*this);
@@ -23,6 +29,22 @@ void Visitor::visit(LiteralExpr* expr) {}
 
 
 void Visitor::visit(IdExpr* expr) {}
+
+
+void Visitor::visit(FunDecl* decl) {
+	for (auto const& param : decl->params)
+		param->accept(*this);
+}
+
+
+void Visitor::visit(FunDefn* defn) {
+	defn->decl->accept(*this);
+	defn->body->accept(*this);
+}
+
+
+
+void Visitor::visit(TypedefStmt* stmt) {}
 
 
 void Visitor::visit(DeclStmt* stmt) {
@@ -56,7 +78,8 @@ void Visitor::visit(ForStmt* stmt) {
 
 
 void Visitor::visit(ReturnStmt* stmt) {
-	stmt->expr->accept(*this);
+	if (stmt->expr)
+		stmt->expr->accept(*this);
 }
 
 

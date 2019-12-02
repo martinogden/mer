@@ -97,3 +97,13 @@ bool Inst::is(OpCode op) const {
 bool Inst::is(std::set<OpCode> ops) const {
 	return ops.find(opcode) != ops.end();
 }
+
+
+InstFun::InstFun(
+	std::string id,
+	std::vector<std::string> params,
+	std::vector<Inst> insts) :
+		id(id),
+		params(params),
+		insts(insts)
+{}

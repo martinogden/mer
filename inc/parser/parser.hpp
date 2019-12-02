@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include "parse-tree.hpp"
 #include "parser/expr.hpp"
 
@@ -11,8 +12,11 @@ class NullParser;
 class Parser : public PrattParser {
 private:
 	BlockStmt* program();
-	void prologue();
-	void epilogue();
+
+	Stmt* declaration();
+	Stmt* typedefStmt(Token& token);
+	Stmt* function(Token& token);
+	std::vector<DeclStmt*> params(Token& token);
 
 	Stmt* statement();
 	Stmt* ifStmt(Token& token);
@@ -26,6 +30,8 @@ private:
 
 	// helper to parse for stmts
 	Stmt* declOrSimpleStmtOpt(TokenType terminator);
+
+	void seedTypes();
 
 public:
 	Parser(Lexer& lexer);

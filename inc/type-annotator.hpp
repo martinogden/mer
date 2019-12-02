@@ -8,7 +8,9 @@
 class TypeAnnotator : public Visitor {
 private:
 	SymTab<Type>& env;
+	SymTab<FunType>& decls;
 
+	void visit(CallExpr*);
 	void visit(TernaryExpr*);
 	void visit(BinaryExpr*);
 	void visit(UnaryExpr*);
@@ -19,6 +21,6 @@ private:
 public:
 	Errors errors;
 
-	TypeAnnotator(SymTab<Type>& env);
+	TypeAnnotator(SymTab<Type>& env, SymTab<FunType>& decls);
 	Type get(Expr* expr);
 };

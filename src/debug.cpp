@@ -110,6 +110,8 @@ std::ostream& operator<<(std::ostream& output, const TokenType& type) {
 			str = "COLON"; break;
 		case TokenType::SEMICOLON:
 			str = "SEMICOLON"; break;
+		case TokenType::COMMA:
+			str = "COMMA"; break;
 		case TokenType::LPAREN:
 			str = "LPAREN"; break;
 		case TokenType::RPAREN:
@@ -134,6 +136,8 @@ std::ostream& operator<<(std::ostream& output, const TokenType& type) {
 		case TokenType::FALSE:
 			str = "FALSE"; break;
 
+		case TokenType::TYPEDEF:
+			str = "TYPEDEF"; break;
 		case TokenType::TYPE:
 			str = "TYPE"; break;
 	}
@@ -196,6 +200,32 @@ std::ostream& operator<<(std::ostream& output, const BinOp& op) {
 			str = "|"; break;
 		case BinOp::XOR:
 			str = "^"; break;
+	}
+
+	output << str;
+	return output;
+}
+
+
+std::ostream& operator<<(std::ostream& output, const Type& type) {
+	std::string str;
+
+	switch (type) {
+		case Type::BOOL:
+			str = "bool";
+			break;
+		case Type::INT:
+			str = "int";
+			break;
+		case Type::VOID:
+			str = "void";
+			break;
+		case Type::ERROR:
+			str = "error";
+			break;
+		case Type::UNKNOWN:
+			str = "unknown";
+			break;
 	}
 
 	output << str;
@@ -325,6 +355,12 @@ std::ostream& operator<<(std::ostream& output, const Inst::OpCode& opcode) {
 		case Inst::RET:
 			output << "ret";
 			break;
+		case Inst::CALL:
+			output << "call";
+			break;
+		case Inst::ARG:
+			output << "arg";
+			break;
 
 		case Inst::LBL:
 			break;
@@ -411,7 +447,8 @@ std::ostream& operator<<(std::ostream& output, const Operand& op) {
 			output << op.reg;
 			break;
 		case Operand::MEM:
-			output << op.mem.offset << '(' << op.mem.reg << ')';
+			// all stack access is 8-byte aligned, so we promote reg to 64-bit
+			output << op.mem.offset << '(' << promote(op.mem.reg) << ')';
 			break;
 		case Operand::LBL:
 			output << op.tmp;
@@ -429,6 +466,8 @@ std::ostream& operator<<(std::ostream& output, const Inst& inst) {
 	else if (inst.is({ Inst::JEQ, Inst::JNE, Inst::JLT, Inst::JLE, Inst::JGT, Inst::JGE }))
 		output << '\t' << inst.getOpcode() << ' ' << inst.getDst()\
 			<< ", " << inst.getSrc1() << ", " << inst.getSrc2();
+	else if (inst.is({ Inst::ARG, Inst::CALL }))
+		output << '\t' << inst.getOpcode() << ' ' << inst.getDst() << ", " << inst.getSrc1();
 	else {
 		uint parity = inst.getParity();
 		output << '\t' << inst.getOpcode();

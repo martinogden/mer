@@ -18,14 +18,16 @@ std::set<TokenType> postOps = {
 };
 
 
-Parser::Parser(Lexer& lexer) :
-	PrattParser(createParserSpec(), lexer)
-{}
+Parser::Parser(Lexer& lexer) : PrattParser(createParserSpec(), lexer) {
+	seedTypes();
+}
 
 
 ParseTree* Parser::run() {
 	try {
-		return new ParseTree( program() );
+		// TODO handle w/o block
+		BlockStmt* block = program();
+		return new ParseTree(block);
 	}
 	catch (ParseError e) {
 		errors.add(e.what(), e.token);
@@ -37,52 +39,85 @@ ParseTree* Parser::run() {
 
 BlockStmt* Parser::program() {
 	advance();
-	advance();
-	prologue();
 
-	std::vector<Stmt*> stmts;
+	std::vector<Stmt*> decls;
 	Token token = get();
 
-	while (!isAtEnd() && !match(TokenType::RBRACE)) {
+	while (!isAtEnd()) {
 		try {
-			stmts.push_back(statement());
+			decls.push_back(declaration());
 		}
-		catch(ParseError e) {
+		catch (ParseError e) {
 			// ignore rest of line on syntax error
 			errors.add(e.what(), e.token);
 			consumeLine();
 		}
 	}
 
-	epilogue();
 	expect(TokenType::END);
 
 	if (errors.exist())
 		return nullptr;
 
-	return new BlockStmt(token, stmts);
+	return new BlockStmt(token, decls);
 }
 
 
-void Parser::prologue() {
+Stmt* Parser::declaration() {
 	Token token = get();
-	expect(TokenType::TYPE);
-	if (token.lexeme != "int")
-		errors.add("Expected 'int', got '" + token.lexeme + "'", token);
 
-	token = get();
-	expect(TokenType::IDENT);
-	if (token.lexeme != "main")
-		errors.add("Expected 'main', got '" + token.lexeme + "'", token);
+	if (accept(TokenType::TYPEDEF))
+		return typedefStmt(token);
+
+	expect(TokenType::TYPE);
+	return function(token);
+}
+
+
+Stmt* Parser::typedefStmt(Token& token) {
+	Token tyToken = expect(TokenType::TYPE);
+	Token idToken = expect(TokenType::IDENT);
+	// essential we forward new type to lexer here before it
+	// reads the semicolon. Otherwise lexer will read in lookahead
+	// token, which could be a type token of this new type
+	lexer.addType(idToken.lexeme);
+	expect(TokenType::SEMICOLON);
+	return new TypedefStmt(token, tyToken, idToken);
+}
+
+
+Stmt* Parser::function(Token& token) {
+	Token id = expect(TokenType::IDENT);
+	FunDecl* decl = new FunDecl(token, id.lexeme, token, params(token));
+
+	if (accept(TokenType::SEMICOLON))
+		return decl;
+
+	Token t = expect(TokenType::LBRACE);
+	return new FunDefn(token, decl, block(t));
+}
+
+
+std::vector<DeclStmt*> Parser::params(Token& token) {
+	std::vector<DeclStmt*> decls;
 
 	expect(TokenType::LPAREN);
+	while (!isAtEnd() && !match(TokenType::RPAREN)) {
+		Token type = expect(TokenType::TYPE);
+		Token id = expect(TokenType::IDENT);
+		DeclStmt* decl = new DeclStmt(type, id.lexeme, type, nullptr);
+		decls.push_back(decl);
+
+		if (!accept(TokenType::COMMA))
+			break;
+	}
 	expect(TokenType::RPAREN);
-	expect(TokenType::LBRACE);
-}
 
+	// TODO: remove this restriction once backend (x86) can handle it
+	if (decls.size() > 6)
+		errors.add("function has too many parameters.", token);
 
-void Parser::epilogue() {
-	expect(TokenType::RBRACE);
+	return decls;
 }
 
 
@@ -164,20 +199,21 @@ Stmt* Parser::declOrSimpleStmtOpt(TokenType terminator) {
 
 
 Stmt* Parser::returnStmt(Token& token) {
-	Expr* expr = expression();
+	Expr* expr = nullptr;
+	if (!match(terminator))
+		expr = expression();
 	return new ReturnStmt(token, expr);
 }
 
 
 Stmt* Parser::declStmt(Token& token) {
-	Type type = toType(token);
 	Token id = expect(TokenType::IDENT);
 
 	Expr* expr = nullptr;
 	if (accept(TokenType::EQL))
 		expr = expression();
 
-	return new DeclStmt(token, id.lexeme, type, expr);
+	return new DeclStmt(token, id.lexeme, token, expr);
 }
 
 
@@ -227,6 +263,12 @@ Expr* Parser::condition() {
 }
 
 
+void Parser::seedTypes() {
+	for (auto const& pair : concreteTypes)
+		lexer.addType(pair.first);
+}
+
+
 ParserSpec createParserSpec() {
 	ParserSpec spec;
 
@@ -238,6 +280,7 @@ ParserSpec createParserSpec() {
 	spec.add( TokenType::NUM, new LiteralParser());
 
 	// left parsers
+	spec.add( TokenType::LPAREN, new CallParser());
 	spec.add({TokenType::MUL, TokenType::DIV, TokenType::MOD}, new BinaryParser(MUL));
 	spec.add({TokenType::ADD, TokenType::SUB}, new BinaryParser(ADD));
 	spec.add({TokenType::LT, TokenType::LT_EQL, TokenType::GT, TokenType::GT_EQL}, new BinaryParser(COMP));

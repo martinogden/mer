@@ -1,14 +1,17 @@
 #include "return-checker.hpp"
 
 
-ReturnChecker::ReturnChecker(ASTNode* node) :
+ReturnChecker::ReturnChecker(FunNode* node) :
 	node(node)
 {}
 
 
 void ReturnChecker::run() {
+	if (node->type == Type::VOID)
+		return;
+
 	if (!get(node))
-		errors.add("main may not return an int");
+		errors.add("Function `" + node->id + "` may not return.", node->token);
 }
 
 

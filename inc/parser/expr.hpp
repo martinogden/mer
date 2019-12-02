@@ -22,8 +22,8 @@ enum Precedence {
 	COMP    = 100,
 	ADD     = 110,
 	MUL     = 120,
-	CALL    = 130,
-	UNARY   = 140,
+	UNARY   = 130,
+	CALL    = 140,
 	LPAREN  = 150,
 };
 
@@ -33,6 +33,13 @@ enum Level {
 	DECL   = 20,
 	CTRL   = 30,
 	BLOCK  = 40,
+};
+
+
+class CallParser : public LeftParser {
+public:
+	CallParser(int lbp=CALL);
+	Expr* parse(Expr* cond, Token& token, PrattParser& parser);
 };
 
 

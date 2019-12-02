@@ -6,7 +6,7 @@
 
 class ReturnChecker : public ASTVisitor {
 private:
-	ASTNode* node;
+	FunNode* node;
 	bool retval;
 
 	virtual void visit(AssignNode*);
@@ -23,7 +23,7 @@ private:
 public:
 	Errors errors;
 
-	ReturnChecker(ASTNode* node);
+	ReturnChecker(FunNode* node);
 	bool get(ASTNode* node);
 	void run();
 };

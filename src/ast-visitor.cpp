@@ -8,6 +8,11 @@ void ASTVisitor::visit(NopNode* node) {}
 void ASTVisitor::visit(ExprNode* node) {}
 
 
+void ASTVisitor::visit(FunNode* node) {
+	node->body->accept(*this);
+}
+
+
 void ASTVisitor::visit(IfNode* node) {
 	node->then->accept(*this);
 	node->otherwise->accept(*this);

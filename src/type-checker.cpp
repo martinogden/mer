@@ -1,14 +1,29 @@
 #include "type-checker.hpp"
 
 
-TypeChecker::TypeChecker(ASTNode* node) :
-	node(node),
+TypeChecker::TypeChecker(FunNode* node, SymTab<FunType>& decls) :
+	func(node),
+	decls(decls),
 	errors("Type error")
 {}
 
 
 void TypeChecker::run() {
-	node->accept(*this);
+	func->accept(*this);
+}
+
+
+void TypeChecker::visit(FunNode* node) {
+	for (Param& param : node->params) {
+		if (env.exists(param.name)) {
+			errors.add("function params must have distinct names", node->token);
+			return;
+		}
+		else
+			env.define(param.name, param.type);
+	}
+
+	node->body->accept(*this);
 }
 
 
@@ -38,8 +53,16 @@ void TypeChecker::visit(WhileNode* node) {
 
 
 void TypeChecker::visit(ReturnNode* node) {
-	if (annotate(node->expr) != Type::INT)
-		errors.add("must return int", node->token);
+	Type ftype = func->type;
+	Type rtype;
+
+	if (node->expr)
+		rtype = annotate(node->expr);
+	else
+		rtype = Type::VOID;
+
+	if (rtype != ftype)
+		errors.add("invalid return type", node->token);
 }
 
 
@@ -53,8 +76,18 @@ void TypeChecker::visit(SeqNode* node) {
 
 
 void TypeChecker::visit(DeclNode* node) {
+	Type type = Type::UNKNOWN;
+
 	env.enter();
-	env.define(node->id, node->type);
+
+	if (node->type == Type::INT || node->type == Type::BOOL)
+		type = node->type;
+	else {
+		errors.add("invalid type for var declaration", node->token);
+		type = Type::ERROR;
+	}
+
+	env.define(node->id, type);
 	node->scope->accept(*this);
 	env.exit();
 }
@@ -66,7 +99,7 @@ void TypeChecker::visit(ExprNode* node) {
 
 
 Type TypeChecker::annotate(Expr* expr) {
-	TypeAnnotator annotator(env);
+	TypeAnnotator annotator(env, decls);
 	annotator.get(expr);
 
 	if (annotator.errors.exist())

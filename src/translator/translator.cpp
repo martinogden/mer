@@ -5,6 +5,8 @@
 
 
 Translator::Translator(Generator& gen) :
+	returnLabel(""),
+	returnTmp(""),
 	tr(gen)
 {}
 
@@ -19,6 +21,16 @@ void Translator::ret(std::vector<IRTCmd*> val) {
 }
 
 
+IRTFun* Translator::get(FunNode* node) {
+	std::vector<std::string> params;
+	for (auto const& param : node->params)
+		params.push_back(param.name);
+
+	node->accept(*this);
+	return new IRTFun(node->id, params, retval);
+}
+
+
 IRTCmd* Translator::get(ASTNode* node) {
 	node->accept(*this);
 	return retval;
@@ -30,6 +42,17 @@ CmdExpr* Translator::get(Expr* expr) {
 }
 
 
+void Translator::visit(FunNode* node) {
+	returnLabel = tr.freshLabel();
+	returnTmp = tr.freshTmp();
+	ret({
+		get(node->body),
+		new LabelCmd(returnLabel),
+		new ReturnCmd(new VarExpr(returnTmp)),
+	});
+}
+
+
 void Translator::visit(AssignNode* node) {
 	CmdExpr* e = get(node->expr);
 	ret({ e->cmd, new AssignCmd(node->id, e->expr) });
@@ -37,8 +60,12 @@ void Translator::visit(AssignNode* node) {
 
 
 void Translator::visit(ReturnNode* node) {
-	CmdExpr* e = get(node->expr);
-	ret({ e->cmd, new ReturnCmd(e->expr) });
+	if (node->expr) {
+		CmdExpr *e = get(node->expr);
+		ret({e->cmd, new AssignCmd(returnTmp, e->expr), new GotoCmd(returnLabel)});
+	}
+	else
+		ret(new GotoCmd(returnLabel));
 }
 
 

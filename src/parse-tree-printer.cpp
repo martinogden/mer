@@ -1,5 +1,5 @@
 #include <string>
-#include "tree-printer.hpp"
+#include "parse-tree-printer.hpp"
 
 
 const std::string BLANK = "";
@@ -40,9 +40,34 @@ std::string TreePrinter::run() {
 }
 
 
+void TreePrinter::visit(FunDecl* decl) {
+	open("declare");
+	printFunSignature(decl);
+	close();
+}
+
+
+void TreePrinter::visit(FunDefn* defn) {
+	open("define");
+	printFunSignature(defn->decl);
+	append(SPACE);
+	defn->body->accept(*this);
+	close();
+}
+
+
+void TreePrinter::visit(TypedefStmt* stmt) {
+	open("typedef");
+	append(stmt->type.lexeme);
+	append(SPACE);
+	append(stmt->alias.lexeme);
+	close();
+}
+
+
 void TreePrinter::visit(DeclStmt* stmt) {
 	open("declare");
-	append(stmt->token.lexeme);
+	append(stmt->type.lexeme);
 	append(SPACE);
 	append(stmt->identifier);
 	if (stmt->expr) {
@@ -100,25 +125,36 @@ void TreePrinter::visit(ForStmt* stmt) {
 
 
 void TreePrinter::visit(ReturnStmt* stmt) {
-	open(stmt->token.lexeme);
-	stmt->expr->accept(*this);
-	close();
+	if (stmt->expr) {
+		open(stmt->token.lexeme);
+		stmt->expr->accept(*this);
+		close();
+	}
+	else
+		append("(return)");
 }
 
 
 void TreePrinter::visit(BlockStmt* block) {
+	if (block->statements.size() == 0) {
+		append("[]");
+		return;
+	}
+
 	append("[");
+	newline();
 	std::vector<Stmt*> stmts = block->statements;
 	Stmt* stmt;
 
 	for (auto it=stmts.begin(); it != --stmts.end(); it++) {
 		stmt = *it;
 		stmt->accept(*this);
-		append(SPACE);
+		newline();
 	}
 
 	stmt = *(--stmts.end());
 	stmt->accept(*this);
+	newline();
 	append("]");
 }
 
@@ -154,6 +190,30 @@ void TreePrinter::visit(PostOpStmt* stmt) {
 
 	append(SPACE);
 	stmt->expr->accept(*this);
+	close();
+}
+
+
+void TreePrinter::visit(CallExpr* expr) {
+	open("call");
+	append(expr->identifier);
+	append(SPACE);
+
+	open();
+	std::vector<Expr*> args = expr->args;
+
+	if (args.size() > 0) {
+		Expr* arg;
+		for (auto it=args.begin(); it != --args.end(); ++it) {
+			arg = *it;
+			arg->accept(*this);
+			append(SPACE);
+		}
+		arg = *(--args.end());
+		arg->accept(*this);
+	}
+	close();
+
 	close();
 }
 
@@ -223,3 +283,30 @@ void TreePrinter::close() {
 	append(RPAREN);
 }
 
+
+void TreePrinter::newline() {
+	append("\n");
+}
+
+
+void TreePrinter::printFunSignature(FunDecl* decl) {
+	append(decl->identifier);
+	append(" <");
+	open();
+
+	std::vector<DeclStmt*>& params = decl->params;
+	DeclStmt* param;
+	if (params.size() > 0) {
+		for (auto it=params.begin(); it != --params.end(); ++it) {
+			param = *it;
+			append(param->identifier + ":" + param->type.lexeme + ", ");
+		}
+		param = *(--params.end());
+		append(param->identifier + ":" + param->type.lexeme);
+	}
+	close();
+
+	append(" -> ");
+	append(decl->type.lexeme);
+	append(">");
+}

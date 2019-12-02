@@ -1,3 +1,4 @@
+#include <unordered_set>
 #include "init-checker.hpp"
 
 
@@ -14,6 +15,21 @@ void InitChecker::run() {
 void InitChecker::visit(ReturnNode* node) {}
 void InitChecker::visit(NopNode* node) {}
 void InitChecker::visit(ExprNode* node) {}
+
+
+void InitChecker::visit(FunNode* node) {
+	std::unordered_set<std::string> ids;
+
+	for (Param& param : node->params)
+		ids.insert(param.name);
+
+	Set<std::string> encl = scope;
+	Set<std::string> vars(std::move(ids));
+
+	scope = encl | vars;
+	node->body->accept(*this);
+	scope = encl;
+}
 
 
 void InitChecker::visit(AssignNode* node) {

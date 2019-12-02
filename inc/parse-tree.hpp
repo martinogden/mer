@@ -28,13 +28,48 @@ public:
 };
 
 
+class FunDecl : public Stmt {
+public:
+	Token type;
+	std::string identifier;
+	std::vector<DeclStmt*> params;
+
+	FunDecl(Token token, std::string identifier,
+	        Token type, std::vector<DeclStmt*> params);
+	~FunDecl();
+	void accept(Visitor& visitor) override;
+};
+
+
+class FunDefn : public Stmt {
+public:
+	FunDecl* decl;
+	Stmt* body;
+
+	FunDefn(Token token, FunDecl* decl, Stmt* body);
+	~FunDefn();
+	void accept(Visitor& visitor) override;
+};
+
+
+class TypedefStmt : public Stmt {
+public:
+	Token type;
+	Token alias;
+
+	TypedefStmt(Token token, Token type, Token alias);
+	~TypedefStmt();
+	void accept(Visitor& visitor) override;
+};
+
+
 class DeclStmt : public Stmt {
 public:
-	Type type;
+	Token type;
 	std::string identifier;
 	Expr* expr;
 
-	DeclStmt(Token token, std::string identifier, Type type, Expr* expr);
+	DeclStmt(Token token, std::string identifier, Token type, Expr* expr);
 	~DeclStmt();
 	void accept(Visitor& visitor) override;
 };
@@ -130,6 +165,18 @@ public:
 
 
 
+class CallExpr : public Expr {
+public:
+	std::string identifier;
+	std::vector<Expr*> args;
+	FunDecl* decl;
+
+	CallExpr(Token token, std::string identifier, std::vector<Expr*> args);
+	~CallExpr();
+	void accept(Visitor& visitor) override;
+};
+
+
 class TernaryExpr : public Expr {
 public:
 	Expr* cond;
@@ -168,11 +215,11 @@ public:
 class LiteralExpr : public Expr {
 public:
 	union Value {
-		uint i;
+		int i;
 		bool b;
 	} as;
 
-	LiteralExpr(Token token, uint value);
+	LiteralExpr(Token token, int value);
 	LiteralExpr(Token token, bool value);
 	void accept(Visitor& visitor) override;
 };

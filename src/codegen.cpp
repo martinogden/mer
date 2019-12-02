@@ -2,16 +2,17 @@
 #include "conversion.hpp"
 
 
-CodeGen::CodeGen(IRTCmd* cmd, Generator& gen) :
-	cmd(cmd),
+CodeGen::CodeGen(IRTFun* fun, Generator& gen) :
+	fun(fun),
 	gen(gen)
 {}
 
 
-std::vector<Inst>& CodeGen::run() {
-	cmd->accept(*this);
-	return insts;
+InstFun CodeGen::run() {
+	fun->accept(*this);
+	return InstFun(fun->id, std::move(fun->params), std::move(insts));
 }
+
 
 void CodeGen::emit(Inst inst) {
 	insts.push_back(inst);
@@ -29,6 +30,11 @@ Operand& CodeGen::get(IRTExpr* expr) {
 }
 
 
+void CodeGen::visit(IRTFun* fun) {
+	fun->body->accept(*this);
+}
+
+
 void CodeGen::visit(SeqCmd* cmd) {
 	cmd->head->accept(*this);
 	cmd->rest->accept(*this);
@@ -36,6 +42,15 @@ void CodeGen::visit(SeqCmd* cmd) {
 
 
 void CodeGen::visit(NopCmd* cmd) {}
+
+
+void CodeGen::visit(CallCmd* cmd) {
+	int i = 1;
+	for (auto const& arg : cmd->args)
+		emit({ Inst::ARG, i++, arg });
+	emit({ Inst::CALL, Operand::label(cmd->label), i-1 });
+	emit({ Inst::MOV, cmd->var, Reg::EAX });
+}
 
 
 void CodeGen::visit(AssignCmd* cmd) {

@@ -9,8 +9,7 @@ Lexer::Lexer(std::string src) :
 	src(src),
 	curr(0),
 	line(1),
-	col(1),
-	types({"int", "bool"})
+	col(1)
 {}
 
 
@@ -32,6 +31,8 @@ Token Lexer::nextToken() {
 				return emit(TokenType::COLON);
 			case ';':
 				return emit(TokenType::SEMICOLON);
+			case ',':
+				return emit(TokenType::COMMA);
 			case '(':
 				return emit(TokenType::LPAREN);
 			case ')':
@@ -405,4 +406,9 @@ Token Lexer::emit(TokenType type) {
 
 std::string Lexer::getLexeme() {
 	return src.substr(start, curr-start);
+}
+
+
+void Lexer::addType(std::string type) {
+	types.insert(type);
 }

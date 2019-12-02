@@ -3,6 +3,27 @@
 #include "conversion.hpp"
 
 
+CallParser::CallParser(int lbp) :
+	LeftParser(lbp)
+{}
+
+
+Expr* CallParser::parse(Expr* left, Token& token, PrattParser& parser) {
+	std::vector<Expr*> args;
+
+	while (!parser.isAtEnd() && !parser.match(TokenType::RPAREN)) {
+		Expr* arg = parser.expression(LOW);
+		args.push_back(arg);
+
+		if (!parser.accept(TokenType::COMMA))
+			break;
+	}
+	parser.expect(TokenType::RPAREN);
+
+	return new CallExpr(token, left->token.lexeme, args);
+}
+
+
 TernaryParser::TernaryParser(int lbp) :
 	LeftParser(lbp)
 {}
