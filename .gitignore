@@ -37,3 +37,6 @@
 
 # Binaries
 bin
+
+# Build files
+cmake-build-*
