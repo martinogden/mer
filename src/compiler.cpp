@@ -166,27 +166,32 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		if (stage == Stage::ASM) {
 			code = regAssign(code, regs);
 
-			std::vector<Reg> savedRegs = getRegs(code, calleeSaved);
+			std::vector<Reg> saved_regs = getRegs(code, calleeSaved);
 
 			// TODO: extract to x86
 			std::cout << X86Asm(X86Asm::PUSH, Reg::RBP) << std::endl;
 			std::cout << X86Asm(X86Asm::MOV, Reg::RBP, Reg::RSP) << std::endl;
 
 			// ensure stack is 16-byte aligned
-			uint num_slots = (savedRegs.size() + 1) & ~1U;
+			uint num_slots = (saved_regs.size() + 1) & ~1U;
 
 			if (num_slots > 0) {
 				std::cout << X86Asm(X86Asm::SUB, Reg::RSP, 8 * num_slots) << std::endl;
-				for (auto it = savedRegs.rbegin(); it != savedRegs.rend(); ++it)
-					std::cout << X86Asm(X86Asm::MOV, Operand(Reg::RBP, -8 * i++), *it) << std::endl;
 				int i = 1;
+				for (auto reg : saved_regs)
+					std::cout << X86Asm(X86Asm::MOV, Operand(Reg::RBP, -8 * i++), reg) << std::endl;
 			}
 
 			for (auto& as : code)
 				std::cout << as << std::endl;
 
-			if (num_slots > 0)
+			if (num_slots > 0) {
+				int i = 1;
+				for (auto reg : saved_regs)
+					std::cout << X86Asm(X86Asm::MOV, reg, Operand(Reg::RBP, -8 * i++)) << std::endl;
+
 				std::cout << X86Asm(X86Asm::ADD, Reg::RSP, 8*num_slots) << std::endl;
+			}
 
 			std::cout << X86Asm(X86Asm::POP, Reg::RBP) << std::endl;
 			std::cout << X86Asm(X86Asm::RET) << std::endl;
