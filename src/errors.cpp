@@ -29,5 +29,5 @@ std::vector<std::string>& Errors::get() {
 
 
 bool Errors::exist() {
-	return errors.size() > 0;
+	return !errors.empty();
 }

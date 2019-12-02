@@ -136,7 +136,7 @@ void TreePrinter::visit(ReturnStmt* stmt) {
 
 
 void TreePrinter::visit(BlockStmt* block) {
-	if (block->statements.size() == 0) {
+	if (block->statements.empty()) {
 		append("[]");
 		return;
 	}
@@ -202,7 +202,7 @@ void TreePrinter::visit(CallExpr* expr) {
 	open();
 	std::vector<Expr*> args = expr->args;
 
-	if (args.size() > 0) {
+	if (!args.empty()) {
 		Expr* arg;
 		for (auto it=args.begin(); it != --args.end(); ++it) {
 			arg = *it;
@@ -296,7 +296,7 @@ void TreePrinter::printFunSignature(FunDecl* decl) {
 
 	std::vector<DeclStmt*>& params = decl->params;
 	DeclStmt* param;
-	if (params.size() > 0) {
+	if (!params.empty()) {
 		for (auto it=params.begin(); it != --params.end(); ++it) {
 			param = *it;
 			append(param->identifier + ":" + param->type.lexeme + ", ");

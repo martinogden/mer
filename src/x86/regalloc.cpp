@@ -40,7 +40,7 @@ public:
 	}
 
 	Operand getMostCommon() {
-		assert (counts.size() > 0);
+		assert (!counts.empty());
 
 		auto const& item = *counts.begin();
 		uint maxCount = item.second;
