@@ -1,6 +1,45 @@
 #include "operand.hpp"
 
 
+std::string promote(Reg reg) {
+	switch(reg) {
+		case Reg::EAX:
+			return "%rax";
+		case Reg::EBX:
+			return "%rbx";
+		case Reg::ECX:
+			return "%rcx";
+		case Reg::EDX:
+			return "%rdx";
+		case Reg::EDI:
+			return "%rdi";
+		case Reg::ESI:
+			return "%rsi";
+		case Reg::R8D:
+			return "%r8";
+		case Reg::R9D:
+			return "%r9";
+		case Reg::R10D:
+			return "%r10";
+		case Reg::R11D:
+			return "%r11";
+		case Reg::R12D:
+			return "%r12";
+		case Reg::R13D:
+			return "%r13";
+		case Reg::R14D:
+			return "%r14";
+		case Reg::R15D:
+			return "%r15";
+		case Reg::RBP:
+			return "%rbp";
+		case Reg::RSP:
+			return "%rsp";
+
+	}
+}
+
+
 Mem::Mem(Reg reg, int offset) :
 	reg(reg), offset(offset)
 {}

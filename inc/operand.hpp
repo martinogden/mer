@@ -41,6 +41,9 @@ enum class Reg {
 std::ostream& operator<<(std::ostream&, const Reg&);
 
 
+std::string promote(Reg reg);
+
+
 struct Mem {
 	Reg reg;
 	int offset;
