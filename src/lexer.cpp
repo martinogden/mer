@@ -195,6 +195,11 @@ int Lexer::multiLineComment() {
 
 	while (!isAtEnd() && nesting != 0) {
 
+		if (accept('\n')) {
+			incrLine();
+			continue;
+		}
+
 		if (accept('/')) {
 			if (isAtEnd())
 				break;
