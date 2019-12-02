@@ -29,7 +29,7 @@ ParseTree* Parser::run() {
 		BlockStmt* block = program();
 		return new ParseTree(block);
 	}
-	catch (ParseError e) {
+	catch (ParseError& e) {
 		errors.add(e.what(), e.token);
 	}
 
@@ -47,7 +47,7 @@ BlockStmt* Parser::program() {
 		try {
 			decls.push_back(declaration());
 		}
-		catch (ParseError e) {
+		catch (ParseError& e) {
 			// ignore rest of line on syntax error
 			errors.add(e.what(), e.token);
 			consumeLine();
