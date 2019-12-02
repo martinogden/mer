@@ -6,7 +6,7 @@
 
 
 typedef unsigned int uint;
-typedef uint Imm;
+typedef int Imm;
 typedef std::string Tmp;
 typedef std::string Lbl;
 
@@ -72,7 +72,7 @@ public:
 	bool is(Type ty) const;
 	std::string getLabel() const;
 	std::string getTmp() const;
-	uint getImm() const;
+	int getImm() const;
 	Reg getReg() const;
 
 	friend bool operator==(Operand a, Operand b);

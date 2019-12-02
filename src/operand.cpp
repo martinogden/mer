@@ -54,7 +54,7 @@ std::string Operand::getTmp() const {
 }
 
 
-uint Operand::getImm() const {
+int Operand::getImm() const {
 	assert(type == IMM);
 	return imm;
 }

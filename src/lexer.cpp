@@ -276,7 +276,7 @@ Token Lexer::hex() {
 	if (!isHexDigit(get()))  // at least one
 		return error("invalid hex number");
 
-	u_int64_t value = hex2int(advance());
+	int64_t value = hex2int(advance());
 
 	while (! isAtEnd()) {
 		char c = get();
@@ -290,6 +290,8 @@ Token Lexer::hex() {
 		c = advance();
 	}
 
+	// we allow 32-bit input, but operate on 64-bit regs for now
+	// TODO: decide if we allow 64-bit ints or operate on 32-bit regs
 	return emit(TokenType::NUM, value);
 }
 
@@ -305,7 +307,7 @@ inline uint dec2int(char c) {
 
 // 0 | [1-9][0-9]*
 Token Lexer::dec() {
-	u_int64_t value = dec2int(prev());
+	int64_t value = dec2int(prev());
 
 	while (! isAtEnd()) {
 		char c = get();

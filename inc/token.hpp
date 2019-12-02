@@ -78,11 +78,11 @@ enum struct TokenType {
 struct Token {
 	TokenType type;
 	std::string lexeme;
-	uint value;
+	int value;
 	uint line;
 	uint col;
 
-	Token(TokenType type, std::string lexeme, uint value, uint line, uint col);
+	Token(TokenType type, std::string lexeme, int value, uint line, uint col);
 	bool operator==(const Token& other) const;
 	friend std::ostream& operator<<(std::ostream& output, const Token& token);
 };

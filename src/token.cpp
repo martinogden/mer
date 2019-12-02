@@ -2,7 +2,7 @@
 #include "token.hpp"
 
 
-Token::Token(TokenType type, std::string lexeme, uint value, uint line, uint col) :
+Token::Token(TokenType type, std::string lexeme, int value, uint line, uint col) :
 	type(type),
 	lexeme(lexeme),
 	value(value),

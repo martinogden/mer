@@ -304,7 +304,7 @@ void UnaryExpr::accept(Visitor& visitor) {
 };
 
 
-LiteralExpr::LiteralExpr(Token token, uint value) :
+LiteralExpr::LiteralExpr(Token token, int value) :
 	Expr(token, Type::INT),
 	as({.i = value})
 {}
