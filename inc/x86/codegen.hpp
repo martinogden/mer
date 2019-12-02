@@ -35,5 +35,5 @@ private:
 
 public:
 	X86CodeGen(InstFun& fun, Generator& gen);
-	std::vector<X86Asm>& run();
+	X86Fun run();
 };

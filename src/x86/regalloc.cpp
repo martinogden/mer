@@ -143,11 +143,11 @@ Alloc toColoring(const Colors& colors) {
 }
 
 
-Alloc regAlloc(std::vector<X86Asm>& code) {
-	IGBuilder builder(code);
+Alloc regAlloc(X86Fun& fun) {
+	IGBuilder builder(fun);
 	Graph<Operand>* IG = builder.run();
 
-	Colors precoloring = getPrecoloring(code);
+	Colors precoloring = getPrecoloring(fun.code);
 	std::vector<Operand> order = mcs(IG, precoloring);
 	Colors colors = greedyColor(IG, order, precoloring);
 
@@ -166,10 +166,10 @@ inline Operand assign(Operand& op, Alloc& regs) {
 };
 
 
-std::vector<X86Asm> regAssign(std::vector<X86Asm>& code, Alloc& regs) {
+X86Fun regAssign(X86Fun& fun, Alloc& regs) {
 	std::vector<X86Asm> out;
 
-	for (auto& as : code) {
+	for (auto& as : fun.code) {
 		if (as.opcode == X86Asm::LBL) {
 			out.emplace_back(as);
 			continue;
@@ -190,5 +190,5 @@ std::vector<X86Asm> regAssign(std::vector<X86Asm>& code, Alloc& regs) {
 		}
 	}
 
-	return out;
+	return {out, fun.params};
 }

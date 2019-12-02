@@ -7,7 +7,7 @@
 class IGBuilder {
 private:
 	const uint n;
-	std::vector<X86Asm>& code;
+	X86Fun& fun;
 	LivenessAnalyser liveness;
 	Graph<Operand>* G;
 
@@ -15,6 +15,6 @@ private:
 	void addEdge(const Operand& u, const Operand& v);
 
 public:
-	IGBuilder(std::vector<X86Asm>& code);
+	IGBuilder(X86Fun&);
 	Graph<Operand>* run();
 };

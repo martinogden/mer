@@ -29,6 +29,12 @@ X86Asm::X86Asm(OpCode opcode, Operand dst, Operand src) :
 {}
 
 
+X86Fun::X86Fun(std::vector<X86Asm> code, std::vector<std::string> params) :
+	code(std::move(code)),
+	params(std::move(params))
+{}
+
+
 std::ostream& operator<<(std::ostream& output, const X86Asm& as) {
 	switch (as.opcode) {
 		case X86Asm::LBL:

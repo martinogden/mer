@@ -23,15 +23,15 @@
 const std::string MAIN_PREFIX("_c0_");
 
 
-std::vector<Reg> getRegs(const std::vector<X86Asm>& code, const std::vector<Reg>& from) {
+std::vector<Reg> getUsedRegs(X86Fun& fun, const std::vector<Reg>& filter) {
 	std::vector<Reg> out;
 	std::set<Reg> regs;
 	std::set<Reg> used;
 
-	for (const auto &reg : from)
+	for (const auto &reg : filter)
 		regs.insert(reg);
 
-	for (const auto& as : code) {
+	for (const auto& as : fun.code) {
 		if (as.parity > 1 && as.src.getType() == Operand::REG)
 			used.insert(as.src.getReg());
 		if (as.parity > 0 && as.dst.getType() == Operand::REG)
@@ -145,18 +145,18 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		}
 
 		X86CodeGen x86codegen(fun, gen);
-		std::vector<X86Asm> code = x86codegen.run();
+		X86Fun x86fun = x86codegen.run();
 
 		if (stage == Stage::CODEGEN) {
-			for (auto& as : code)
+			for (auto& as : x86fun.code)
 				std::cout << as << std::endl;
 			continue;
 		}
 
-		Alloc regs = regAlloc(code);
+		Alloc alloc = regAlloc(x86fun);
 
 		if (stage == Stage::REGALLOC) {
-			for (const auto& pair : regs) {
+			for (const auto& pair : alloc) {
 				if (pair.first.is(Operand::TMP))
 					std::cout << pair.first << " -> " << pair.second << std::endl;
 			}
@@ -164,9 +164,9 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		}
 
 		if (stage == Stage::ASM) {
-			code = regAssign(code, regs);
+			x86fun = regAssign(x86fun, alloc);
 
-			std::vector<Reg> saved_regs = getRegs(code, calleeSaved);
+			std::vector<Reg> saved_regs = getUsedRegs(x86fun, calleeSaved);
 
 			// TODO: extract to x86
 			std::cout << X86Asm(X86Asm::PUSH, Reg::RBP) << std::endl;
@@ -182,7 +182,7 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 					std::cout << X86Asm(X86Asm::MOV, Operand(Reg::RBP, -8 * i++), reg) << std::endl;
 			}
 
-			for (auto& as : code)
+			for (auto& as : x86fun.code)
 				std::cout << as << std::endl;
 
 			if (num_slots > 0) {

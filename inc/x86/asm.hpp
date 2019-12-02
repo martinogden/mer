@@ -35,3 +35,10 @@ struct X86Asm {
 	friend std::ostream& operator<<(std::ostream& output, const X86Asm& as);
 	friend std::ostream& operator<<(std::ostream& output, const OpCode& op);
 };
+
+
+struct X86Fun {
+	std::vector<X86Asm> code;
+	std::vector<std::string> params;
+	X86Fun(std::vector<X86Asm> code, std::vector<std::string> params);
+};

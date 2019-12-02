@@ -177,7 +177,7 @@ void X86CodeGen::visitCJmp(X86Asm::OpCode opcode, Operand&& op, Operand&& t, Ope
 }
 
 
-std::vector<X86Asm>& X86CodeGen::run() {
+X86Fun X86CodeGen::run() {
 	prologue();
 
 	for (auto& inst : fun.insts)
@@ -185,5 +185,5 @@ std::vector<X86Asm>& X86CodeGen::run() {
 
 	epilogue();
 
-	return as;
+	return {as, std::move(fun.params)};
 }

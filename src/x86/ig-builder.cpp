@@ -1,10 +1,10 @@
 #include "x86/ig-builder.hpp"
 
 
-IGBuilder::IGBuilder(std::vector<X86Asm>& code) :
-	n(code.size()),
-	code(code),
-	liveness(code),
+IGBuilder::IGBuilder(X86Fun& fun) :
+	n(fun.code.size()),
+	fun(fun),
+	liveness(fun.code),
 	G(new Graph<Operand>())
 {}
 
@@ -12,8 +12,21 @@ IGBuilder::IGBuilder(std::vector<X86Asm>& code) :
 Graph<Operand>* IGBuilder::run() {
 	liveness.run();
 
+	// add all registers to IG
 	for (uint i=0; i<=MAX_REG; ++i)
 		G->addVertex(static_cast<Reg>(i));
+
+	// each parameter must interfere with the register
+	// associated with each other register
+	// (Actually it need only interfere with the regs
+	// associated with later params in ltr order)
+	uint i = 1;
+	for (auto const& param : fun.params) {
+		for (uint j=1; j<=fun.params.size(); ++j)
+			if (i != j)
+				addEdge(param, static_cast<Reg>(j));
+		++i;
+	}
 
 	#ifdef DEBUG
 	std::cout << "liveness\n========" << std::endl;
@@ -28,7 +41,7 @@ Graph<Operand>* IGBuilder::run() {
 	#endif
 
 	uint l = 0;
-	for (auto& as : code)
+	for (auto& as : fun.code)
 		visit(as, l++);
 
 	return G;

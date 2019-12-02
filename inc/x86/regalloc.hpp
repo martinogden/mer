@@ -7,6 +7,6 @@
 
 typedef std::unordered_map<Operand, Reg> Alloc;
 
-Alloc regAlloc(std::vector<X86Asm>& code);
+Alloc regAlloc(X86Fun& code);
 
-std::vector<X86Asm> regAssign(std::vector<X86Asm>& code, Alloc& regs);
+X86Fun regAssign(X86Fun& code, Alloc& regs);
