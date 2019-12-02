@@ -177,9 +177,9 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 
 			if (num_slots > 0) {
 				std::cout << X86Asm(X86Asm::SUB, Reg::RSP, 8 * num_slots) << std::endl;
-				uint i = 1;
 				for (auto it = savedRegs.rbegin(); it != savedRegs.rend(); ++it)
 					std::cout << X86Asm(X86Asm::MOV, Operand(Reg::RBP, -8 * i++), *it) << std::endl;
+				int i = 1;
 			}
 
 			for (auto& as : code)

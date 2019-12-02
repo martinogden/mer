@@ -321,7 +321,7 @@ Token Lexer::dec() {
 			break;
 
 		value = 10*value + dec2int(c);
-		if (value > uint(1)<<31)
+		if (value > 1U<<31U)
 			return error("integer value too big");
 		c = advance();
 	}
@@ -392,7 +392,7 @@ Token Lexer::error(std::string msg) {
 
 
 Token Lexer::emit(TokenType type, std::string lexeme, uint value) {
-	int length = curr - start;
+	uint length = curr - start;
 	return Token(type, std::move(lexeme), value, line, col-length);
 }
 
