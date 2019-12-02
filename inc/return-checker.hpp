@@ -23,7 +23,7 @@ private:
 public:
 	Errors errors;
 
-	ReturnChecker(FunNode* node);
-	bool get(ASTNode* node);
+	ReturnChecker(FunNode*);
+	bool get(ASTNode*);
 	void run();
 };

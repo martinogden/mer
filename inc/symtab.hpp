@@ -28,20 +28,6 @@ public:
 		return find(key) != nullptr;
 	}
 
-	void assign(std::string key, T value) {
-		T* v = find(key);
-		assert (v && "key does not exist");
-		*v = value;
-	}
-
-	void assignAll(T value) {
-		for (auto& item : values)
-			values[item.first] = value;
-
-		if (encl)
-			encl->assignAll(value);
-	}
-
 	void define(std::string key, T value) {
 		T* v = find(key);
 		assert (!v && "cannot redefine key");
@@ -52,10 +38,6 @@ public:
 		T* value = find(key);
 		assert (value && "key does not exist");
 		return *value;
-	}
-
-	std::unordered_map<std::string, T>& locals() {
-		return values;
 	}
 
 	Scope<T>* enclosing() {
@@ -80,24 +62,12 @@ public:
 		return scope->exists(key);
 	}
 
-	void assign(std::string key, T value) {
-		scope->assign(key, value);
-	}
-
-	void assignAll(T value) {
-		scope->assignAll(value);
-	}
-
 	void define(std::string key, T value) {
 		scope->define(key, value);
 	}
 
 	T& lookup(std::string key) {
 		return scope->lookup(key);
-	}
-
-	std::unordered_map<std::string, T>& locals() {
-		return scope->locals();
 	}
 
 	void enter() {

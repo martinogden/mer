@@ -11,28 +11,19 @@ enum class Assoc {
 enum Precedence {
 	LOW     =   0,
 	RPAREN  =  10,
-	ASSIGN  =  20,
-	TERN    =  30,
-	LOR     =  40,
-	LAND    =  50,
-	BWOR    =  60,
-	XOR     =  70,
-	BWAND   =  80,
-	EQUAL   =  90,
-	COMP    = 100,
-	ADD     = 110,
-	MUL     = 120,
-	UNARY   = 130,
-	CALL    = 140,
-	LPAREN  = 150,
-};
-
-
-enum Level {
-	EXPR   = 10,
-	DECL   = 20,
-	CTRL   = 30,
-	BLOCK  = 40,
+	TERN    =  20,
+	LOR     =  30,
+	LAND    =  40,
+	BWOR    =  50,
+	XOR     =  60,
+	BWAND   =  70,
+	EQUAL   =  80,
+	COMP    =  90,
+	ADD     = 100,
+	MUL     = 110,
+	UNARY   = 120,
+	CALL    = 130,
+	LPAREN  = 140,
 };
 
 

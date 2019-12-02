@@ -17,9 +17,9 @@ private:
 	void visit(IdExpr*) override;
 
 	void ret(std::string);
-	std::string get(Expr* expr);
+	std::string get(Expr*);
 
 public:
-	ExprPrinter(Expr* expr);
+	ExprPrinter(Expr*);
 	std::string run();
 };

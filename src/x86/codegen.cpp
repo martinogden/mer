@@ -147,13 +147,8 @@ void X86CodeGen::visitRet(Operand&& op) {
 
 
 void X86CodeGen::visitCall(Operand&& name, Operand&& n) {
-	// for (auto it=callerSaved.rbegin(); it!=callerSaved.rend(); ++it)
-	// 	emit(X86Asm::PUSH, *it);
 	std::string label = "_" + name.getLabel();
 	emit(X86Asm::CALL, Operand::label(label), n);
-
-	// for (auto it=callerSaved.begin(); it!=callerSaved.end(); ++it)
-		// emit(X86Asm::POP, *it);
 }
 
 

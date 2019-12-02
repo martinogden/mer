@@ -12,7 +12,6 @@ private:
 	void append(std::string str);
 	void open(std::string atom);
 	void open();
-	void close(std::string atom);
 	void close();
 	void newline();
 	void printFunSignature(FunDecl* decl);

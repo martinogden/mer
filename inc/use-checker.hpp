@@ -33,12 +33,9 @@ private:
 	VarSet& getInit();
 	VarSet& getDecl();
 
-	void enter();
-	void exit();
-
 public:
 	Errors errors;
 
-	UseChecker(ASTNode* node);
+	UseChecker(ASTNode*);
 	void run();
 };

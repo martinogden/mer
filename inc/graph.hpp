@@ -71,8 +71,6 @@ public:
 			V.insert(pair.first);
 		return V;
 	}
-
-	friend std::ostream& operator<<(std::ostream& output, const DiGraph& G);
 };
 
 

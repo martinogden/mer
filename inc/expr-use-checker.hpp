@@ -14,6 +14,6 @@ private:
 public:
 	Errors errors;
 
-	ExprUseChecker(Expr* expr, Set<std::string>& scope);
+	ExprUseChecker(Expr*, Set<std::string>&);
 	void run();
 };

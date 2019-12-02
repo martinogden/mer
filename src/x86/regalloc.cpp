@@ -143,9 +143,6 @@ Alloc toColoring(Colors colors) {
 }
 
 
-std::string printGraph(Graph<Operand>* G, std::unordered_map<Operand, uint>& coloring);
-
-
 Alloc regAlloc(std::vector<X86Asm>& code) {
 	IGBuilder builder(code);
 	Graph<Operand>* IG = builder.run();
@@ -154,7 +151,6 @@ Alloc regAlloc(std::vector<X86Asm>& code) {
 	std::vector<Operand> order = mcs(IG, precoloring);
 	Colors colors = greedyColor(IG, order, precoloring);
 
-	// std::cout << printGraph(IG, colors);
 	return toColoring(colors);
 }
 
