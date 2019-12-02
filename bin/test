@@ -22,26 +22,31 @@ class Effect(Enum):
 	RETURN = auto()
 	SIGFPE = auto()
 	SIGALRM = auto()
+	SIGABRT = auto()
 	ERROR = auto()
 
 
 def parse_test_directive(f):
 	line = f.readline()
 
-	match = re.match(r"//\s*test return (-?\d+)\s*", line)
+	match = re.match(r"//\s*test\s+return (-?\d+)\s*", line)
 	if match:
 		arg = match.group(1)
 		return Effect.RETURN, int(arg)
 
-	match = re.match(r"//\s*test div-by-zero\s*", line)
+	match = re.match(r"//\s*test\s+div-by-zero\s*", line)
 	if match:
 		return Effect.SIGFPE, None
 
-	match = re.match(r"//\s*test infloop\s*", line)
+	match = re.match(r"//\s*test\s+infloop\s*", line)
 	if match:
 		return Effect.SIGALRM, None
 
-	match = re.match(r"//\s*test error\s*", line)
+	match = re.match(r"//\s*test\s+abort\s*", line)
+	if match:
+		return Effect.SIGABRT, None
+
+	match = re.match(r"//\s*test\s+error\s*", line)
 	if match:
 		return Effect.ERROR, None
 
@@ -62,7 +67,10 @@ def run(fp, effect, result):
 	r = link_and_execute(r.stdout, fn)
 
 	if effect == Effect.RETURN:
-		output = int(r.stdout.strip())
+		try:
+			output = int(r.stdout.strip())
+		except ValueError as e:
+			import ipdb; ipdb.set_trace()
 		assert output == result, "Invalid result(%s != %d) in: `%s`" % (output, result, fn)
 
 	if effect == Effect.SIGFPE:
@@ -70,6 +78,9 @@ def run(fp, effect, result):
 
 	if effect == Effect.SIGALRM:
 		assert r.returncode == -14, "SIGALRM not raised in: `%s`" % fn
+
+	if effect == Effect.SIGALRM:
+		assert r.returncode == -6, "SIGABRT not raised in: `%s`" % fn
 
 
 def link_and_execute(asm, fn):
