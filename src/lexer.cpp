@@ -249,6 +249,8 @@ Token Lexer::op(char c) {
 		case '%':
 			type = TokenType::MOD;
 			break;
+		default:
+			throw 1;  // TODO: we should never get here
 	}
 
 	if (accept('='))
