@@ -12,7 +12,7 @@ IGBuilder::IGBuilder(std::vector<X86Asm>& code) :
 Graph<Operand>* IGBuilder::run() {
 	liveness.run();
 
-	for (uint i=0; i<MAX_REG; ++i)
+	for (uint i=0; i<=MAX_REG; ++i)
 		G->addVertex(static_cast<Reg>(i));
 
 	#ifdef DEBUG
