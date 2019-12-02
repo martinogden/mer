@@ -5,7 +5,8 @@ LivenessAnalyser::LivenessAnalyser(std::vector<X86Asm>& code) :
 	n(code.size()),
 	code(code),
 	dua(code),
-	live(n)
+	live(n),
+	changed(true)
 {}
 
 

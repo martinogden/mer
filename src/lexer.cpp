@@ -7,6 +7,7 @@ const int D = static_cast<int>(TokenType::ADD_EQL) - static_cast<int>(TokenType:
 
 Lexer::Lexer(std::string src) :
 	src(std::move(src)),
+	start(0),
 	curr(0),
 	line(1),
 	col(1)
