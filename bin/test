@@ -5,7 +5,7 @@ import re
 import subprocess
 from enum import Enum, auto
 
-
+EXE = "cmake-build-release/mer"
 PATH = os.path.abspath("fixtures")
 
 
@@ -28,22 +28,22 @@ class Effect(Enum):
 def parse_test_directive(f):
 	line = f.readline()
 
-	match = re.match("//\s*test return (-?\d+)\s*", line)
+	match = re.match(r"//\s*test return (-?\d+)\s*", line)
 	if match:
 		arg = match.group(1)
-		return (Effect.RETURN, int(arg))
+		return Effect.RETURN, int(arg)
 
-	match = re.match("//\s*test div-by-zero\s*", line)
+	match = re.match(r"//\s*test div-by-zero\s*", line)
 	if match:
-		return (Effect.SIGFPE, None)
+		return Effect.SIGFPE, None
 
-	match = re.match("//\s*test infloop\s*", line)
+	match = re.match(r"//\s*test infloop\s*", line)
 	if match:
-		return (Effect.SIGALRM, None)
+		return Effect.SIGALRM, None
 
-	match = re.match("//\s*test error\s*", line)
+	match = re.match(r"//\s*test error\s*", line)
 	if match:
-		return (Effect.ERROR, None)
+		return Effect.ERROR, None
 
 	fn = os.path.basename(f.name)
 	raise ParseError("Missing test directive in `%s`" % fn)
@@ -51,7 +51,8 @@ def parse_test_directive(f):
 
 def run(fp, effect, result):
 	fn = os.path.basename(fp)
-	r = subprocess.run(["bin/c0c", fp], capture_output=True)
+	#print(fn)
+	r = subprocess.run([EXE, fp], capture_output=True)
 
 	if effect == Effect.ERROR:
 		assert r.returncode == 1, "Invalid file compiled: `%s`" % fn
@@ -73,7 +74,7 @@ def run(fp, effect, result):
 
 def link_and_execute(asm, fn):
 	write(asm, "out.s")
-	r = subprocess.run(["gcc", "-m64", "out.s", "runtime/l1rt.c"], capture_output=True)
+	r = subprocess.run(["gcc", "-m64", "out.s", "runtime/l3rt.c"], capture_output=True)
 	assert r.returncode == 0, "Valid file not linked: `%s`" % fn
 	return subprocess.run(["./a.out"], capture_output=True)
 
