@@ -8,7 +8,6 @@ Token END(TokenType::END, "", true, 0, 0);
 BaseParser::BaseParser(Lexer& lexer, TokenType terminator) :
 	lexer(lexer),
 	curr(END),
-	next(END),
 	terminator(terminator),
 	errors("Parse error")
 {}
@@ -24,21 +23,15 @@ Token BaseParser::get() {
 }
 
 
-Token BaseParser::peek() {
-	return next;
-}
-
-
 Token BaseParser::advance() {
 	Token token = get();
 	// skip lexical errors
-	while (next.type == TokenType::ERROR) {
-		errors.add(next.lexeme, next);
-		next = lexer.nextToken();
+	while (curr.type == TokenType::ERROR) {
+		errors.add(curr.lexeme, curr);
+		curr = lexer.nextToken();
 	}
 
-	curr = next;
-	next = lexer.nextToken();
+	curr = lexer.nextToken();
 	return token;
 }
 

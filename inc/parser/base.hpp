@@ -8,7 +8,6 @@ class BaseParser {
 protected:
 	Lexer& lexer;
 	Token curr;
-	Token next;
 	TokenType terminator;
 
 public:
@@ -16,7 +15,6 @@ public:
 
 	bool isAtEnd();
 	Token get();
-	Token peek();
 	Token advance();
 	bool match(TokenType type);
 	bool match(std::set<TokenType> types);

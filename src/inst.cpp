@@ -28,36 +28,6 @@ Inst::Inst(OpCode opcode, Operand dst, Operand src1, Operand src2) :
 {}
 
 
-Inst::Type Inst::getType() const {
-	switch (getOpcode()) {
-		case ADD:
-		case SUB:
-		case MUL:
-		case DIV:
-		case MOD:
-		case AND:
-		case OR:
-		case XOR:
-			return Type::BINARY;
-		case MOV:
-			return Type::UNARY;
-		case RET:
-			return Type::RET;
-		case JMP:
-			return Type::JMP;
-		case JEQ:
-		case JNE:
-		case JLT:
-		case JLE:
-		case JGT:
-		case JGE:
-			return Type::CJMP;
-		case LBL:
-			return Type::LABEL;
-	}
-}
-
-
 uint Inst::getParity() const {
 	return parity;
 }

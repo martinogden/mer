@@ -106,18 +106,6 @@ BinOp postOpToBinOp(TokenType type) {
 }
 
 
-Type toType(Token token) {
-	assert (token.type == TokenType::TYPE);
-
-	if (token.lexeme == "int")
-		return Type::INT;
-	else {
-		assert(token.lexeme == "bool");
-		return Type::BOOL;
-	}
-}
-
-
 Inst::OpCode toOpCode(BinOp op) {
 	switch (op) {
 		case BinOp::ADD:

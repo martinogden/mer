@@ -30,7 +30,6 @@ public:
 	Inst(OpCode opcode, Operand dst, Operand src1);
 	Inst(OpCode opcode, Operand dst, Operand src1, Operand src2);
 
-	Type getType() const;
 	uint getParity() const;
 	OpCode getOpcode() const;
 	Operand getDst() const;

@@ -15,10 +15,6 @@ BinOp asnOpToBinOp(TokenType type);
 BinOp postOpToBinOp(TokenType type);
 
 
-// tokens -> types
-Type toType(Token token);
-
-
 // operators -> ir opcodes
 Inst::OpCode toOpCode(BinOp op);
 
