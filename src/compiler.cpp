@@ -1,3 +1,4 @@
+#include <memory>
 #include <sstream>
 #include <set>
 #include "compiler.hpp"
@@ -51,7 +52,7 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 	Lexer lexer(std::move(src));
 
 	Parser parser(lexer);
-	ParseTree* tree = parser.run();
+	ParseTree tree = parser.run();
 	if (parser.errors.exist())
 		return {false, join( parser.errors.get(), "\n" )};
 
@@ -62,21 +63,24 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 
 
 	Elaborator elab(tree);
-	std::vector<FunNode*> defns = elab.run();
+	std::vector<FunNodePtr> defns = elab.run();
 	SymTab<FunType> decls = elab.getDecls();
 
 	if (elab.errors.exist())
 		return {false, join( elab.errors.get(), "\n" )};
 
 	if (stage == Stage::AST) {
-		ASTPrinter printer(defns);
-		return {true, printer.run()};
+		for (auto& ast : defns) {
+			ASTPrinter printer(ast);
+			std::cout << printer.run() << std::endl;
+		}
+		return {true, ""};
 	}
 
 	// Semantic analysis stage
 	Errors errors;
 
-	for (auto const& ast : defns) {
+	for (auto& ast : defns) {
 		// TODO check main: () -> int is defined
 
 		ReturnChecker retChecker(ast);
@@ -121,9 +125,9 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		std::cout << ".globl __c0_main" << std::endl;
 	}
 
-	for (auto const& ast : defns) {
+	for (auto& ast : defns) {
 		Translator tr(gen);
-		IRTFun* irt = tr.get(ast);
+		IRTFunPtr irt = tr.get(ast);
 
 		if (stage == Stage::HIR) {
 			IRTPrinter printer;

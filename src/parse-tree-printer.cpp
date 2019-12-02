@@ -2,12 +2,9 @@
 #include "parse-tree-printer.hpp"
 
 
-const std::string BLANK = "";
 const std::string SPACE = " ";
-const std::string NEWLINE = "\n";
 const std::string LPAREN = "(";
 const std::string RPAREN = ")";
-const std::string LET = "let";
 
 
 std::string to_string(UnOp op) {
@@ -29,63 +26,66 @@ std::string to_string(bool b) {
 }
 
 
-TreePrinter::TreePrinter(ParseTree* tree) :
+TreePrinter::TreePrinter(ParseTree& tree) :
 	tree(tree)
 {}
 
 
 std::string TreePrinter::run() {
-	tree->block->accept(*this);
+	for (auto const& decl : tree.decls)
+		decl->accept(*this);
 	return buffer.str();
 }
 
 
-void TreePrinter::visit(FunDecl* decl) {
+void TreePrinter::visit(FunDecl& decl) {
 	open("declare");
 	printFunSignature(decl);
 	close();
 }
 
 
-void TreePrinter::visit(FunDefn* defn) {
+void TreePrinter::visit(FunDefn& defn) {
 	open("define");
-	printFunSignature(defn->decl);
+	// TODO: get rid of this
+	FunDecl* decl = defn.decl.get();
+	printFunSignature(*decl);
 	append(SPACE);
-	defn->body->accept(*this);
+	defn.body->accept(*this);
 	close();
 }
 
 
-void TreePrinter::visit(TypedefStmt* stmt) {
+void TreePrinter::visit(TypedefStmt& stmt) {
 	open("typedef");
-	append(stmt->type.lexeme);
+	append(stmt.type.lexeme);
 	append(SPACE);
-	append(stmt->alias.lexeme);
+	append(stmt.alias.lexeme);
 	close();
 }
 
 
-void TreePrinter::visit(DeclStmt* stmt) {
+void TreePrinter::visit(DeclStmt& stmt) {
 	open("declare");
-	append(stmt->type.lexeme);
+	append(stmt.type.lexeme);
 	append(SPACE);
-	append(stmt->identifier);
-	if (stmt->expr) {
+	append(stmt.identifier);
+	if (stmt.expr) {
 		append(SPACE);
-		stmt->expr->accept(*this);
+		stmt.expr->accept(*this);
 	}
 	close();
 }
 
 
-void TreePrinter::visit(IfStmt* stmt) {
+void TreePrinter::visit(IfStmt& stmt) {
 	open("if");
-	stmt->cond->accept(*this);
+	stmt.cond->accept(*this);
 	append(SPACE);
-	stmt->then->accept(*this);
+	stmt.then->accept(*this);
 	append(SPACE);
-	if (stmt->otherwise)
-		stmt->otherwise->accept(*this);
+	if (stmt.otherwise)
+		stmt.otherwise->accept(*this);
 	else
 		append("()");
 
@@ -93,41 +93,41 @@ void TreePrinter::visit(IfStmt* stmt) {
 }
 
 
-void TreePrinter::visit(WhileStmt* stmt) {
+void TreePrinter::visit(WhileStmt& stmt) {
 	open("while");
-	stmt->cond->accept(*this);
+	stmt.cond->accept(*this);
 	append(SPACE);
-	stmt->body->accept(*this);
+	stmt.body->accept(*this);
 	close();
 }
 
 
-void TreePrinter::visit(ForStmt* stmt) {
+void TreePrinter::visit(ForStmt& stmt) {
 	open("for");
-	if (stmt->init)
-		stmt->init->accept(*this);
+	if (stmt.init)
+		stmt.init->accept(*this);
 	else
 		append("()");
 
 	append(SPACE);
-	stmt->cond->accept(*this);
+	stmt.cond->accept(*this);
 	append(SPACE);
 
-	if (stmt->step)
-		stmt->step->accept(*this);
+	if (stmt.step)
+		stmt.step->accept(*this);
 	else
 		append("()");
 
 	append(SPACE);
-	stmt->body->accept(*this);
+	stmt.body->accept(*this);
 	close();
 }
 
 
-void TreePrinter::visit(ReturnStmt* stmt) {
-	if (stmt->expr) {
-		open(stmt->token.lexeme);
-		stmt->expr->accept(*this);
+void TreePrinter::visit(ReturnStmt& stmt) {
+	if (stmt.expr) {
+		open(stmt.token.lexeme);
+		stmt.expr->accept(*this);
 		close();
 	}
 	else
@@ -135,49 +135,46 @@ void TreePrinter::visit(ReturnStmt* stmt) {
 }
 
 
-void TreePrinter::visit(BlockStmt* block) {
-	if (block->statements.empty()) {
+void TreePrinter::visit(BlockStmt& block) {
+	if (block.statements.empty()) {
 		append("[]");
 		return;
 	}
 
 	append("[");
 	newline();
-	std::vector<Stmt*> stmts = block->statements;
-	Stmt* stmt;
+	std::vector<StmtPtr>& stmts = block.statements;
 
 	for (auto it=stmts.begin(); it != --stmts.end(); it++) {
-		stmt = *it;
-		stmt->accept(*this);
+		(*it)->accept(*this);
 		newline();
 	}
 
-	stmt = *(--stmts.end());
-	stmt->accept(*this);
+	(*--stmts.end())->accept(*this);
 	newline();
 	append("]");
 }
 
 
-void TreePrinter::visit(ExprStmt* stmt) {
-	stmt->expr->accept(*this);
+void TreePrinter::visit(ExprStmt& stmt) {
+	stmt.expr->accept(*this);
 }
 
 
-void TreePrinter::visit(AssignStmt* stmt) {
+void TreePrinter::visit(AssignStmt& stmt) {
 	open("assign");
-	append(to_string(stmt->op));
+	append(to_string(stmt.op));
 	append(SPACE);
-	stmt->lvalue->accept(*this);
+	stmt.lvalue->accept(*this);
 	append(SPACE);
-	stmt->rvalue->accept(*this);
+	stmt.rvalue->accept(*this);
 	close();
 }
 
 
-void TreePrinter::visit(PostOpStmt* stmt) {
+void TreePrinter::visit(PostOpStmt& stmt) {
 	open();
-	switch (stmt->op) {
+	switch (stmt.op) {
 		case BinOp::ADD:
 			append("incr");
 			break;
@@ -189,69 +186,65 @@ void TreePrinter::visit(PostOpStmt* stmt) {
 	}
 
 	append(SPACE);
-	stmt->expr->accept(*this);
+	stmt.expr->accept(*this);
 	close();
 }
 
 
-void TreePrinter::visit(CallExpr* expr) {
+void TreePrinter::visit(CallExpr& expr) {
 	open("call");
-	append(expr->identifier);
+	append(expr.identifier);
 	append(SPACE);
 
 	open();
-	std::vector<Expr*> args = expr->args;
+	std::vector<ExprPtr>& args = expr.args;
 
-	if (!args.empty()) {
-		Expr* arg;
+	if (!expr.args.empty()) {
 		for (auto it=args.begin(); it != --args.end(); ++it) {
-			arg = *it;
-			arg->accept(*this);
+			(*it)->accept(*this);
 			append(SPACE);
 		}
-		arg = *(--args.end());
-		arg->accept(*this);
+		(*--args.end())->accept(*this);
 	}
 	close();
-
 	close();
 }
 
 
-void TreePrinter::visit(TernaryExpr* expr) {
+void TreePrinter::visit(TernaryExpr& expr) {
 	open("?");
-	expr->cond->accept(*this);
+	expr.cond->accept(*this);
 	append(SPACE);
-	expr->then->accept(*this);
+	expr.then->accept(*this);
 	append(SPACE);
-	expr->otherwise->accept(*this);
+	expr.otherwise->accept(*this);
 	close();
 }
 
 
-void TreePrinter::visit(BinaryExpr* expr) {
-	open(to_string(expr->op));
-	expr->left->accept(*this);
+void TreePrinter::visit(BinaryExpr& expr) {
+	open(to_string(expr.op));
+	expr.left->accept(*this);
 	append(SPACE);
-	expr->right->accept(*this);
+	expr.right->accept(*this);
 	close();
 }
 
 
-void TreePrinter::visit(UnaryExpr* unary) {
+void TreePrinter::visit(UnaryExpr& unary) {
 	open("neg");
-	unary->expr->accept(*this);
+	unary.expr->accept(*this);
 	close();
 }
 
 
-void TreePrinter::visit(LiteralExpr* expr) {
-	switch (expr->type) {
+void TreePrinter::visit(LiteralExpr& expr) {
+	switch (expr.type) {
 		case Type::INT:
-			append(std::to_string(expr->as.i));
+			append(std::to_string(expr.as.i));
 			break;
 		case Type::BOOL:
-			append(std::to_string(expr->as.b));
+			append(std::to_string(expr.as.b));
 			break;
 		default:
 			throw 1;  // should never get here
@@ -259,8 +252,8 @@ void TreePrinter::visit(LiteralExpr* expr) {
 }
 
 
-void TreePrinter::visit(IdExpr* expr) {
-	append(expr->identifier);
+void TreePrinter::visit(IdExpr& expr) {
+	append(expr.identifier);
 }
 
 
@@ -289,24 +282,20 @@ void TreePrinter::newline() {
 }
 
 
-void TreePrinter::printFunSignature(FunDecl* decl) {
-	append(decl->identifier);
+void TreePrinter::printFunSignature(FunDecl& decl) {
+	append(decl.identifier);
 	append(" <");
 	open();
 
-	std::vector<DeclStmt*>& params = decl->params;
-	DeclStmt* param;
+	std::vector<DeclStmtPtr>& params = decl.params;
 	if (!params.empty()) {
-		for (auto it=params.begin(); it != --params.end(); ++it) {
-			param = *it;
-			append(param->identifier + ":" + param->type.lexeme + ", ");
-		}
-		param = *(--params.end());
-		append(param->identifier + ":" + param->type.lexeme);
+		for (auto it=params.begin(); it != --params.end(); ++it)
+			append((*it)->identifier + ":" + (*it)->type.lexeme + ", ");
+		append((*--params.end())->identifier + ":" + (*--params.end())->type.lexeme);
 	}
 	close();
 
 	append(" -> ");
-	append(decl->type.lexeme);
+	append(decl.type.lexeme);
 	append(">");
 }

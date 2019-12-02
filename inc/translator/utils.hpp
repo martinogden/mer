@@ -2,7 +2,7 @@
 #include "irt.hpp"
 
 
-IRTCmd* concat(std::vector<IRTCmd*> cmds);
+IRTCmdPtr concat(std::vector<IRTCmdPtr> cmds);
 
 
 bool isPureOp(BinOp op);

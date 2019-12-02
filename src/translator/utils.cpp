@@ -1,15 +1,13 @@
 #include "translator/utils.hpp"
 
 
-IRTCmd* concat(std::vector<IRTCmd*> cmds) {
-	unsigned n = cmds.size();
+IRTCmdPtr concat(std::vector<IRTCmdPtr> cmds) {
+	IRTCmdPtr cmd = std::make_unique<NopCmd>();
 
-	if (n == 0)
-		return new NopCmd();
+	for (auto it=cmds.rbegin(); it!=cmds.rend(); ++it)
+		cmd = std::make_unique<SeqCmd>(std::move(*it), std::move(cmd));
 
-	IRTCmd* head = cmds[0];
-	std::vector<IRTCmd*> rest(std::next(cmds.begin()), cmds.end());
-	return new SeqCmd(head, concat(rest));
+	return cmd;
 }
 
 

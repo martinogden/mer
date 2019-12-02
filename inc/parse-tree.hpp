@@ -1,10 +1,22 @@
 #pragma once
 #include <iostream>
+#include <memory>
 #include <vector>
 #include "token.hpp"
 #include "parse-tree-visitor.hpp"
 #include "operator.hpp"
 #include "type.hpp"
+
+
+class Expr;
+class Stmt;
+class DeclStmt;
+class FunDecl;
+
+typedef std::unique_ptr<Expr> ExprPtr;
+typedef std::unique_ptr<Stmt> StmtPtr;
+typedef std::unique_ptr<DeclStmt> DeclStmtPtr;
+typedef std::unique_ptr<FunDecl> FunDeclPtr;
 
 
 class Expr {
@@ -32,22 +44,19 @@ class FunDecl : public Stmt {
 public:
 	Token type;
 	std::string identifier;
-	std::vector<DeclStmt*> params;
+	std::vector<DeclStmtPtr> params;
 
-	FunDecl(Token token, std::string identifier,
-	        Token type, std::vector<DeclStmt*> params);
-	~FunDecl() override;
+	FunDecl(Token token, std::string identifier, Token type, std::vector<DeclStmtPtr> params);
 	void accept(Visitor& visitor) override;
 };
 
 
 class FunDefn : public Stmt {
 public:
-	FunDecl* decl;
-	Stmt* body;
+	FunDeclPtr decl;
+	StmtPtr body;
 
-	FunDefn(Token token, FunDecl* decl, Stmt* body);
-	~FunDefn() override;
+	FunDefn(Token token, FunDeclPtr decl, StmtPtr body);
 	void accept(Visitor& visitor) override;
 };
 
@@ -58,7 +67,6 @@ public:
 	Token alias;
 
 	TypedefStmt(Token token, Token type, Token alias);
-	~TypedefStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -67,76 +75,69 @@ class DeclStmt : public Stmt {
 public:
 	Token type;
 	std::string identifier;
-	Expr* expr;
+	ExprPtr expr;
 
-	DeclStmt(Token token, std::string identifier, Token type, Expr* expr);
-	~DeclStmt() override;
+	DeclStmt(Token token, std::string identifier, Token type, ExprPtr expr);
 	void accept(Visitor& visitor) override;
 };
 
 
 class IfStmt : public Stmt {
 public:
-	Expr* cond;
-	Stmt* then;
-	Stmt* otherwise;
+	ExprPtr cond;
+	StmtPtr then;
+	StmtPtr otherwise;
 
-	IfStmt(Token token, Expr* cond, Stmt* then, Stmt* otherwise);
-	~IfStmt() override;
+	IfStmt(Token token, ExprPtr cond, StmtPtr then, StmtPtr otherwise);
 	void accept(Visitor& visitor) override;
 };
 
 
 class WhileStmt : public Stmt {
 public:
-	Expr* cond;
-	Stmt* body;
+	ExprPtr cond;
+	StmtPtr body;
 
-	WhileStmt(Token token, Expr* cond, Stmt* body);
-	~WhileStmt() override;
+	WhileStmt(Token token, ExprPtr cond, StmtPtr body);
 	void accept(Visitor& visitor) override;
 };
 
 
 class ForStmt : public Stmt {
 public:
-	Stmt* init;
-	Expr* cond;
-	Stmt* step;
-	Stmt* body;
+	StmtPtr init;
+	ExprPtr cond;
+	StmtPtr step;
+	StmtPtr body;
 
-	ForStmt(Token token, Stmt* init, Expr* cond, Stmt* step, Stmt* body);
-	~ForStmt() override;
+	ForStmt(Token token, StmtPtr init, ExprPtr cond, StmtPtr step, StmtPtr body);
 	void accept(Visitor& visitor) override;
 };
 
 
 class ReturnStmt : public Stmt {
 public:
-	Expr* expr;
+	ExprPtr expr;
 
-	ReturnStmt(Token token, Expr* expr);
-	~ReturnStmt() override;
+	ReturnStmt(Token token, ExprPtr expr);
 	void accept(Visitor& visitor) override;
 };
 
 
 class BlockStmt : public Stmt {
 public:
-	std::vector<Stmt*> statements;
+	std::vector<StmtPtr> statements;
 
-	BlockStmt(Token token, std::vector<Stmt*> statements);
-	~BlockStmt() override;
+	BlockStmt(Token token, std::vector<StmtPtr> statements);
 	void accept(Visitor& visitor) override;
 };
 
 
 class ExprStmt : public Stmt {
 public:
-	Expr* expr;
+	ExprPtr expr;
 
-	ExprStmt(Token token, Expr* expr);
-	~ExprStmt() override;
+	ExprStmt(Token token, ExprPtr expr);
 	void accept(Visitor& visitor) override;
 };
 
@@ -144,11 +145,10 @@ public:
 class AssignStmt : public Stmt {
 public:
 	BinOp op;
-	Expr* lvalue;
-	Expr* rvalue;
+	ExprPtr lvalue;
+	ExprPtr rvalue;
 
-	AssignStmt(Token token, BinOp op, Expr* lvalue, Expr* rvalue);
-	~AssignStmt() override;
+	AssignStmt(Token token, BinOp op, ExprPtr lvalue, ExprPtr rvalue);
 	void accept(Visitor& visitor) override;
 };
 
@@ -156,10 +156,9 @@ public:
 class PostOpStmt : public Stmt {
 public:
 	BinOp op;
-	Expr* expr;
+	ExprPtr expr;
 
-	PostOpStmt(Token token, BinOp op, Expr* expr);
-	~PostOpStmt() override;
+	PostOpStmt(Token token, BinOp op, ExprPtr expr);
 	void accept(Visitor& visitor) override;
 };
 
@@ -168,23 +167,20 @@ public:
 class CallExpr : public Expr {
 public:
 	std::string identifier;
-	std::vector<Expr*> args;
-	FunDecl* decl;
+	std::vector<ExprPtr> args;
 
-	CallExpr(Token token, std::string identifier, std::vector<Expr*> args);
-	~CallExpr() override;
+	CallExpr(Token token, std::string identifier, std::vector<ExprPtr> args);
 	void accept(Visitor& visitor) override;
 };
 
 
 class TernaryExpr : public Expr {
 public:
-	Expr* cond;
-	Expr* then;
-	Expr* otherwise;
+	ExprPtr cond;
+	ExprPtr then;
+	ExprPtr otherwise;
 
-	TernaryExpr(Token token, Expr* cond, Expr* then, Expr* otherwise);
-	~TernaryExpr() override;
+	TernaryExpr(Token token, ExprPtr cond, ExprPtr then, ExprPtr otherwise);
 	void accept(Visitor& visitor) override;
 };
 
@@ -192,11 +188,10 @@ public:
 class BinaryExpr : public Expr {
 public:
 	BinOp op;
-	Expr* left;
-	Expr* right;
+	ExprPtr left;
+	ExprPtr right;
 
-	BinaryExpr(Token token, BinOp op, Expr* left, Expr* right);
-	~BinaryExpr() override;
+	BinaryExpr(Token token, BinOp op, ExprPtr left, ExprPtr right);
 	void accept(Visitor& visitor) override;
 };
 
@@ -204,10 +199,9 @@ public:
 class UnaryExpr : public Expr {
 public:
 	UnOp op;
-	Expr* expr;
+	ExprPtr expr;
 
-	UnaryExpr(Token token, UnOp op, Expr* expr);
-	~UnaryExpr() override;
+	UnaryExpr(Token token, UnOp op, ExprPtr expr);
 	void accept(Visitor& visitor) override;
 };
 
@@ -236,8 +230,6 @@ public:
 
 class ParseTree {
 public:
-	BlockStmt* block;
-
-	ParseTree(BlockStmt* block);
-	~ParseTree();
+	std::vector<StmtPtr> decls;
+	ParseTree(std::vector<StmtPtr> decls);
 };

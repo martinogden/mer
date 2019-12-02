@@ -10,29 +10,29 @@
 // translate: AST -> IRT
 class Translator : public ASTVisitor {
 private:
-	IRTCmd* retval;
+	IRTCmdPtr retval;
 	std::string returnLabel;
 	std::string returnTmp;
 
 	ExprTranslator tr;
 
-	void ret(IRTCmd*);
-	void ret(std::vector<IRTCmd*>);
-	CmdExpr* get(Expr*);
-	IRTCmd* get(ASTNode*);
+	void ret(IRTCmdPtr);
+	void ret(std::vector<IRTCmdPtr>);
+	CmdExprPtr get(ExprPtr);
+	IRTCmdPtr get(ASTNodePtr&);
 
 public:
 	Translator(Generator& gen);
 
-	void visit(FunNode*) override;
-	void visit(AssignNode*) override;
-	void visit(IfNode*) override;
-	void visit(WhileNode*) override;
-	void visit(ReturnNode*) override;
-	void visit(NopNode*) override;
-	void visit(SeqNode*) override;
-	void visit(DeclNode*) override;
-	void visit(ExprNode*) override;
+	void visit(FunNode&) override;
+	void visit(AssignNode&) override;
+	void visit(IfNode&) override;
+	void visit(WhileNode&) override;
+	void visit(ReturnNode&) override;
+	void visit(NopNode&) override;
+	void visit(SeqNode&) override;
+	void visit(DeclNode&) override;
+	void visit(ExprNode&) override;
 
-	IRTFun* get(FunNode*);
+	IRTFunPtr get(FunNodePtr&);
 };

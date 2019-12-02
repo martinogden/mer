@@ -1,7 +1,7 @@
 #include "expr-use-checker.hpp"
 
 
-ExprUseChecker::ExprUseChecker(Expr* expr, Set<std::string>& scope) :
+ExprUseChecker::ExprUseChecker(ExprPtr& expr, Set<std::string>& scope) :
 	root(expr),
 	scope(scope)
 {}
@@ -12,9 +12,9 @@ void ExprUseChecker::run() {
 }
 
 
-void ExprUseChecker::visit(IdExpr* expr) {
-	std::string id = expr->identifier;
+void ExprUseChecker::visit(IdExpr& expr) {
+	std::string id = expr.identifier;
 
 	if (!scope.contains(id))
-		errors.add("use of uninitialized variable: " + id, expr->token);
+		errors.add("use of uninitialized variable: " + id, expr.token);
 }

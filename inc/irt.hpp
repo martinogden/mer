@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <string>
 #include "operator.hpp"
 #include "parse-tree.hpp"
@@ -23,23 +24,30 @@ public:
 };
 
 
+typedef std::unique_ptr<IRTExpr> IRTExprPtr;
+typedef std::unique_ptr<IRTCmd> IRTCmdPtr;
+
+
 class IRTFun {
 public:
 	std::string id;
 	std::vector<std::string> params;
-	IRTCmd* body;
+	IRTCmdPtr body;
 
-	IRTFun(std::string id, std::vector<std::string> params, IRTCmd* body);
+	IRTFun(std::string id, std::vector<std::string> params, IRTCmdPtr body);
 	void accept(IRTVisitor& visitor);
 };
 
 
+typedef std::unique_ptr<IRTFun> IRTFunPtr;
+
+
 class SeqCmd : public IRTCmd {
 public:
-	IRTCmd* head;
-	IRTCmd* rest;
+	IRTCmdPtr head;
+	IRTCmdPtr rest;
 
-	SeqCmd(IRTCmd* head, IRTCmd* rest);
+	SeqCmd(IRTCmdPtr head, IRTCmdPtr rest);
 	void accept(IRTVisitor& visitor) override;
 };
 
@@ -66,10 +74,10 @@ class EffAssignCmd : public IRTCmd {
 public:
 	std::string var;
 	BinOp op;
-	IRTExpr* left;
-	IRTExpr* right;
+	IRTExprPtr left;
+	IRTExprPtr right;
 
-	EffAssignCmd(std::string var, BinOp op, IRTExpr* left, IRTExpr* right);
+	EffAssignCmd(std::string var, BinOp op, IRTExprPtr left, IRTExprPtr right);
 	void accept(IRTVisitor& visitor) override;
 };
 
@@ -78,9 +86,9 @@ public:
 class AssignCmd : public IRTCmd {
 public:
 	std::string var;
-	IRTExpr* value;
+	IRTExprPtr value;
 
-	AssignCmd(std::string var, IRTExpr* value);
+	AssignCmd(std::string var, IRTExprPtr value);
 	void accept(IRTVisitor& visitor) override;
 };
 
@@ -96,10 +104,10 @@ public:
 
 struct Comparison {
 	BinOp op;
-	IRTExpr* left;
-	IRTExpr* right;
+	IRTExprPtr left;
+	IRTExprPtr right;
 
-	Comparison(BinOp op, IRTExpr* left, IRTExpr* right);
+	Comparison(BinOp op, IRTExprPtr left, IRTExprPtr right);
 };
 
 
@@ -126,9 +134,9 @@ public:
 
 class ReturnCmd : public IRTCmd {
 public:
-	IRTExpr* expr;
+	IRTExprPtr expr;
 
-	ReturnCmd(IRTExpr* expr);
+	ReturnCmd(IRTExprPtr expr);
 	void accept(IRTVisitor& visitor) override;
 };
 
@@ -136,12 +144,15 @@ public:
 // TODO: rename
 class CmdExpr : public IRTCmd {
 public:
-	IRTCmd* cmd;
-	IRTExpr* expr;
+	IRTCmdPtr cmd;
+	IRTExprPtr expr;
 
-	CmdExpr(IRTCmd* cmd, IRTExpr* expr);
+	CmdExpr(IRTCmdPtr cmd, IRTExprPtr expr);
 	void accept(IRTVisitor& visitor) override;
 };
+
+
+typedef std::unique_ptr<CmdExpr> CmdExprPtr;
 
 
 class IntExpr : public IRTExpr {
@@ -166,9 +177,9 @@ public:
 class PairExpr : public IRTExpr {
 public:
 	BinOp op;
-	IRTExpr* left;
-	IRTExpr* right;
+	IRTExprPtr left;
+	IRTExprPtr right;
 
-	PairExpr(BinOp op, IRTExpr* left, IRTExpr* right);
+	PairExpr(BinOp op, IRTExprPtr left, IRTExprPtr right);
 	void accept(IRTVisitor& visitor) override;
 };

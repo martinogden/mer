@@ -7,13 +7,13 @@
 
 class ExprUseChecker : public Visitor {
 private:
-	Expr* root;
+	ExprPtr& root;
 	Set<std::string>& scope;
 
-	void visit(IdExpr*) override;
+	void visit(IdExpr&) override;
 public:
 	Errors errors;
 
-	ExprUseChecker(Expr*, Set<std::string>&);
+	ExprUseChecker(ExprPtr&, Set<std::string>&);
 	void run();
 };

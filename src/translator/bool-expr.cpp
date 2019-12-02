@@ -17,102 +17,117 @@ std::string BoolExprTranslator::getFalseLabel() {
 }
 
 
-void BoolExprTranslator::ret(IRTCmd* val) {
-	retval = val;
+void BoolExprTranslator::ret(IRTCmdPtr val) {
+	retval = std::move(val);
 }
 
 
-void BoolExprTranslator::ret(std::vector<IRTCmd*> val) {
-	retval = concat(std::move(val));
+void BoolExprTranslator::ret(std::vector<IRTCmdPtr> val) {
+	retval = concat( std::move(val) );
 }
 
 
-IRTCmd* BoolExprTranslator::get(Expr* expr, std::string t, std::string f) {
+IRTCmdPtr BoolExprTranslator::get(ExprPtr expr, std::string t, std::string f) {
 	l1 = std::move(t);
 	l2 = std::move(f);
 	expr->accept(*this);
-	return retval;
+	return std::move(retval);
 }
 
 
-void BoolExprTranslator::visit(TernaryExpr* expr) {
+void BoolExprTranslator::visit(TernaryExpr& expr) {
 	std::string t = getTrueLabel();
 	std::string f = getFalseLabel();
 	std::string lbl1 = tr.freshLabel();
 	std::string lbl2 = tr.freshLabel();
 
-	IRTCmd* cond = get(expr->cond, lbl1, lbl2);
-	IRTCmd* left = get(expr->then, t, f);
-	IRTCmd* right = get(expr->otherwise, t, f);
+	IRTCmdPtr cond = get(std::move(expr.cond), lbl1, lbl2);
+	IRTCmdPtr left = get(std::move(expr.then), t, f);
+	IRTCmdPtr right = get(std::move(expr.otherwise), t, f);
 
-	ret({
-		cond,
-		new LabelCmd(lbl1), left,
-		new LabelCmd(lbl2), right
-	});
+	std::vector<IRTCmdPtr> cmds;
+	cmds.push_back( std::move(cond) );
+
+	cmds.push_back( std::make_unique<LabelCmd>(lbl1) );
+	cmds.push_back( std::move(left) );
+
+	cmds.push_back( std::make_unique<LabelCmd>(lbl2) );
+	cmds.push_back( std::move(right) );
+
+	ret( std::move(cmds) );
 }
 
 
-void BoolExprTranslator::visit(BinaryExpr* expr) {
+void BoolExprTranslator::visit(BinaryExpr& expr) {
 	std::string t = getTrueLabel();
 	std::string f = getFalseLabel();
 
-	switch (expr->op) {
+	switch (expr.op) {
 		case BinOp::LOG_AND: {
 			std::string l = tr.freshLabel();
-			IRTCmd* left = get(expr->left, l, f);
-			IRTCmd* right = get(expr->right, t, f);
+			IRTCmdPtr left = get(std::move(expr.left), l, f);
+			IRTCmdPtr right = get(std::move(expr.right), t, f);
 
-			ret({ left, new LabelCmd(l), right });
+			std::vector<IRTCmdPtr> cmds;
+			cmds.push_back( std::move(left) );
+			cmds.push_back( std::make_unique<LabelCmd>(l) );
+			cmds.push_back( std::move(right) );
+			ret( std::move(cmds) );
 		} break;
 		case BinOp::LOG_OR: {
 			std::string l = tr.freshLabel();
-			IRTCmd* left = get(expr->left, t, l);
-			IRTCmd* right = get(expr->right, t, f);
+			IRTCmdPtr left = get(std::move(expr.left), t, l);
+			IRTCmdPtr right = get(std::move(expr.right), t, f);
 
-			ret({ left, new LabelCmd(l), right });
+			std::vector<IRTCmdPtr> cmds;
+			cmds.push_back( std::move(left) );
+			cmds.push_back( std::make_unique<LabelCmd>(l) );
+			cmds.push_back( std::move(right) );
+			ret( std::move(cmds) );
 		} break;
 		default: {
-			assert(getOpType(expr->op) == OpType::REL ||
-				   getOpType(expr->op) == OpType::EQL);
+			assert(getOpType(expr.op) == OpType::REL ||
+				   getOpType(expr.op) == OpType::EQL);
 
-			CmdExpr* lhs = tr.get(expr->left);
-			CmdExpr* rhs = tr.get(expr->right);
+			CmdExprPtr lhs = tr.get( std::move(expr.left) );
+			CmdExprPtr rhs = tr.get( std::move(expr.right) );
 
-			ret({
-				lhs->cmd, rhs->cmd,
-				new IfCmd({expr->op, lhs->expr, rhs->expr}, t, f)
-			});
+			std::vector<IRTCmdPtr> cmds;
+			cmds.push_back( std::move(lhs->cmd) );
+			cmds.push_back( std::move(rhs->cmd) );
+			cmds.push_back( std::make_unique<IfCmd>(Comparison(expr.op, std::move(lhs->expr), std::move(rhs->expr)), t, f) );
+			ret( std::move(cmds) );
 		} break;
 	}
 }
 
 
-void BoolExprTranslator::visit(UnaryExpr* unary) {
+void BoolExprTranslator::visit(UnaryExpr& unary) {
 	std::string t = getTrueLabel();
 	std::string f = getFalseLabel();
 
-	assert(unary->op == UnOp::LOG_NOT);
-	ret( get(unary->expr, f, t) );
+	assert(unary.op == UnOp::LOG_NOT);
+	ret( get(std::move(unary.expr), f, t) );
 }
 
 
-void BoolExprTranslator::visit(LiteralExpr* expr) {
+void BoolExprTranslator::visit(LiteralExpr& expr) {
 	std::string t = getTrueLabel();
 	std::string f = getFalseLabel();
-	bool value = expr->as.b;
+	bool value = expr.as.b;
 
-	ret( new GotoCmd(value ? t : f) );
+	ret( std::make_unique<GotoCmd>(value ? t : f) );
 }
 
 
-void BoolExprTranslator::visit(IdExpr* expr) {
+void BoolExprTranslator::visit(IdExpr& expr) {
 	std::string t = getTrueLabel();
 	std::string f = getFalseLabel();
-	CmdExpr* e = tr.get(expr);
+	CmdExprPtr e = std::make_unique<CmdExpr>(std::make_unique<NopCmd>(), std::make_unique<VarExpr>(expr.identifier));
+	IRTExprPtr zero = std::make_unique<IntExpr>(0);
 
-	ret({
-		e->cmd,
-		new IfCmd({BinOp::NOT_EQL, e->expr, new IntExpr(0)}, t, f)
-	});
+	std::vector<IRTCmdPtr> cmds;
+	cmds.push_back( std::move(e->cmd) );
+	cmds.push_back( std::make_unique<IfCmd>(Comparison(BinOp::NOT_EQL, std::move(e->expr), std::move(zero)), t, f) );
+	ret( std::move(cmds) );
 }

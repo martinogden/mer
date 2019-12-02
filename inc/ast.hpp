@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <string>
 #include <utility>
 #include "token.hpp"
@@ -24,60 +25,60 @@ public:
 };
 
 
+typedef std::unique_ptr<ASTNode> ASTNodePtr;
+
+
 class FunNode : public ASTNode {
 public:
 	std::string id;
 	Type type;
 	std::vector<Param> params;
-	ASTNode* body;
+	ASTNodePtr body;
 
-	FunNode(Token token, std::string id, Type type,
-	        std::vector<Param> params, ASTNode* body);
-	~FunNode() override;
+	FunNode(Token token, std::string id, Type type, std::vector<Param> params, ASTNodePtr body);
 	void accept(ASTVisitor& visitor) override;
 };
+
+
+typedef std::unique_ptr<FunNode> FunNodePtr;
 
 
 class AssignNode : public ASTNode {
 public:
 	std::string id;
-	Expr* expr;
+	ExprPtr expr;
 
-	AssignNode(Token token, std::string id, Expr* expr);
-	~AssignNode() override;
+	AssignNode(Token token, std::string id, ExprPtr expr);
 	void accept(ASTVisitor& visitor) override;
 };
 
 
 class IfNode : public ASTNode {
 public:
-	Expr* cond;
-	ASTNode* then;
-	ASTNode* otherwise;
+	ExprPtr cond;
+	ASTNodePtr then;
+	ASTNodePtr otherwise;
 
-	IfNode(Token token, Expr* cond, ASTNode* then, ASTNode* otherwise);
-	~IfNode() override;
+	IfNode(Token token, ExprPtr cond, ASTNodePtr then, ASTNodePtr otherwise);
 	void accept(ASTVisitor& visitor) override;
 };
 
 
 class WhileNode : public ASTNode {
 public:
-	Expr* cond;
-	ASTNode* body;
+	ExprPtr cond;
+	ASTNodePtr body;
 
-	WhileNode(Token token, Expr* cond, ASTNode* body);
-	~WhileNode() override;
+	WhileNode(Token token, ExprPtr cond, ASTNodePtr body);
 	void accept(ASTVisitor& visitor) override;
 };
 
 
 class ReturnNode : public ASTNode {
 public:
-	Expr* expr;
+	ExprPtr expr;
 
-	ReturnNode(Token token, Expr* expr);
-	~ReturnNode() override;
+	ReturnNode(Token token, ExprPtr expr);
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -92,11 +93,10 @@ public:
 
 class SeqNode : public ASTNode {
 public:
-	ASTNode* head;
-	ASTNode* rest;
+	ASTNodePtr head;
+	ASTNodePtr rest;
 
-	SeqNode(Token token, ASTNode* head, ASTNode* rest);
-	~SeqNode() override;
+	SeqNode(Token token, ASTNodePtr head, ASTNodePtr rest);
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -105,19 +105,17 @@ class DeclNode : public ASTNode {
 public:
 	std::string id;
 	Type type;
-	ASTNode* scope;
+	ASTNodePtr scope;
 
-	DeclNode(Token token, std::string id, Type type, ASTNode* scope);
-	~DeclNode() override;
+	DeclNode(Token token, std::string id, Type type, ASTNodePtr scope);
 	void accept(ASTVisitor& visitor) override;
 };
 
 
 class ExprNode : public ASTNode {
 public:
-	Expr* expr;
+	ExprPtr expr;
 
-	ExprNode(Token token, Expr* expr);
-	~ExprNode() override;
+	ExprNode(Token token, ExprPtr expr);
 	void accept(ASTVisitor& visitor) override;
 };

@@ -17,7 +17,7 @@ void Errors::add(const std::string& msg) {
 }
 
 
-void Errors::add(const std::string& msg, Token& token) {
+void Errors::add(const std::string& msg, Token token) {
 	std::string str = "[" + label + "] " + msg;
 	add( error(str, token) );
 }

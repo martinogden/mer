@@ -1,30 +1,30 @@
 #include "irt.hpp"
 
 
-IRTFun::IRTFun(std::string id, std::vector<std::string> params, IRTCmd* body) :
+IRTFun::IRTFun(std::string id, std::vector<std::string> params, IRTCmdPtr body) :
 	id(std::move(id)),
 	params(std::move(params)),
-	body(body)
+	body(std::move(body))
 {}
 
 
 void IRTFun::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
-SeqCmd::SeqCmd(IRTCmd* head, IRTCmd* rest) :
-	head(head),
-	rest(rest)
+SeqCmd::SeqCmd(IRTCmdPtr head, IRTCmdPtr rest) :
+	head(std::move(head)),
+	rest(std::move(rest))
 {}
 
 void SeqCmd::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
 void NopCmd::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
@@ -36,31 +36,31 @@ CallCmd::CallCmd(std::string var, std::string label, std::vector<std::string> ar
 
 
 void CallCmd::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
-EffAssignCmd::EffAssignCmd(std::string var, BinOp op, IRTExpr* left, IRTExpr* right) :
+EffAssignCmd::EffAssignCmd(std::string var, BinOp op, IRTExprPtr left, IRTExprPtr right) :
 	var(std::move(var)),
 	op(op),
-	left(left),
-	right(right)
+	left(std::move(left)),
+	right(std::move(right))
 {}
 
 
 void EffAssignCmd::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
-AssignCmd::AssignCmd(std::string var, IRTExpr* value) :
+AssignCmd::AssignCmd(std::string var, IRTExprPtr value) :
 	var(std::move(var)),
-	value(value)
+	value(std::move(value))
 {}
 
 
 void AssignCmd::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
@@ -70,26 +70,26 @@ LabelCmd::LabelCmd(std::string name) :
 
 
 void LabelCmd::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
-Comparison::Comparison(BinOp op, IRTExpr* left, IRTExpr* right) :
+Comparison::Comparison(BinOp op, IRTExprPtr left, IRTExprPtr right) :
 	op(op),
-	left(left),
-	right(right)
+	left(std::move(left)),
+	right(std::move(right))
 {}
 
 
 IfCmd::IfCmd(Comparison cmp, std::string then, std::string otherwise) :
-	cmp(cmp),
+	cmp(std::move(cmp)),
 	then(std::move(then)),
 	otherwise(std::move(otherwise))
 {}
 
 
 void IfCmd::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
@@ -99,28 +99,28 @@ GotoCmd::GotoCmd(std::string label) :
 
 
 void GotoCmd::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
-ReturnCmd::ReturnCmd(IRTExpr* expr) :
-	expr(expr)
+ReturnCmd::ReturnCmd(IRTExprPtr expr) :
+	expr(std::move(expr))
 {}
 
 
 void ReturnCmd::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
-CmdExpr::CmdExpr(IRTCmd* cmd, IRTExpr* expr) :
-	cmd(cmd),
-	expr(expr)
+CmdExpr::CmdExpr(IRTCmdPtr cmd, IRTExprPtr expr) :
+	cmd(std::move(cmd)),
+	expr(std::move(expr))
 {}
 
 
 void CmdExpr::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
@@ -130,7 +130,7 @@ IntExpr::IntExpr(int value) :
 
 
 void IntExpr::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
@@ -140,17 +140,17 @@ VarExpr::VarExpr(std::string name) :
 
 
 void VarExpr::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }
 
 
-PairExpr::PairExpr(BinOp op, IRTExpr* left, IRTExpr* right) :
+PairExpr::PairExpr(BinOp op, IRTExprPtr left, IRTExprPtr right) :
 	op(op),
-	left(left),
-	right(right)
+	left(std::move(left)),
+	right(std::move(right))
 {}
 
 
 void PairExpr::accept(IRTVisitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 }

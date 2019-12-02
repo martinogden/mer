@@ -27,25 +27,25 @@ class PostOpStmt;
 // implemented in visitor.cpp
 class Visitor {
 public:
-	virtual void visit(CallExpr*);
-	virtual void visit(TernaryExpr*);
-	virtual void visit(BinaryExpr*);
-	virtual void visit(UnaryExpr*);
-	virtual void visit(LiteralExpr*);
-	virtual void visit(IdExpr*);
+	virtual void visit(CallExpr&);
+	virtual void visit(TernaryExpr&);
+	virtual void visit(BinaryExpr&);
+	virtual void visit(UnaryExpr&);
+	virtual void visit(LiteralExpr&);
+	virtual void visit(IdExpr&);
 
-	virtual void visit(FunDecl*);
-	virtual void visit(FunDefn*);
-	virtual void visit(TypedefStmt*);
-	virtual void visit(DeclStmt*);
-	virtual void visit(IfStmt*);
-	virtual void visit(WhileStmt*);
-	virtual void visit(ForStmt*);
-	virtual void visit(ReturnStmt*);
-	virtual void visit(BlockStmt*);
-	virtual void visit(ExprStmt*);
-	virtual void visit(AssignStmt*);
-	virtual void visit(PostOpStmt*);
+	virtual void visit(FunDecl&);
+	virtual void visit(FunDefn&);
+	virtual void visit(TypedefStmt&);
+	virtual void visit(DeclStmt&);
+	virtual void visit(IfStmt&);
+	virtual void visit(WhileStmt&);
+	virtual void visit(ForStmt&);
+	virtual void visit(ReturnStmt&);
+	virtual void visit(BlockStmt&);
+	virtual void visit(ExprStmt&);
+	virtual void visit(AssignStmt&);
+	virtual void visit(PostOpStmt&);
 
 	virtual ~Visitor() = default;
 };

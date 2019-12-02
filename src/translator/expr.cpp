@@ -4,7 +4,8 @@
 
 
 ExprTranslator::ExprTranslator(Generator& gen) :
-	gen(gen)
+	gen(gen),
+	retval(nullptr)
 {}
 
 
@@ -18,47 +19,47 @@ std::string ExprTranslator::freshTmp() {
 }
 
 
-void ExprTranslator::ret(CmdExpr* val) {
-	retval = val;
+void ExprTranslator::ret(CmdExprPtr val) {
+	retval = std::move(val);
 }
 
 
-void ExprTranslator::ret(IRTCmd* cmd, IRTExpr* e) {
-	retval = new CmdExpr(cmd, e);
+void ExprTranslator::ret(IRTCmdPtr cmd, IRTExprPtr e) {
+	retval = std::make_unique<CmdExpr>(std::move(cmd), std::move(e));
 }
 
 
-CmdExpr* ExprTranslator::get(Expr* expr) {
+CmdExprPtr ExprTranslator::get(ExprPtr expr) {
+	if (expr->type == Type::BOOL)
+		return transBool( std::move(expr) );
+
 	expr->accept(*this);
-	return retval;
+	return std::move(retval);
 }
 
 
-void ExprTranslator::visit(CallExpr* expr) {
-	std::vector<IRTCmd*> cmds;
+void ExprTranslator::visit(CallExpr& expr) {
+	std::vector<IRTCmdPtr> cmds;
 	std::vector<std::string> tmps;
 
-	for (Expr* arg : expr->args) {
-		CmdExpr* e = get(arg);
+	for (auto& arg : expr.args) {
+		CmdExprPtr e = get( std::move(arg) );
 		std::string tmp = freshTmp();
 
-		cmds.push_back(e->cmd);
-		cmds.push_back(new AssignCmd(tmp, e->expr));
+		cmds.push_back( std::move(e->cmd) );
+		cmds.push_back( std::make_unique<AssignCmd>(tmp, std::move(e->expr)) );
 		tmps.push_back(tmp);
 	}
 
 	std::string t = freshTmp();
-	cmds.push_back( new CallCmd(t, expr->identifier, std::move(tmps)) );
+	cmds.push_back( std::make_unique<CallCmd>(t, expr.identifier, std::move(tmps)) );
 
-	ret(concat(cmds), new VarExpr(t));
+	ret( concat( std::move(cmds) ), std::make_unique<VarExpr>(t) );
 }
 
 
-void ExprTranslator::visit(TernaryExpr* expr) {
-	if (expr->type == Type::BOOL) {
-		ret( transBool(expr) );
-		return;
-	}
+void ExprTranslator::visit(TernaryExpr& expr) {
+	assert(expr.type == Type::INT);
 
 	BoolExprTranslator btr(*this);
 
@@ -67,93 +68,89 @@ void ExprTranslator::visit(TernaryExpr* expr) {
 	std::string l3 = freshLabel();
 
 	std::string t = freshTmp();
-	CmdExpr* then = get(expr->then);
-	CmdExpr* otherwise = get(expr->otherwise);
+	CmdExprPtr then = get( std::move(expr.then) );
+	CmdExprPtr otherwise = get( std::move(expr.otherwise) );
 
-	IRTCmd* cmd = concat({
-		btr.get(expr->cond, l1, l2),
-		new LabelCmd(l1), then->cmd, new AssignCmd(t, then->expr), new GotoCmd(l3),
-		new LabelCmd(l2), otherwise->cmd, new AssignCmd(t, otherwise->expr), new GotoCmd(l3),
-		new LabelCmd(l3)
-	});
+	std::vector<IRTCmdPtr> cmds;
+	cmds.push_back( btr.get( std::move(expr.cond), l1, l2 ) );
 
-	ret(cmd, new VarExpr(t));
+	cmds.push_back( std::make_unique<LabelCmd>(l1) );
+	cmds.push_back( std::move(then->cmd) );
+	cmds.push_back( std::make_unique<AssignCmd>(t, std::move(then->expr)) );
+	cmds.push_back( std::make_unique<GotoCmd>(l3) );
+
+	cmds.push_back( std::make_unique<LabelCmd>(l2) );
+	cmds.push_back( std::move(otherwise->cmd) );
+	cmds.push_back( std::make_unique<AssignCmd>(t, std::move(otherwise->expr)) );
+	cmds.push_back( std::make_unique<GotoCmd>(l3) );
+
+	cmds.push_back( std::make_unique<LabelCmd>(l3) );
+
+	IRTCmdPtr cmd = concat( std::move(cmds) );
+
+	ret( std::move(cmd), std::make_unique<VarExpr>(t) );
 }
 
 
-void ExprTranslator::visit(BinaryExpr* expr) {
-	if (expr->type == Type::BOOL) {
-		ret( transBool(expr) );
-		return;
-	}
+void ExprTranslator::visit(BinaryExpr& expr) {
+	assert(expr.type == Type::INT);
 
-	assert(expr->type == Type::INT);
+	CmdExprPtr lhs = get( std::move(expr.left) );
+	CmdExprPtr rhs = get( std::move(expr.right) );
+	IRTCmdPtr cmd = std::make_unique<SeqCmd>( std::move(lhs->cmd), std::move(rhs->cmd) );
+	IRTExprPtr e;
 
-	CmdExpr* lhs = get(expr->left);
-	CmdExpr* rhs = get(expr->right);
-	IRTCmd* cmd = concat({ lhs->cmd, rhs->cmd });
-	IRTExpr* e;
-
-	if ( isPureOp(expr->op) )
-		e = new PairExpr(expr->op, lhs->expr, rhs->expr);
+	if ( isPureOp(expr.op) )
+		e = std::make_unique<PairExpr>(expr.op, std::move(lhs->expr), std::move(rhs->expr));
 	else {
 		std::string var = freshTmp();
-		cmd = concat({ cmd, new EffAssignCmd(var, expr->op, lhs->expr, rhs->expr) });
-		e = new VarExpr(var);
+
+		std::vector<IRTCmdPtr> cmds;
+		cmds.push_back( std::move(cmd) );
+		cmds.push_back( std::make_unique<EffAssignCmd>(var, expr.op, std::move(lhs->expr), std::move(rhs->expr)) );
+
+		cmd = concat( std::move(cmds) );
+		e = std::make_unique<VarExpr>(var);
 	}
 
-	ret(cmd, e);
+	ret( std::move(cmd), std::move(e) );
 }
 
 
-void ExprTranslator::visit(UnaryExpr* unary) {
-	if (unary->type == Type::BOOL) {
-		ret( transBool(unary) );
-		return;
-	}
+void ExprTranslator::visit(UnaryExpr& unary) {
+	assert(unary.type == Type::INT);
+	CmdExprPtr e = get( std::move(unary.expr) );
+	IRTExprPtr expr;
+	IRTExprPtr zero = std::make_unique<IntExpr>(0);
+	IRTExprPtr neg = std::make_unique<PairExpr>(BinOp::SUB, std::move(zero), std::move(e->expr));
 
-	assert(unary->type == Type::INT);
-	CmdExpr* e = get(unary->expr);
-	IRTExpr* expr;
-	IRTExpr* neg = new PairExpr(BinOp::SUB, new IntExpr(0), e->expr);
-
-	if (unary->op == UnOp::NEG)
-		expr = neg;
-	else if (unary->op == UnOp::BIT_NOT)
+	if (unary.op == UnOp::NEG)
+		expr = std::move(neg);
+	else if (unary.op == UnOp::BIT_NOT) {
 		// ~x = -x - 1
-		expr = new PairExpr(BinOp::SUB, neg, new IntExpr(1));
+		IRTExprPtr one = std::make_unique<IntExpr>(1);
+		expr = std::make_unique<PairExpr>(BinOp::SUB, std::move(neg), std::move(one));
+	}
 	else
 		throw 1;  // we should never get here
 
-	ret(e->cmd, expr);
+	ret( std::move(e->cmd), std::move(expr) );
 }
 
 
-void ExprTranslator::visit(LiteralExpr* expr) {
-	int value;
-
-	switch (expr->type) {
-		case Type::INT:
-			value = expr->as.i;
-			break;
-		case Type::BOOL:
-			value = static_cast<int>(expr->as.b);
-			break;
-		default:
-			throw 1;  // we should never get here
-	}
-
-	ret(new NopCmd(), new IntExpr(value));
+void ExprTranslator::visit(LiteralExpr& expr) {
+	assert(expr.type == Type::INT);
+	ret( std::make_unique<NopCmd>(), std::make_unique<IntExpr>(expr.as.i) );
 }
 
 
-void ExprTranslator::visit(IdExpr* expr) {
-	assert(expr->type == Type::INT || expr->type == Type::BOOL);
-	ret(new NopCmd(), new VarExpr(expr->identifier));
+void ExprTranslator::visit(IdExpr& expr) {
+	assert(expr.type == Type::INT);
+	ret( std::make_unique<NopCmd>(), std::make_unique<VarExpr>(expr.identifier) );
 }
 
 
-CmdExpr* ExprTranslator::transBool(Expr* expr) {
+CmdExprPtr ExprTranslator::transBool(ExprPtr expr) {
 	BoolExprTranslator btr(*this);
 
 	std::string l1 = freshLabel();
@@ -161,12 +158,20 @@ CmdExpr* ExprTranslator::transBool(Expr* expr) {
 	std::string l3 = freshLabel();
 	std::string t = freshTmp();
 
-	IRTCmd* cmd = concat({
-		btr.get(expr, l1, l2),
-		new LabelCmd(l1), new AssignCmd(t, new IntExpr(1)), new GotoCmd(l3),
-		new LabelCmd(l2), new AssignCmd(t, new IntExpr(0)), new GotoCmd(l3),
-		new LabelCmd(l3)
-	});
+	std::vector<IRTCmdPtr> cmds;
+	cmds.push_back( btr.get(std::move(expr), l1, l2) );
 
-	return new CmdExpr(cmd, new VarExpr(t));
+	cmds.push_back( std::make_unique<LabelCmd>(l1) );
+	cmds.push_back( std::make_unique<AssignCmd>(t, std::make_unique<IntExpr>(1)) );
+	cmds.push_back( std::make_unique<GotoCmd>(l3) );
+
+	cmds.push_back( std::make_unique<LabelCmd>(l2) );
+	cmds.push_back( std::make_unique<AssignCmd>(t, std::make_unique<IntExpr>(0)) );
+	cmds.push_back( std::make_unique<GotoCmd>(l3) );
+
+	cmds.push_back( std::make_unique<LabelCmd>(l3) );
+
+	IRTCmdPtr cmd = concat( std::move(cmds) );
+
+	return std::make_unique<CmdExpr>(std::move(cmd), std::make_unique<VarExpr>(t));
 }

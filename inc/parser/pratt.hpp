@@ -14,10 +14,10 @@ protected:
 
 public:
 	NullParser(int bp);
-	virtual ~NullParser() {}
+	virtual ~NullParser() = default;
 
 	virtual int getBP();
-	virtual Expr* parse(Token& token, PrattParser& parser);
+	virtual ExprPtr parse(Token& token, PrattParser& parser) = 0;
 };
 
 
@@ -33,7 +33,7 @@ public:
 
 	virtual int getLBP();
 	virtual int getRBP();
-	virtual Expr* parse(Expr* left, Token& token, PrattParser& parser);
+	virtual ExprPtr parse(ExprPtr left, Token& token, PrattParser& parser) = 0;
 };
 
 
@@ -42,7 +42,7 @@ protected:
 	ParserSpec spec;
 
 public:
-	Expr* expression(int rbp=0);
+	ExprPtr expression(int rbp=0);
 	PrattParser(ParserSpec&& spec, Lexer& lexer);
 	~PrattParser() override = default;
 };

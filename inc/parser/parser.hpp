@@ -11,29 +11,29 @@ class NullParser;
 
 class Parser : public PrattParser {
 private:
-	BlockStmt* program();
+	std::vector<StmtPtr> program();
 
-	Stmt* declaration();
-	Stmt* typedefStmt(Token& token);
-	Stmt* function(Token& token);
-	std::vector<DeclStmt*> params(Token& token);
+	StmtPtr declaration();
+	StmtPtr typedefStmt(Token& token);
+	StmtPtr function(Token& token);
+	std::vector<DeclStmtPtr> params(Token& token);
 
-	Stmt* statement();
-	Stmt* ifStmt(Token& token);
-	Stmt* whileStmt(Token& token);
-	Stmt* forStmt(Token& token);
-	Stmt* returnStmt(Token& token);
-	Stmt* declStmt(Token& token);
-	Stmt* block(Token& token);
-	Stmt* simpleStmt(Token& token);
-	Expr* condition();
+	StmtPtr statement();
+	StmtPtr ifStmt(Token& token);
+	StmtPtr whileStmt(Token& token);
+	StmtPtr forStmt(Token& token);
+	StmtPtr returnStmt(Token& token);
+	StmtPtr declStmt(Token& token);
+	StmtPtr block(Token& token);
+	StmtPtr simpleStmt(Token& token);
+	ExprPtr condition();
 
 	// helper to parse for stmts
-	Stmt* declOrSimpleStmtOpt(TokenType terminator);
+	StmtPtr declOrSimpleStmtOpt(TokenType terminator);
 
 	void seedTypes();
 
 public:
 	Parser(Lexer& lexer);
-	ParseTree* run();
+	ParseTree run();
 };

@@ -9,7 +9,7 @@
 
 class CodeGen : public IRTVisitor {
 private:
-	IRTFun* fun;
+	IRTFunPtr& fun;
 	Generator& gen;
 
 	std::vector<Inst> insts;
@@ -19,24 +19,24 @@ private:
 	void ret(Operand);
 
 public:
-	CodeGen(IRTFun* fun, Generator& gen);
+	CodeGen(IRTFunPtr& fun, Generator& gen);
 
-	void visit(IRTFun*) override;
-	void visit(SeqCmd*) override;
-	void visit(NopCmd*) override;
-	void visit(CallCmd*) override;
-	void visit(AssignCmd*) override;
-	void visit(EffAssignCmd*) override;
-	void visit(LabelCmd*) override;
-	void visit(IfCmd*) override;
-	void visit(GotoCmd*) override;
-	void visit(ReturnCmd*) override;
+	void visit(IRTFun&) override;
+	void visit(SeqCmd&) override;
+	void visit(NopCmd&) override;
+	void visit(CallCmd&) override;
+	void visit(AssignCmd&) override;
+	void visit(EffAssignCmd&) override;
+	void visit(LabelCmd&) override;
+	void visit(IfCmd&) override;
+	void visit(GotoCmd&) override;
+	void visit(ReturnCmd&) override;
 
-	void visit(CmdExpr*) override;
-	void visit(IntExpr*) override;
-	void visit(VarExpr*) override;
-	void visit(PairExpr*) override;
+	void visit(CmdExpr&) override;
+	void visit(IntExpr&) override;
+	void visit(VarExpr&) override;
+	void visit(PairExpr&) override;
 
-	Operand& get(IRTExpr*);
+	Operand& get(IRTExprPtr&);
 	InstFun run();
 };

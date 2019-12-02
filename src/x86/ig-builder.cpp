@@ -5,11 +5,11 @@ IGBuilder::IGBuilder(X86Fun& fun) :
 	n(fun.code.size()),
 	fun(fun),
 	liveness(fun.code),
-	G(new Graph<Operand>())
+	G(std::make_unique<Graph<Operand>>())
 {}
 
 
-Graph<Operand>* IGBuilder::run() {
+std::unique_ptr<Graph<Operand>> IGBuilder::run() {
 	liveness.run();
 
 	// add all registers to IG
@@ -44,8 +44,9 @@ Graph<Operand>* IGBuilder::run() {
 	for (auto& as : fun.code)
 		visit(as, l++);
 
-	return G;
+	return std::move(G);
 }
+
 
 /*
 Inference rule for interference relation on operands

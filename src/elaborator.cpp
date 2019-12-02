@@ -1,54 +1,51 @@
 #include "elaborator.hpp"
 
 
-Elaborator::Elaborator(ParseTree* tree) : tree(tree) {
+Elaborator::Elaborator(ParseTree& tree) : tree(tree) {
 	seedTypes();
 	seedDecls();
 }
 
 
-std::vector<FunNode*> Elaborator::run() {
-	// TODO store list of stmts rather than block
-	BlockStmt* block = static_cast<BlockStmt*>(tree->block);
-
-	for (Stmt* stmt : block->statements)
-		stmt->accept(*this);
+std::vector<FunNodePtr> Elaborator::run() {
+	for (StmtPtr& decl : tree.decls)
+		decl->accept(*this);
 
 	if (!decls.exists("main"))
 		errors.add("No main function found.");
 
 	if (errors.exist())
-		return {};
-	else
-		return defns;
+		defns.clear();
+
+	return std::move(defns);
 };
 
 
 SymTab<FunType> Elaborator::getDecls() {
-	return decls;
+	return std::move(decls);
 }
 
 
-void Elaborator::visit(FunDecl* decl) {
+void Elaborator::visit(FunDecl& decl) {
 	// TODO: tidy up
-	std::string id = decl->identifier;
+	std::string id = decl.identifier;
 	if (decls.exists(id)) {
 		// check types match
-		std::vector<DeclStmt*> params = decl->params;
+		std::vector<DeclStmtPtr>& params = decl.params;
 
 		FunType type = decls.lookup(id);
 		if (params.size() != type.first.size()) {
-			errors.add("Function declarations mismatch", decl->token);
+			errors.add("Function declarations mismatch", decl.token);
 			return;
 		}
 
-		if (resolveType(decl->type) != type.second) {
-			errors.add("Function declarations mismatch", decl->token);
+		if (resolveType(decl.type) != type.second) {
+			errors.add("Function declarations mismatch", decl.token);
 			return;
 		}
 
 		for (uint i=0; i<params.size(); ++i) {
-			DeclStmt* param = params[i];
+			DeclStmtPtr& param = params[i];
 			if (resolveType(param->type) != type.first[i]) {
 				errors.add("Function declarations mismatch", param->token);
 				return;
@@ -57,221 +54,214 @@ void Elaborator::visit(FunDecl* decl) {
 	}
 	else {
 		std::vector<Type> domain;
-		for (auto const& param : decl->params)
+		for (auto const& param : decl.params)
 			domain.push_back( resolveType(param->type) );
 
-		Type codomain = resolveType(decl->type);
+		Type codomain = resolveType(decl.type);
 		decls.define(id, { domain, codomain });
 	}
 }
 
 
-void Elaborator::visit(FunDefn* defn) {
-	defn->decl->accept(*this);
+void Elaborator::visit(FunDefn& defn) {
+	defn.decl->accept(*this);
 
-	std::string id = defn->decl->identifier;
-	Type type = resolveType(defn->decl->type);
-	ASTNode* body = get(defn->body);
+	std::string id = defn.decl->identifier;
+	Type type = resolveType(defn.decl->type);
+	ASTNodePtr body = get(defn.body);
 
 	std::vector<Param> params;
-	for (auto const& param : defn->decl->params)
+	for (auto const& param : defn.decl->params)
 		params.emplace_back( param->identifier, resolveType(param->type) );
 
-	emit( new FunNode(defn->token, id, type, params, body) );
+	emit( std::make_unique<FunNode>(defn.token, id, type, params, std::move(body)) );
 }
 
 
-void Elaborator::visit(TypedefStmt* stmt) {
-	std::string alias = stmt->alias.lexeme;
+void Elaborator::visit(TypedefStmt& stmt) {
+	std::string alias = stmt.alias.lexeme;
 	if (decls.exists(alias))
 		errors.add(
-				"A function with this name (" + alias
-				+ ") has already been declared",stmt->alias
-			);
+			"A function with this name (" + alias
+			+ ") has already been declared",stmt.alias
+		);
 	else if (types.exists(alias))
-		errors.add("Type alias already defined: " + alias + ".", stmt->alias);
+		errors.add("Type alias already defined: " + alias + ".", stmt.alias);
 	else
-		types.define(alias, resolveType(stmt->type));
-	// TODO what do we return here?
+		types.define(alias, resolveType(stmt.type));
+	// TODO: what do we return here?
 }
 
 
-void Elaborator::visit(BlockStmt* block) {
-	std::vector<Stmt*> stmts = block->statements;
+void Elaborator::visit(BlockStmt& block) {
+	std::vector<StmtPtr>& stmts = block.statements;
 	uint n = stmts.size();
-	ASTNode* node;
+	ASTNodePtr node;
 
 	if (n == 0)
-		node = new NopNode(block->token);
+		node = std::make_unique<NopNode>(block.token);
 	else {
 		node = get(stmts[n-1]);
 		for (auto it=++stmts.rbegin(); it!=stmts.rend(); ++it)
-			node = seq(*it, node);
+			node = seq(*it, std::move(node));
 	}
 
-	ret(node);
+	ret( std::move(node) );
 }
 
 
-void Elaborator::visit(DeclStmt* stmt) {
-	std::string id = stmt->identifier;
-	ASTNode* node;
+void Elaborator::visit(DeclStmt& stmt) {
+	std::string id = stmt.identifier;
+	ASTNodePtr node;
 
-	if (stmt->expr) {
-		stmt->expr->accept(*this);
-
-		Expr* expr = stmt->expr;
-		node = new AssignNode(expr->token, id, expr);
+	if (stmt.expr) {
+		stmt.expr->accept(*this);
+		node = std::make_unique<AssignNode>(stmt.token, id, std::move(stmt.expr));
 	}
 	else
-		node = new NopNode(stmt->token);
+		node = std::make_unique<NopNode>(stmt.token);
 
-	ret( new DeclNode(stmt->token, id, resolveType(stmt->type), node) );
+	ret( std::make_unique<DeclNode>(stmt.token, id, resolveType(stmt.type), std::move(node)) );
 }
 
 
-void Elaborator::visit(IfStmt* stmt) {
-	stmt->cond->accept(*this);
+void Elaborator::visit(IfStmt& stmt) {
+	stmt.cond->accept(*this);
 
-	ASTNode* otherwise;
-	if (stmt->otherwise)
-		otherwise = get(stmt->otherwise);
+	ASTNodePtr otherwise;
+	if (stmt.otherwise)
+		otherwise = get(stmt.otherwise);
 	else
-		otherwise = new NopNode(stmt->token);
+		otherwise = std::make_unique<NopNode>(stmt.token);
 
-	ret( new IfNode(stmt->token, stmt->cond, get(stmt->then), otherwise) );
+	ret( std::make_unique<IfNode>(stmt.token, std::move(stmt.cond), get(stmt.then), std::move(otherwise)) );
 }
 
 
-void Elaborator::visit(WhileStmt* stmt) {
-	stmt->cond->accept(*this);
-	ret( new WhileNode(stmt->token, stmt->cond, get(stmt->body)) );
+void Elaborator::visit(WhileStmt& stmt) {
+	stmt.cond->accept(*this);
+	ret( std::make_unique<WhileNode>(stmt.token, std::move(stmt.cond), get(stmt.body)) );
 }
 
 
-void Elaborator::visit(ForStmt* stmt) {
-	if (stmt->init) stmt->init->accept(*this);
-	stmt->cond->accept(*this);
-	if (stmt->step) stmt->step->accept(*this);
+void Elaborator::visit(ForStmt& stmt) {
+	stmt.cond->accept(*this);
 
-	ASTNode* body = get(stmt->body);
+	ASTNodePtr body = get(stmt.body);
 
-	if (stmt->step) {
-		if (dynamic_cast<DeclStmt*>(stmt->step))
-			errors.add("Cannot declare a variable here.", stmt->step->token);
-		body = new SeqNode(stmt->token, body, get(stmt->step));
+	if (stmt.step) {
+		if ( dynamic_cast<DeclStmt*>(stmt.step.get()) )
+			errors.add("Cannot declare a variable here.", stmt.step->token);
+		body = std::make_unique<SeqNode>(stmt.token, std::move(body), get(stmt.step));
 	}
 
-	ASTNode* node = new WhileNode(stmt->token, stmt->cond, body);
+	ASTNodePtr node = std::make_unique<WhileNode>(stmt.token, std::move(stmt.cond), std::move(body));
 
-	if (stmt->init) {
+	if (stmt.init) {
 		// lift up to a declNode if stmt->init is a decl
-		ret( seq(stmt->init, node) );
+		ret( seq(stmt.init, std::move(node)) );
 	}
 	else
-		ret(node);
+		ret( std::move(node) );
 }
 
 
-void Elaborator::visit(ReturnStmt* stmt) {
-	if (stmt->expr)
-		stmt->expr->accept(*this);
+void Elaborator::visit(ReturnStmt& stmt) {
+	if (stmt.expr)
+		stmt.expr->accept(*this);
 
-	ret( new ReturnNode(stmt->token, stmt->expr) );
+	ret( std::make_unique<ReturnNode>(stmt.token, std::move(stmt.expr)) );
 }
 
 
-void Elaborator::visit(AssignStmt* stmt) {
-	std::string id = getIdOrError(stmt->lvalue);
+void Elaborator::visit(AssignStmt& stmt) {
+	std::string id = getIdOrError(stmt.lvalue);
 
-	stmt->lvalue->accept(*this);
-	stmt->rvalue->accept(*this);
+	stmt.lvalue->accept(*this);
+	stmt.rvalue->accept(*this);
 
-	Expr* expr;
-	if (stmt->op == BinOp::EQL)
-		expr = stmt->rvalue;
-	else {
-		expr = new BinaryExpr(stmt->rvalue->token, stmt->op, stmt->lvalue, stmt->rvalue);
-	}
+	ExprPtr expr;
+	if (stmt.op == BinOp::EQL)
+		expr = std::move(stmt.rvalue);
+	else
+		expr = std::make_unique<BinaryExpr>(stmt.rvalue->token, stmt.op, std::move(stmt.lvalue), std::move(stmt.rvalue));
 
-	ret( new AssignNode(stmt->token, id, expr) );
+	ret( std::make_unique<AssignNode>(stmt.token, id, std::move(expr)) );
 }
 
 
-void Elaborator::visit(PostOpStmt* stmt) {
-	std::string id = getIdOrError(stmt->expr);
-	Expr* one = new LiteralExpr(stmt->token, 0x1);
-	Expr* rvalue = new BinaryExpr(stmt->token, stmt->op, stmt->expr, one);
+void Elaborator::visit(PostOpStmt& stmt) {
+	std::string id = getIdOrError(stmt.expr);
+	ExprPtr one = std::make_unique<LiteralExpr>(stmt.token, 0x1);
+	ExprPtr rvalue = std::make_unique<BinaryExpr>(stmt.token, stmt.op, std::move(stmt.expr), std::move(one));
 
-	ret( new AssignNode(stmt->token, id, rvalue) );
+	ret( std::make_unique<AssignNode>(stmt.token, id, std::move(rvalue)) );
 }
 
 
-void Elaborator::visit(ExprStmt* stmt) {
-	stmt->expr->accept(*this);
-	ret( new ExprNode(stmt->token, stmt->expr) );
+void Elaborator::visit(ExprStmt& stmt) {
+	stmt.expr->accept(*this);
+	ret( std::make_unique<ExprNode>(stmt.token, std::move(stmt.expr)) );
 }
 
 
-void Elaborator::visit(CallExpr* expr) {
+void Elaborator::visit(CallExpr& expr) {
 	// FIXME: temporary hack
-	if (expr->identifier == "main")
-		expr->identifier = "__c0_main";
+	if (expr.identifier == "main")
+		expr.identifier = "__c0_main";
 
-	std::string id = expr->identifier;
+	std::string id = expr.identifier;
 
-	for (auto const& arg : expr->args)
+	for (auto const& arg : expr.args)
 		arg->accept(*this);
 
 	if (!decls.exists(id))
-		errors.add("Use of undeclared function: " + id + ".", expr->token);
+		errors.add("Use of undeclared function: " + id + ".", expr.token);
 }
 
 
-ASTNode* Elaborator::seq(Stmt* stmt, ASTNode* node) {
-	if (dynamic_cast<DeclStmt*>(stmt)) {
+ASTNodePtr Elaborator::seq(StmtPtr& stmt, ASTNodePtr node) {
+	if ( auto declStmt = dynamic_cast<DeclStmt*>(stmt.get()) ) {
 		// patch decl node
-		DeclNode* decl = static_cast<DeclNode*>(get(stmt));
-		ASTNode* scope = decl->scope;
+		visit(*declStmt);
+		DeclNode* decl = dynamic_cast<DeclNode*>(retval.release());
 
-		if (scope)
-			decl->scope = new SeqNode(scope->token, scope, node);
+		if (decl->scope)
+			decl->scope = std::make_unique<SeqNode>(decl->token, std::move(decl->scope), std::move(node));
 		else
-			decl->scope = node;
+			decl->scope = std::move(node);
 
-		return decl;
+		return std::unique_ptr<DeclNode>(decl);
 	}
 
-	return new SeqNode(stmt->token, get(stmt), node);
+	return std::make_unique<SeqNode>(stmt->token, get(stmt), std::move(node));
 }
 
 
-void Elaborator::ret(ASTNode* stmt) {
-	retval = stmt;
+void Elaborator::ret(ASTNodePtr stmt) {
+	retval = std::move(stmt);
 }
 
 
-ASTNode* Elaborator::get(Stmt* stmt) {
+ASTNodePtr Elaborator::get(StmtPtr& stmt) {
 	stmt->accept(*this);
-	ASTNode* node = retval;
-	retval = nullptr;
-	return node;
+	return std::move(retval);
 }
 
 
-void Elaborator::emit(FunNode* node) {
+void Elaborator::emit(FunNodePtr node) {
 	std::string id = node->id;
 	if (defnNames.find(id) != defnNames.end())
 		errors.add("Cannot redefine function", node->token);
 	else {
 		defnNames.insert(id);
-		defns.push_back(node);
+		defns.emplace_back( std::move(node) );
 	}
 }
 
 
-std::string Elaborator::getIdOrError(Expr* expr) {
-	IdExpr* idExpr = dynamic_cast<IdExpr*>(expr);
+std::string Elaborator::getIdOrError(ExprPtr& expr) {
+	IdExpr* idExpr = dynamic_cast<IdExpr*>(expr.get());
 
 	if (!idExpr) {
 		errors.add("Invalid lvalue", expr->token);

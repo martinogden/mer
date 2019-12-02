@@ -12,21 +12,21 @@ typedef Set<std::string> VarSet;
 // Ensure all vars initialized before use
 class UseChecker : public ASTVisitor {
 private:
-	ASTNode* root;
+	FunNodePtr& root;
 	VarSet init;
 	VarSet decl;
 
-	void visit(FunNode*) override;
-	void visit(AssignNode*) override;
-	void visit(IfNode*) override;
-	void visit(WhileNode*) override;
-	void visit(ReturnNode*) override;
-	void visit(NopNode*) override;
-	void visit(SeqNode*) override;
-	void visit(DeclNode*) override;
-	void visit(ExprNode*) override;
+	void visit(FunNode&) override;
+	void visit(AssignNode&) override;
+	void visit(IfNode&) override;
+	void visit(WhileNode&) override;
+	void visit(ReturnNode&) override;
+	void visit(NopNode&) override;
+	void visit(SeqNode&) override;
+	void visit(DeclNode&) override;
+	void visit(ExprNode&) override;
 
-	void check(Expr* expr);
+	void check(ExprPtr& expr);
 
 	void setInit(VarSet set);
 	void setDecl(VarSet set);
@@ -36,6 +36,6 @@ private:
 public:
 	Errors errors;
 
-	UseChecker(ASTNode*);
+	UseChecker(FunNodePtr&);
 	void run();
 };

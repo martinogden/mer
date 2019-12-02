@@ -1,26 +1,31 @@
 #pragma once
 #include <map>
+#include <memory>
 #include <set>
+#include <vector>
 #include "token.hpp"
 
 
 class NullParser;
 class LeftParser;
 
+typedef std::shared_ptr<NullParser> NullParserPtr;
+typedef std::shared_ptr<LeftParser> LeftParserPtr;
+
 
 class ParserSpec {
 private:
 	// TODO write hash function for TokenType so we
 	// can use the (faster lookup) unordered_(map|set)
-	std::map<TokenType, NullParser*> null;
-	std::map<TokenType, LeftParser*> left;
+	std::map<TokenType, NullParserPtr> null;
+	std::map<TokenType, LeftParserPtr> left;
 
 public:
-	void add(TokenType type, NullParser* parser);
-	void add(std::set<TokenType> types, NullParser* parser);
-	void add(TokenType type, LeftParser* parser);
-	void add(std::set<TokenType> types, LeftParser* parser);
+	void add(TokenType type, NullParserPtr parser);
+	void add(const std::set<TokenType>& types, NullParserPtr parser);
+	void add(TokenType type, LeftParserPtr parser);
+	void add(const std::set<TokenType>& types, LeftParserPtr parser);
 
-	NullParser* getNullParser(TokenType type);
-	LeftParser* getLeftParser(TokenType type);
+	NullParserPtr getNullParser(TokenType type);
+	LeftParserPtr getLeftParser(TokenType type);
 };

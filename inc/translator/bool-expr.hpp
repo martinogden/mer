@@ -7,14 +7,14 @@
 
 class BoolExprTranslator : public Visitor {
 private:
-	IRTCmd* retval;
+	IRTCmdPtr retval;
 	ExprTranslator& tr;
 
 	std::string l1;
 	std::string l2;
 
-	void ret(IRTCmd*);
-	void ret(std::vector<IRTCmd*>);
+	void ret(IRTCmdPtr);
+	void ret(std::vector<IRTCmdPtr>);
 
 	std::string getTrueLabel();
 	std::string getFalseLabel();
@@ -22,11 +22,11 @@ private:
 public:
 	BoolExprTranslator(ExprTranslator&);
 
-	void visit(TernaryExpr*) override;
-	void visit(BinaryExpr*) override;
-	void visit(UnaryExpr*) override;
-	void visit(LiteralExpr*) override;
-	void visit(IdExpr*) override;
+	void visit(TernaryExpr&) override;
+	void visit(BinaryExpr&) override;
+	void visit(UnaryExpr&) override;
+	void visit(LiteralExpr&) override;
+	void visit(IdExpr&) override;
 
-	IRTCmd* get(Expr*, std::string, std::string);
+	IRTCmdPtr get(ExprPtr, std::string, std::string);
 };

@@ -14,7 +14,7 @@ public:
 
 	void append(Errors&);
 	void add(const std::string&);
-	void add(const std::string&, Token&);
+	void add(const std::string&, Token);
 	std::vector<std::string>& get();
 	bool exist();
 };

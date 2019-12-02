@@ -57,7 +57,7 @@ public:
 };
 
 
-std::vector<Operand> mcs(Graph<Operand>* G, Colors& precoloring) {
+std::vector<Operand> mcs(IGPtr& G, Colors& precoloring) {
 	uint n = G->numVertices();
 	assert(n > 0);
 
@@ -109,7 +109,7 @@ inline uint leastUnusedColor(std::unordered_set<Operand>& vertices, Colors& colo
 }
 
 
-Colors greedyColor(Graph<Operand>* G, std::vector<Operand>& order, Colors& precoloring) {
+Colors greedyColor(IGPtr& G, std::vector<Operand>& order, Colors& precoloring) {
 	Colors colors;
 
 	// precolor vertices
@@ -145,7 +145,7 @@ Alloc toColoring(const Colors& colors) {
 
 Alloc regAlloc(X86Fun& fun) {
 	IGBuilder builder(fun);
-	Graph<Operand>* IG = builder.run();
+	IGPtr IG = builder.run();
 
 	Colors precoloring = getPrecoloring(fun.code);
 	std::vector<Operand> order = mcs(IG, precoloring);

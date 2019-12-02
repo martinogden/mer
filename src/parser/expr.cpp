@@ -8,19 +8,19 @@ CallParser::CallParser(int lbp) :
 {}
 
 
-Expr* CallParser::parse(Expr* left, Token& token, PrattParser& parser) {
-	std::vector<Expr*> args;
+ExprPtr CallParser::parse(ExprPtr left, Token& token, PrattParser& parser) {
+	std::vector<ExprPtr> args;
 
 	while (!parser.isAtEnd() && !parser.match(TokenType::RPAREN)) {
-		Expr* arg = parser.expression(LOW);
-		args.push_back(arg);
+		ExprPtr arg = parser.expression(LOW);
+		args.push_back( std::move(arg) );
 
 		if (!parser.accept(TokenType::COMMA))
 			break;
 	}
 	parser.expect(TokenType::RPAREN);
 
-	return new CallExpr(token, left->token.lexeme, args);
+	return std::make_unique<CallExpr>(token, left->token.lexeme, std::move(args));
 }
 
 
@@ -29,11 +29,11 @@ TernaryParser::TernaryParser(int lbp) :
 {}
 
 
-Expr* TernaryParser::parse(Expr* cond, Token& token, PrattParser& parser) {
-	Expr* then = parser.expression( getRBP() );
+ExprPtr TernaryParser::parse(ExprPtr cond, Token& token, PrattParser& parser) {
+	ExprPtr then = parser.expression( getRBP() );
 	parser.expect(TokenType::COLON);
-	Expr* otherwise = parser.expression( getRBP() );
-	return new TernaryExpr(token, cond, then, otherwise);
+	ExprPtr otherwise = parser.expression( getRBP() );
+	return std::make_unique<TernaryExpr>(token, std::move(cond), std::move(then), std::move(otherwise));
 }
 
 
@@ -54,10 +54,10 @@ BinaryParser::BinaryParser(int lbp, int rbp, Assoc assoc) :
 {}
 
 
-Expr* BinaryParser::parse(Expr* left, Token& token, PrattParser& parser) {
+ExprPtr BinaryParser::parse(ExprPtr left, Token& token, PrattParser& parser) {
 	BinOp op = toBinOp(token.type);
-	Expr* right = parser.expression( getRBP() );
-	return new BinaryExpr(token, op, left, right);
+	ExprPtr right = parser.expression( getRBP() );
+	return std::make_unique<BinaryExpr>(token, op, std::move(left), std::move(right));
 }
 
 
@@ -75,10 +75,10 @@ UnaryParser::UnaryParser(int bp) :
 	NullParser(bp)
 {}
 
-Expr* UnaryParser::parse(Token& token, PrattParser& parser) {
+ExprPtr UnaryParser::parse(Token& token, PrattParser& parser) {
 	UnOp op = toUnOp(token.type);
-	Expr* expr = parser.expression( getBP() );
-	return new UnaryExpr(token, op, expr);
+	ExprPtr expr = parser.expression( getBP() );
+	return std::make_unique<UnaryExpr>(token, op, std::move(expr));
 }
 
 
@@ -87,14 +87,14 @@ LiteralParser::LiteralParser(int bp) :
 {}
 
 
-Expr* LiteralParser::parse(Token& token, PrattParser& parser) {
+ExprPtr LiteralParser::parse(Token& token, PrattParser& parser) {
 	switch(token.type) {
 		case TokenType::NUM:
-			return new LiteralExpr(token, token.value);
+			return std::make_unique<LiteralExpr>(token, token.value);
 		case TokenType::TRUE:
-			return new LiteralExpr(token, true);
+			return std::make_unique<LiteralExpr>(token, true);
 		case TokenType::FALSE:
-			return new LiteralExpr(token, false);
+			return std::make_unique<LiteralExpr>(token, false);
 		default:
 			// should never get here
 			throw ParseError("Invalid literal", token);
@@ -107,8 +107,8 @@ IdentParser::IdentParser(int bp) :
 {}
 
 
-Expr* IdentParser::parse(Token& token, PrattParser& parser) {
-	return new IdExpr(token, token.lexeme);
+ExprPtr IdentParser::parse(Token& token, PrattParser& parser) {
+	return std::make_unique<IdExpr>(token, token.lexeme);
 }
 
 
@@ -117,8 +117,8 @@ ParensParser::ParensParser(int bp) :
 {}
 
 
-Expr* ParensParser::parse(Token& token, PrattParser& parser) {
-	Expr* expr = parser.expression( getBP() );
+ExprPtr ParensParser::parse(Token& token, PrattParser& parser) {
+	ExprPtr expr = parser.expression( getBP() );
 	parser.expect(TokenType::RPAREN);
-	return expr;
+	return std::move(expr);
 }

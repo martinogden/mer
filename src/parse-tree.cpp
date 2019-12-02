@@ -12,8 +12,7 @@ Stmt::Stmt(Token token) :
 {}
 
 
-FunDecl::FunDecl(Token token, std::string identifier,
-                 Token type, std::vector<DeclStmt*> params) :
+FunDecl::FunDecl(Token token, std::string identifier, Token type, std::vector<DeclStmtPtr> params) :
 	Stmt(std::move(token)),
 	type(std::move(type)),
 	identifier(std::move(identifier)),
@@ -21,32 +20,20 @@ FunDecl::FunDecl(Token token, std::string identifier,
 {}
 
 
-FunDecl::~FunDecl() {
-	for (auto const& param : params)
-		delete param;
-}
-
-
 void FunDecl::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-FunDefn::FunDefn(Token token, FunDecl* decl, Stmt* body) :
+FunDefn::FunDefn(Token token, FunDeclPtr decl, StmtPtr body) :
 	Stmt(std::move(token)),
-	decl(decl),
-	body(body)
+	decl(std::move(decl)),
+	body(std::move(body))
 {}
 
 
-FunDefn::~FunDefn() {
-	delete decl;
-	delete body;
-}
-
-
 void FunDefn::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
@@ -57,250 +44,169 @@ TypedefStmt::TypedefStmt(Token token, Token type, Token alias) :
 {}
 
 
-TypedefStmt::~TypedefStmt() = default;
-
-
 void TypedefStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
 
-DeclStmt::DeclStmt(Token token, std::string identifier, Token type, Expr* expr) :
+DeclStmt::DeclStmt(Token token, std::string identifier, Token type, ExprPtr expr) :
 	Stmt(std::move(token)),
 	type(std::move(type)),
 	identifier(std::move(identifier)),
-	expr(expr)
+	expr(std::move(expr))
 {}
-
-
-DeclStmt::~DeclStmt() {
-	delete expr;
-}
 
 
 void DeclStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-IfStmt::IfStmt(Token token, Expr* cond, Stmt* then, Stmt* otherwise) :
+IfStmt::IfStmt(Token token, ExprPtr cond, StmtPtr then, StmtPtr otherwise) :
 	Stmt(std::move(token)),
-	cond(cond),
-	then(then),
-	otherwise(otherwise)
+	cond(std::move(cond)),
+	then(std::move(then)),
+	otherwise(std::move(otherwise))
 {}
-
-
-IfStmt::~IfStmt() {
-	delete cond;
-	delete then;
-	delete otherwise;
-}
 
 
 void IfStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-WhileStmt::WhileStmt(Token token, Expr* cond, Stmt* body) :
+WhileStmt::WhileStmt(Token token, ExprPtr cond, StmtPtr body) :
 	Stmt(std::move(token)),
-	cond(cond),
-	body(body)
+	cond(std::move(cond)),
+	body(std::move(body))
 {}
-
-
-WhileStmt::~WhileStmt() {
-	delete cond;
-	delete body;
-}
 
 
 void WhileStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-ForStmt::ForStmt(Token token, Stmt* init, Expr* cond, Stmt* step, Stmt* body) :
+ForStmt::ForStmt(Token token, StmtPtr init, ExprPtr cond, StmtPtr step, StmtPtr body) :
 	Stmt(std::move(token)),
-	init(init),
-	cond(cond),
-	step(step),
-	body(body)
+	init(std::move(init)),
+	cond(std::move(cond)),
+	step(std::move(step)),
+	body(std::move(body))
 {}
 
 
-ForStmt::~ForStmt() {
-	delete init;
-	delete cond;
-	delete step;
-	delete body;
-}
-
-
 void ForStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-ReturnStmt::ReturnStmt(Token token, Expr* expr) :
+ReturnStmt::ReturnStmt(Token token, ExprPtr expr) :
 	Stmt(std::move(token)),
-	expr(expr)
+	expr(std::move(expr))
 {}
 
 
 void ReturnStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-ReturnStmt::~ReturnStmt() {
-	delete expr;
-}
-
-
-BlockStmt::BlockStmt(Token token, std::vector<Stmt*> statements) :
+BlockStmt::BlockStmt(Token token, std::vector<StmtPtr> statements) :
 	Stmt(std::move(token)),
 	statements(std::move(statements))
 {}
 
 
-BlockStmt::~BlockStmt() {
-	for (auto stmt : statements)
-		delete stmt;
-}
-
-
 void BlockStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-ExprStmt::ExprStmt(Token token, Expr* expr) :
+ExprStmt::ExprStmt(Token token, ExprPtr expr) :
 	Stmt(std::move(token)),
-	expr(expr)
+	expr(std::move(expr))
 {}
 
 
-ExprStmt::~ExprStmt() {
-	delete expr;
-}
-
-
-AssignStmt::AssignStmt(Token token, BinOp op, Expr* lvalue, Expr* rvalue) :
+AssignStmt::AssignStmt(Token token, BinOp op, ExprPtr lvalue, ExprPtr rvalue) :
 	Stmt(std::move(token)),
 	op(op),
-	lvalue(lvalue),
-	rvalue(rvalue)
+	lvalue(std::move(lvalue)),
+	rvalue(std::move(rvalue))
 {}
-
-
-AssignStmt::~AssignStmt() {
-	delete lvalue;
-	delete rvalue;
-}
 
 
 void AssignStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-PostOpStmt::PostOpStmt(Token token, BinOp op, Expr* expr) :
+PostOpStmt::PostOpStmt(Token token, BinOp op, ExprPtr expr) :
 	Stmt(std::move(token)),
 	op(op),
-	expr(expr)
+	expr(std::move(expr))
 {}
 
 
-PostOpStmt::~PostOpStmt() {
-	delete expr;
-}
-
-
 void PostOpStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
 void ExprStmt::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-CallExpr::CallExpr(Token token, std::string identifier, std::vector<Expr*> args) :
+CallExpr::CallExpr(Token token, std::string identifier, std::vector<ExprPtr> args) :
 	Expr(std::move(token)),
 	identifier(std::move(identifier)),
-	args(std::move(args)),
-	decl(nullptr)
+	args(std::move(args))
 {}
-
-
-CallExpr::~CallExpr() {
-	for (auto const& arg : args)
-		delete arg;
-}
 
 
 void CallExpr::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-TernaryExpr::TernaryExpr(Token token, Expr* cond, Expr* then, Expr* otherwise) :
+TernaryExpr::TernaryExpr(Token token, ExprPtr cond, ExprPtr then, ExprPtr otherwise) :
 	Expr(std::move(token)),
-	cond(cond),
-	then(then),
-	otherwise(otherwise)
+	cond(std::move(cond)),
+	then(std::move(then)),
+	otherwise(std::move(otherwise))
 {}
-
-
-TernaryExpr::~TernaryExpr() {
-	delete cond;
-	delete then;
-	delete otherwise;
-}
 
 
 void TernaryExpr::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-BinaryExpr::BinaryExpr(Token token, BinOp op, Expr* left, Expr* right) :
+BinaryExpr::BinaryExpr(Token token, BinOp op, ExprPtr left, ExprPtr right) :
 	Expr(std::move(token)),
 	op(op),
-	left(left),
-	right(right)
+	left(std::move(left)),
+	right(std::move(right))
 {}
-
-
-BinaryExpr::~BinaryExpr() {
-	delete left;
-	delete right;
-}
 
 
 void BinaryExpr::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-UnaryExpr::UnaryExpr(Token token, UnOp op, Expr* expr) :
+UnaryExpr::UnaryExpr(Token token, UnOp op, ExprPtr expr) :
 	Expr(std::move(token)),
 	op(op),
-	expr(expr)
+	expr(std::move(expr))
 {}
 
 
-UnaryExpr::~UnaryExpr() {
-	delete expr;
-}
-
-
 void UnaryExpr::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
@@ -317,7 +223,7 @@ LiteralExpr::LiteralExpr(Token token, bool value) :
 
 
 void LiteralExpr::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
@@ -328,15 +234,10 @@ IdExpr::IdExpr(Token token, std::string lexeme) :
 
 
 void IdExpr::accept(Visitor& visitor) {
-	visitor.visit(this);
+	visitor.visit(*this);
 };
 
 
-ParseTree::ParseTree(BlockStmt* block) :
-	block(block)
+ParseTree::ParseTree(std::vector<StmtPtr> decls) :
+	decls(std::move(decls))
 {}
-
-
-ParseTree::~ParseTree() {
-	delete block;
-}

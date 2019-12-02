@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -7,21 +8,22 @@ template <typename T>
 class Scope {
 private:
 	std::unordered_map<std::string, T> values;
-	Scope<T>* encl;
 
 	T* find(std::string key) {
 		if (values.find(key) != values.end())
 			return &values[key];
 
-		if (encl)
-			return encl->find(key);
+		if (enclosing)
+			return enclosing->find(key);
 
 		return nullptr;
 	}
 
 public:
-	Scope(Scope<T>* encl=nullptr) :
-		encl(encl)
+	std::unique_ptr<Scope<T>> enclosing;
+
+	Scope(std::unique_ptr<Scope<T>> enclosing=nullptr) :
+		enclosing(std::move(enclosing))
 	{}
 
 	bool exists(const std::string& key) {
@@ -39,21 +41,17 @@ public:
 		assert (value && "key does not exist");
 		return *value;
 	}
-
-	Scope<T>* enclosing() {
-		return encl;
-	}
 };
 
 
 template <typename T>
 class SymTab {
 private:
-	Scope<T>* scope;
+	std::unique_ptr<Scope<T>> scope;
 
 public:
 	SymTab() :
-		scope(new Scope<T>())
+		scope(std::make_unique<Scope<T>>())
 	{}
 
 	// the next four procedures are proxies
@@ -71,13 +69,11 @@ public:
 	}
 
 	void enter() {
-		scope = new Scope<T>(scope);
+		scope = std::make_unique<Scope<T>>( std::move(scope) );
 	}
 
 	void exit() {
-		Scope<T>* enclosing = scope->enclosing();
-		assert(enclosing && "stack underflow");
-		delete scope;
-		scope = enclosing;
+		assert(scope->enclosing != nullptr && "stack underflow");
+		scope = std::move(scope->enclosing);
 	}
 };
