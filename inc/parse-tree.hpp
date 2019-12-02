@@ -36,7 +36,7 @@ public:
 
 	FunDecl(Token token, std::string identifier,
 	        Token type, std::vector<DeclStmt*> params);
-	~FunDecl();
+	~FunDecl() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -47,7 +47,7 @@ public:
 	Stmt* body;
 
 	FunDefn(Token token, FunDecl* decl, Stmt* body);
-	~FunDefn();
+	~FunDefn() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -58,7 +58,7 @@ public:
 	Token alias;
 
 	TypedefStmt(Token token, Token type, Token alias);
-	~TypedefStmt();
+	~TypedefStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -70,7 +70,7 @@ public:
 	Expr* expr;
 
 	DeclStmt(Token token, std::string identifier, Token type, Expr* expr);
-	~DeclStmt();
+	~DeclStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -82,7 +82,7 @@ public:
 	Stmt* otherwise;
 
 	IfStmt(Token token, Expr* cond, Stmt* then, Stmt* otherwise);
-	~IfStmt();
+	~IfStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -93,7 +93,7 @@ public:
 	Stmt* body;
 
 	WhileStmt(Token token, Expr* cond, Stmt* body);
-	~WhileStmt();
+	~WhileStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -106,7 +106,7 @@ public:
 	Stmt* body;
 
 	ForStmt(Token token, Stmt* init, Expr* cond, Stmt* step, Stmt* body);
-	~ForStmt();
+	~ForStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -116,7 +116,7 @@ public:
 	Expr* expr;
 
 	ReturnStmt(Token token, Expr* expr);
-	~ReturnStmt();
+	~ReturnStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -126,7 +126,7 @@ public:
 	std::vector<Stmt*> statements;
 
 	BlockStmt(Token token, std::vector<Stmt*> statements);
-	~BlockStmt();
+	~BlockStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -136,7 +136,7 @@ public:
 	Expr* expr;
 
 	ExprStmt(Token token, Expr* expr);
-	~ExprStmt();
+	~ExprStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -148,7 +148,7 @@ public:
 	Expr* rvalue;
 
 	AssignStmt(Token token, BinOp op, Expr* lvalue, Expr* rvalue);
-	~AssignStmt();
+	~AssignStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -159,7 +159,7 @@ public:
 	Expr* expr;
 
 	PostOpStmt(Token token, BinOp op, Expr* expr);
-	~PostOpStmt();
+	~PostOpStmt() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -172,7 +172,7 @@ public:
 	FunDecl* decl;
 
 	CallExpr(Token token, std::string identifier, std::vector<Expr*> args);
-	~CallExpr();
+	~CallExpr() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -184,7 +184,7 @@ public:
 	Expr* otherwise;
 
 	TernaryExpr(Token token, Expr* cond, Expr* then, Expr* otherwise);
-	~TernaryExpr();
+	~TernaryExpr() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -196,7 +196,7 @@ public:
 	Expr* right;
 
 	BinaryExpr(Token token, BinOp op, Expr* left, Expr* right);
-	~BinaryExpr();
+	~BinaryExpr() override;
 	void accept(Visitor& visitor) override;
 };
 
@@ -207,7 +207,7 @@ public:
 	Expr* expr;
 
 	UnaryExpr(Token token, UnOp op, Expr* expr);
-	~UnaryExpr();
+	~UnaryExpr() override;
 	void accept(Visitor& visitor) override;
 };
 

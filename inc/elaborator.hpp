@@ -20,20 +20,20 @@ private:
 	std::vector<FunNode*> defns;
 	std::unordered_set<std::string> defnNames;
 
-	void visit(FunDecl*);
-	void visit(FunDefn*);
-	void visit(TypedefStmt*);
-	void visit(BlockStmt*);
-	void visit(IfStmt*);
-	void visit(WhileStmt*);
-	void visit(ForStmt*);
-	void visit(ReturnStmt*);
-	void visit(DeclStmt*);
-	void visit(AssignStmt*);
-	void visit(PostOpStmt*);
-	void visit(ExprStmt*);
+	void visit(FunDecl*) override;
+	void visit(FunDefn*) override;
+	void visit(TypedefStmt*) override;
+	void visit(BlockStmt*) override;
+	void visit(IfStmt*) override;
+	void visit(WhileStmt*) override;
+	void visit(ForStmt*) override;
+	void visit(ReturnStmt*) override;
+	void visit(DeclStmt*) override;
+	void visit(AssignStmt*) override;
+	void visit(PostOpStmt*) override;
+	void visit(ExprStmt*) override;
 
-	void visit(CallExpr*);
+	void visit(CallExpr*) override;
 
 	void ret(ASTNode* stmt);
 	ASTNode* get(Stmt* stmt);
@@ -53,5 +53,4 @@ public:
 	Elaborator(ParseTree* tree);
 	std::vector<FunNode*> run();
 	SymTab<FunType> getDecls();
-
 };

@@ -34,5 +34,5 @@ public:
 	Token token;
 
 	ParseError(std::string msg, Token token);
-	virtual const char* what() const noexcept;
+	const char* what() const noexcept override;
 };

@@ -42,12 +42,12 @@ public:
 	IRTCmd* rest;
 
 	SeqCmd(IRTCmd* head, IRTCmd* rest);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
 class NopCmd : public IRTCmd {
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -58,7 +58,7 @@ public:
 	std::vector<std::string> args;
 
 	CallCmd(std::string var, std::string label, std::vector<std::string> args);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -72,7 +72,7 @@ public:
 	IRTExpr* right;
 
 	EffAssignCmd(std::string var, BinOp op, IRTExpr* left, IRTExpr* right);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -83,7 +83,7 @@ public:
 	IRTExpr* value;
 
 	AssignCmd(std::string var, IRTExpr* value);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -92,7 +92,7 @@ public:
 	std::string name;
 
 	LabelCmd(std::string name);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -113,7 +113,7 @@ public:
 	std::string otherwise;
 
 	IfCmd(Comparison cmp, std::string then, std::string otherwise);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -122,7 +122,7 @@ public:
 	std::string label;
 
 	GotoCmd(std::string label);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -131,7 +131,7 @@ public:
 	IRTExpr* expr;
 
 	ReturnCmd(IRTExpr* expr);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -142,7 +142,7 @@ public:
 	IRTExpr* expr;
 
 	CmdExpr(IRTCmd* cmd, IRTExpr* expr);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -151,7 +151,7 @@ public:
 	int value;
 
 	IntExpr(int value);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -160,7 +160,7 @@ public:
 	std::string name;
 
 	VarExpr(std::string name);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };
 
 
@@ -172,5 +172,5 @@ public:
 	IRTExpr* right;
 
 	PairExpr(BinOp op, IRTExpr* left, IRTExpr* right);
-	void accept(IRTVisitor& visitor);
+	void accept(IRTVisitor& visitor) override;
 };

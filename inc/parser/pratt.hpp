@@ -44,5 +44,5 @@ protected:
 public:
 	Expr* expression(int rbp=0);
 	PrattParser(ParserSpec&& spec, Lexer& lexer);
-	virtual ~PrattParser() {}
+	~PrattParser() override {};
 };

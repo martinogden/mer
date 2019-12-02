@@ -9,15 +9,15 @@ private:
 	std::vector<FunNode*>& nodes;
 	std::string retval;
 
-	void visit(FunNode*);
-	void visit(AssignNode*);
-	void visit(IfNode*);
-	void visit(WhileNode*);
-	void visit(ReturnNode*);
-	void visit(NopNode*);
-	void visit(SeqNode*);
-	void visit(DeclNode*);
-	void visit(ExprNode*);
+	void visit(FunNode*) override;
+	void visit(AssignNode*) override;
+	void visit(IfNode*) override;
+	void visit(WhileNode*) override;
+	void visit(ReturnNode*) override;
+	void visit(NopNode*) override;
+	void visit(SeqNode*) override;
+	void visit(DeclNode*) override;
+	void visit(ExprNode*) override;
 
 	void ret(std::string s);
 	std::string get(ASTNode* node);

@@ -10,7 +10,7 @@ private:
 	Expr* expr;
 	Set<std::string>& scope;
 
-	void visit(IdExpr*);
+	void visit(IdExpr*) override;
 public:
 	Errors errors;
 

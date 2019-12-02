@@ -33,7 +33,7 @@ public:
 
 	FunNode(Token token, std::string id, Type type,
 	        std::vector<Param> params, ASTNode* body);
-	~FunNode();
+	~FunNode() override;
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -44,7 +44,7 @@ public:
 	Expr* expr;
 
 	AssignNode(Token token, std::string id, Expr* expr);
-	~AssignNode();
+	~AssignNode() override;
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -56,7 +56,7 @@ public:
 	ASTNode* otherwise;
 
 	IfNode(Token token, Expr* cond, ASTNode* then, ASTNode* otherwise);
-	~IfNode();
+	~IfNode() override;
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -67,7 +67,7 @@ public:
 	ASTNode* body;
 
 	WhileNode(Token token, Expr* cond, ASTNode* body);
-	~WhileNode();
+	~WhileNode() override;
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -77,7 +77,7 @@ public:
 	Expr* expr;
 
 	ReturnNode(Token token, Expr* expr);
-	~ReturnNode();
+	~ReturnNode() override;
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -96,7 +96,7 @@ public:
 	ASTNode* rest;
 
 	SeqNode(Token token, ASTNode* head, ASTNode* rest);
-	~SeqNode();
+	~SeqNode() override;
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -108,7 +108,7 @@ public:
 	ASTNode* scope;
 
 	DeclNode(Token token, std::string id, Type type, ASTNode* scope);
-	~DeclNode();
+	~DeclNode() override;
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -118,6 +118,6 @@ public:
 	Expr* expr;
 
 	ExprNode(Token token, Expr* expr);
-	~ExprNode();
+	~ExprNode() override;
 	void accept(ASTVisitor& visitor) override;
 };

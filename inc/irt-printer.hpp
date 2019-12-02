@@ -10,22 +10,22 @@ private:
 	void ret(std::string);
 
 public:
-	void visit(IRTFun*);
+	void visit(IRTFun*) override;
 
-	void visit(SeqCmd*);
-	void visit(NopCmd*);
-	void visit(CallCmd*);
-	void visit(AssignCmd*);
-	void visit(EffAssignCmd*);
-	void visit(LabelCmd*);
-	void visit(IfCmd*);
-	void visit(GotoCmd*);
-	void visit(ReturnCmd*);
+	void visit(SeqCmd*) override;
+	void visit(NopCmd*) override;
+	void visit(CallCmd*) override;
+	void visit(AssignCmd*) override;
+	void visit(EffAssignCmd*) override;
+	void visit(LabelCmd*) override;
+	void visit(IfCmd*) override;
+	void visit(GotoCmd*) override;
+	void visit(ReturnCmd*) override;
 
-	void visit(CmdExpr*);
-	void visit(IntExpr*);
-	void visit(VarExpr*);
-	void visit(PairExpr*);
+	void visit(CmdExpr*) override;
+	void visit(IntExpr*) override;
+	void visit(VarExpr*) override;
+	void visit(PairExpr*) override;
 
 	std::string get(IRTFun*);
 	std::string get(IRTCmd*);

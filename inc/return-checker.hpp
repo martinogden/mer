@@ -9,14 +9,14 @@ private:
 	FunNode* node;
 	bool retval;
 
-	virtual void visit(AssignNode*);
-	virtual void visit(IfNode*);
-	virtual void visit(WhileNode*);
-	virtual void visit(ReturnNode*);
-	virtual void visit(NopNode*);
-	virtual void visit(SeqNode*);
-	virtual void visit(DeclNode*);
-	virtual void visit(ExprNode*);
+	void visit(AssignNode*) override;
+	void visit(IfNode*) override;
+	void visit(WhileNode*) override;
+	void visit(ReturnNode*) override;
+	void visit(NopNode*) override;
+	void visit(SeqNode*) override;
+	void visit(DeclNode*) override;
+	void visit(ExprNode*) override;
 
 	void ret(bool b);
 

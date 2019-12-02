@@ -39,15 +39,15 @@ enum Level {
 class CallParser : public LeftParser {
 public:
 	CallParser(int lbp=CALL);
-	Expr* parse(Expr* cond, Token& token, PrattParser& parser);
+	Expr* parse(Expr* cond, Token& token, PrattParser& parser) override;
 };
 
 
 class TernaryParser : public LeftParser {
 public:
 	TernaryParser(int lbp=TERN);
-	Expr* parse(Expr* cond, Token& token, PrattParser& parser);
-	int getRBP();
+	Expr* parse(Expr* cond, Token& token, PrattParser& parser) override;
+	int getRBP() override;
 };
 
 
@@ -58,34 +58,34 @@ private:
 public:
 	BinaryParser(int lbp, Assoc assoc=Assoc::LEFT);
 	BinaryParser(int lbp, int rbp, Assoc assoc);
-	Expr* parse(Expr* left, Token& token, PrattParser& parser);
-	int getRBP();
+	Expr* parse(Expr* left, Token& token, PrattParser& parser) override;
+	int getRBP() override;
 };
 
 
 class UnaryParser : public NullParser {
 public:
 	UnaryParser(int bp=UNARY);
-	Expr* parse(Token& token, PrattParser& parser);
+	Expr* parse(Token& token, PrattParser& parser) override;
 };
 
 
 class LiteralParser : public NullParser {
 public:
 	LiteralParser(int bp=LOW);
-	Expr* parse(Token& token, PrattParser& parser);
+	Expr* parse(Token& token, PrattParser& parser) override;
 };
 
 
 class IdentParser : public NullParser {
 public:
 	IdentParser(int bp=LOW);
-	Expr* parse(Token& token, PrattParser& parser);
+	Expr* parse(Token& token, PrattParser& parser) override;
 };
 
 
 class ParensParser : public NullParser {
 public:
 	ParensParser(int bp=RPAREN);
-	Expr* parse(Token& token, PrattParser& parser);
+	Expr* parse(Token& token, PrattParser& parser) override;
 };

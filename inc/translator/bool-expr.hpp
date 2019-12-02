@@ -22,11 +22,11 @@ private:
 public:
 	BoolExprTranslator(ExprTranslator&);
 
-	void visit(TernaryExpr*);
-	void visit(BinaryExpr*);
-	void visit(UnaryExpr*);
-	void visit(LiteralExpr*);
-	void visit(IdExpr*);
+	void visit(TernaryExpr*) override;
+	void visit(BinaryExpr*) override;
+	void visit(UnaryExpr*) override;
+	void visit(LiteralExpr*) override;
+	void visit(IdExpr*) override;
 
 	IRTCmd* get(Expr*, std::string, std::string);
 };
