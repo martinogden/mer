@@ -124,6 +124,7 @@ Colors greedyColor(Graph<Operand>* G, std::vector<Operand>& order, Colors& preco
 		// color vertex using least unused color among neighbors
 		std::unordered_set<Operand> adj = G->getAdj(u);
 		colors[u] = leastUnusedColor(adj, colors);
+		assert(colors[u] <= MAX_REG-2 && "TODO: register spilling");
 	}
 
 	return colors;
