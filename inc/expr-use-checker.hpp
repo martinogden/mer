@@ -7,7 +7,7 @@
 
 class ExprUseChecker : public Visitor {
 private:
-	Expr* expr;
+	Expr* root;
 	Set<std::string>& scope;
 
 	void visit(IdExpr*) override;

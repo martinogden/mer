@@ -38,17 +38,17 @@ IRTCmd* BoolExprTranslator::get(Expr* expr, std::string t, std::string f) {
 void BoolExprTranslator::visit(TernaryExpr* expr) {
 	std::string t = getTrueLabel();
 	std::string f = getFalseLabel();
-	std::string l1 = tr.freshLabel();
-	std::string l2 = tr.freshLabel();
+	std::string lbl1 = tr.freshLabel();
+	std::string lbl2 = tr.freshLabel();
 
-	IRTCmd* cond = get(expr->cond, l1, l2);
+	IRTCmd* cond = get(expr->cond, lbl1, lbl2);
 	IRTCmd* left = get(expr->then, t, f);
 	IRTCmd* right = get(expr->otherwise, t, f);
 
 	ret({
 		cond,
-		new LabelCmd(l1), left,
-		new LabelCmd(l2), right
+		new LabelCmd(lbl1), left,
+		new LabelCmd(lbl2), right
 	});
 }
 

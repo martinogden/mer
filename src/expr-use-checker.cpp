@@ -2,13 +2,13 @@
 
 
 ExprUseChecker::ExprUseChecker(Expr* expr, Set<std::string>& scope) :
-	expr(expr),
+	root(expr),
 	scope(scope)
 {}
 
 
 void ExprUseChecker::run() {
-	expr->accept(*this);
+	root->accept(*this);
 }
 
 

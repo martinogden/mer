@@ -6,7 +6,7 @@
 
 class ReturnChecker : public ASTVisitor {
 private:
-	FunNode* node;
+	FunNode* root;
 	bool retval;
 
 	void visit(AssignNode*) override;

@@ -9,7 +9,7 @@
 // Ensure all vars declared before initialization
 class InitChecker : public ASTVisitor {
 private:
-	ASTNode* node;
+	ASTNode* root;
 	Set<std::string> scope;
 
 	void visit(FunNode*) override;

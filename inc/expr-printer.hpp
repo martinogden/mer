@@ -6,7 +6,7 @@
 
 class ExprPrinter : public Visitor {
 private:
-	Expr* expr;
+	Expr* root;
 	std::string retval;
 
 	void visit(CallExpr*) override;

@@ -4,12 +4,12 @@
 
 
 UseChecker::UseChecker(ASTNode* node) :
-	node(node)
+	root(node)
 {}
 
 
 void UseChecker::run() {
-	node->accept(*this);
+	root->accept(*this);
 }
 
 
@@ -28,26 +28,26 @@ void UseChecker::visit(FunNode* node) {
 
 
 void UseChecker::visit(AssignNode* node) {
-	VarSet init = getInit();
+	VarSet init_ = getInit();
 
 	check(node->expr);
 
 	VarSet vars({node->id});
-	setInit(init | vars);
+	setInit(init_ | vars);
 }
 
 
 void UseChecker::visit(IfNode* node) {
-	VarSet init = getInit();
-	VarSet decl = getDecl();
+	VarSet init_ = getInit();
+	VarSet decl_ = getDecl();
 
 	check(node->cond);
 
 	node->then->accept(*this);
 	VarSet then = getInit();
 
-	setInit(init);
-	setDecl(decl);
+	setInit(init_);
+	setDecl(decl_);
 	node->otherwise->accept(*this);
 	VarSet ow = getInit();
 
@@ -57,24 +57,24 @@ void UseChecker::visit(IfNode* node) {
 
 
 void UseChecker::visit(WhileNode* node) {
-	VarSet init = getInit();
-	VarSet decl = getDecl();
+	VarSet init_ = getInit();
+	VarSet decl_ = getDecl();
 
 	check(node->cond);
 	node->body->accept(*this);
 
-	setInit(init);
-	setDecl(decl);
+	setInit(init_);
+	setDecl(decl_);
 }
 
 
 void UseChecker::visit(ReturnNode* node) {
-	VarSet decl = getDecl();
+	VarSet decl_ = getDecl();
 
 	if (node->expr)
 		check(node->expr);
 
-	setInit(decl);
+	setInit(decl_);
 }
 
 
@@ -88,14 +88,14 @@ void UseChecker::visit(SeqNode* node) {
 
 
 void UseChecker::visit(DeclNode* node) {
-	VarSet decl = getDecl();
+	VarSet decl_ = getDecl();
 	VarSet vars({node->id});
 
-	setDecl(decl | vars);
+	setDecl(decl_ | vars);
 	node->scope->accept(*this);
 
 	setInit(getInit() - vars);
-	setDecl(decl);
+	setDecl(decl_);
 }
 
 

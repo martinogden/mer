@@ -2,16 +2,16 @@
 
 
 ReturnChecker::ReturnChecker(FunNode* node) :
-	node(node)
+	root(node)
 {}
 
 
 void ReturnChecker::run() {
-	if (node->type == Type::VOID)
+	if (root->type == Type::VOID)
 		return;
 
-	if (!get(node))
-		errors.add("Function `" + node->id + "` may not return.", node->token);
+	if (!get(root))
+		errors.add("Function `" + root->id + "` may not return.", root->token);
 }
 
 

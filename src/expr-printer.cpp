@@ -4,13 +4,13 @@
 
 
 ExprPrinter::ExprPrinter(Expr* expr) :
-	expr(expr)
+	root(expr)
 {}
 
 
 std::string ExprPrinter::run() {
-	assert(expr);
-	return get(expr);
+	assert(root != nullptr);
+	return get(root);
 }
 
 

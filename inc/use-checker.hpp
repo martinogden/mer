@@ -12,7 +12,7 @@ typedef Set<std::string> VarSet;
 // Ensure all vars initialized before use
 class UseChecker : public ASTVisitor {
 private:
-	ASTNode* node;
+	ASTNode* root;
 	VarSet init;
 	VarSet decl;
 

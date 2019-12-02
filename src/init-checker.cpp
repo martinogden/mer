@@ -3,12 +3,12 @@
 
 
 InitChecker::InitChecker(ASTNode* node) :
-	node(node)
+	root(node)
 {}
 
 
 void InitChecker::run() {
-	node->accept(*this);
+	root->accept(*this);
 }
 
 
