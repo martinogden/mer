@@ -47,6 +47,5 @@ public:
 	virtual void visit(AssignStmt*);
 	virtual void visit(PostOpStmt*);
 
-	virtual ~Visitor() {}
+	virtual ~Visitor() = default;
 };
-

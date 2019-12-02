@@ -29,7 +29,7 @@ protected:
 public:
 	LeftParser(int lbp);
 	LeftParser(int lbp, int rbp);
-	virtual ~LeftParser() {}
+	virtual ~LeftParser() = default;
 
 	virtual int getLBP();
 	virtual int getRBP();
@@ -44,5 +44,5 @@ protected:
 public:
 	Expr* expression(int rbp=0);
 	PrattParser(ParserSpec&& spec, Lexer& lexer);
-	~PrattParser() override {};
+	~PrattParser() override = default;
 };

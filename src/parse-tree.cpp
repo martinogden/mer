@@ -57,7 +57,7 @@ TypedefStmt::TypedefStmt(Token token, Token type, Token alias) :
 {}
 
 
-TypedefStmt::~TypedefStmt() {}
+TypedefStmt::~TypedefStmt() = default;
 
 
 void TypedefStmt::accept(Visitor& visitor) {

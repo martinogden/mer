@@ -50,7 +50,7 @@ private:
 	std::unordered_set<T> elts;
 
 public:
-	Set() {}
+	Set() = default;
 
 	Set(std::unordered_set<T>&& elts) :
 		elts(elts)

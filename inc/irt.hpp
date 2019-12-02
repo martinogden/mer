@@ -13,14 +13,12 @@ public:
 
 class IRTExpr : public IRTNode {
 public:
-	virtual ~IRTExpr() = default;
 	virtual void accept(IRTVisitor& visitor) = 0;
 };
 
 
 class IRTCmd : public IRTNode {
 public:
-	virtual ~IRTCmd() = default;
 	virtual void accept(IRTVisitor& visitor) = 0;
 };
 

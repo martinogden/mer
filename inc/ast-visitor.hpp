@@ -24,5 +24,5 @@ public:
 	virtual void visit(DeclNode*);
 	virtual void visit(ExprNode*);
 
-	virtual ~ASTVisitor() {};
+	virtual ~ASTVisitor() = default;
 };

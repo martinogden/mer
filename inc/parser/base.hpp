@@ -24,7 +24,7 @@ public:
 	void consumeLine();
 
 	BaseParser(Lexer& lexer, TokenType terminator=TokenType::SEMICOLON);
-	virtual ~BaseParser() {}
+	virtual ~BaseParser() = default;
 };
 
 
