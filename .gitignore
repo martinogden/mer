@@ -33,6 +33,7 @@
 
 # Text editors
 .vscode
+.idea
 
 # Binaries
-bin/c0c
+bin
