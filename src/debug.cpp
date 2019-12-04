@@ -1,11 +1,11 @@
 #include <iomanip>
 #include <sstream>
-#include "token.hpp"
-#include "parse-tree.hpp"
-#include "operator.hpp"
+#include "cst/token.hpp"
+#include "cst/cst.hpp"
+#include "cst/operator.hpp"
 #include "graph.hpp"
-#include "operand.hpp"
-#include "inst.hpp"
+#include "inst/operand.hpp"
+#include "inst/inst.hpp"
 
 
 bool Token::operator==(const Token& other) const {

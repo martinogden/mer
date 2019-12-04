@@ -1,6 +1,6 @@
 #include <unordered_map>
 #include "graph.hpp"
-#include "operand.hpp"
+#include "inst/operand.hpp"
 #include "x86/ig-builder.hpp"
 #include "x86/regalloc.hpp"
 

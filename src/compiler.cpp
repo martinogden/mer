@@ -2,19 +2,19 @@
 #include <sstream>
 #include <set>
 #include "compiler.hpp"
-#include "lexer.hpp"
+#include "parser/lexer.hpp"
 #include "parser/parser.hpp"
-#include "return-checker.hpp"
-#include "type-checker.hpp"
-#include "elaborator.hpp"
-#include "codegen.hpp"
-#include "parse-tree-printer.hpp"
-#include "ast-printer.hpp"
-#include "init-checker.hpp"
-#include "use-checker.hpp"
-#include "translator/translator.hpp"
-#include "irt-printer.hpp"
-#include "generator.hpp"
+#include "sca/return-checker.hpp"
+#include "type/checker.hpp"
+#include "ast/elaborator.hpp"
+#include "inst/codegen.hpp"
+#include "cst/printer.hpp"
+#include "ast/printer.hpp"
+#include "sca/init-checker.hpp"
+#include "sca/use-checker.hpp"
+#include "irt/translator/translator.hpp"
+#include "irt/printer.hpp"
+#include "inst/generator.hpp"
 #include "graph.hpp"
 #include "x86/codegen.hpp"
 #include "x86/regalloc.hpp"
@@ -57,7 +57,7 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		return {false, join( parser.errors.get(), "\n" )};
 
 	if (stage == Stage::PARSE) {
-		TreePrinter printer(tree);
+		CSTPrinter printer(tree);
 		return {true, printer.run()};
 	}
 
