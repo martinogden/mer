@@ -1,5 +1,5 @@
 #include <unordered_map>
-#include "graph.hpp"
+#include "counter.hpp"
 #include "inst/operand.hpp"
 #include "regalloc/regalloc.hpp"
 #include "regalloc/ig-builder.hpp"
@@ -19,44 +19,6 @@ Colors getPrecoloring(InstFun& fun) {
 }
 
 
-// loosely based on Python's collections.Counter
-class Counter {
-private:
-	std::unordered_map<Operand, uint> counts;
-
-public:
-	Counter(const std::unordered_set<Operand>& keys) {
-		for (auto const& key : keys)
-			counts[key] = 0;
-	}
-
-	void incr(const Operand& key) {
-		assert(counts.find(key) != counts.end());
-		counts[key]++;
-	}
-
-	void erase(const Operand& key) {
-		counts.erase(key);
-	}
-
-	Operand getMostCommon() {
-		assert (!counts.empty());
-
-		auto const& item = *counts.begin();
-		uint maxCount = item.second;
-		Operand mostCommon = item.first;
-
-		for (auto const& item : counts) {
-			if (item.second > maxCount) {
-				maxCount = item.second;
-				mostCommon = item.first;
-			}
-		}
-		return mostCommon;
-	}
-};
-
-
 std::vector<Operand> mcs(IGPtr& G, Colors& precoloring) {
 	uint n = G->numVertices();
 	assert(n > 0);
@@ -64,7 +26,7 @@ std::vector<Operand> mcs(IGPtr& G, Colors& precoloring) {
 	std::unordered_set<Operand> V = G->getVertices();
 
 	std::vector<Operand> order(n);
-	Counter weights(V);
+	Counter<Operand> weights(V);
 
 	for (auto& c : precoloring) {
 		Operand u = c.first;
