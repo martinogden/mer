@@ -7,7 +7,6 @@ enum class Stage {
 	AST,
 	HIR,
 	LIR,
-	CODEGEN,
 	REGALLOC,
 	ASM,
 };

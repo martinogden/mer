@@ -187,9 +187,10 @@ X86Asm::OpCode toOpcode(Inst::OpCode opcode) {
 			return X86Asm::RET;
 		case Inst::CALL:
 			return X86Asm::CALL;
-		case Inst::ARG:
-			return X86Asm::CALL;  // !TODO fix
 		case Inst::LBL:
 			return X86Asm::LBL;
+		case Inst::ARG:
+		case Inst::ENTER:
+			throw 1; // TODO: we should never get here
 	}
 };

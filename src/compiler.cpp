@@ -17,7 +17,7 @@
 #include "inst/generator.hpp"
 #include "graph.hpp"
 #include "x86/codegen.hpp"
-#include "x86/regalloc.hpp"
+#include "regalloc/regalloc.hpp"
 #include "print-utils.hpp"
 
 
@@ -148,16 +148,8 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 			continue;
 		}
 
-		X86CodeGen x86codegen(fun, gen);
-		X86Fun x86fun = x86codegen.run();
 
-		if (stage == Stage::CODEGEN) {
-			for (auto& as : x86fun.code)
-				std::cout << as << std::endl;
-			continue;
-		}
-
-		Alloc alloc = regAlloc(x86fun);
+		Alloc alloc = regAlloc(fun);
 
 		if (stage == Stage::REGALLOC) {
 			for (const auto& pair : alloc) {
@@ -167,9 +159,13 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 			continue;
 		}
 
-		if (stage == Stage::ASM) {
-			x86fun = regAssign(x86fun, alloc);
+		fun = regAssign(fun, alloc);
 
+
+		X86CodeGen x86codegen(fun, alloc);
+		X86Fun x86fun = x86codegen.run();
+
+		if (stage == Stage::ASM) {
 			std::vector<Reg> saved_regs = getUsedRegs(x86fun, calleeSaved);
 
 			// TODO: extract to x86

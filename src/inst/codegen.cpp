@@ -31,6 +31,7 @@ Operand& CodeGen::get(IRTExprPtr& expr) {
 
 
 void CodeGen::visit(IRTFun& fun) {
+	emit({ Inst::ENTER });
 	fun.body->accept(*this);
 }
 
@@ -48,8 +49,8 @@ void CodeGen::visit(CallCmd& cmd) {
 	int i = 1;
 	for (auto const& arg : cmd.args)
 		emit({ Inst::ARG, i++, arg });
-	emit({ Inst::CALL, Operand::label(cmd.label), i-1 });
-	emit({ Inst::MOV, cmd.var, Reg::EAX });
+	emit({ Inst::CALL, cmd.var, Operand::label(cmd.label), i-1 });
+	// TODO: check if we can omit this and save it for x86 codegen
 }
 
 

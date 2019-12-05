@@ -15,8 +15,6 @@ Stage toStage(std::string s) {
 		return Stage::HIR;
 	if (s == "-lir")
 		return Stage::LIR;
-	if (s == "-codegen")
-		return Stage::CODEGEN;
 	if (s == "-regalloc")
 		return Stage::REGALLOC;
 	if (s == "-asm")

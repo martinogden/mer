@@ -1,21 +1,22 @@
 #pragma once
 #include <vector>
-#include "x86/def-use-analyser.hpp"
+#include "inst/inst.hpp"
+#include "regalloc/def-use-analyser.hpp"
 
 
 class LivenessAnalyser {
 private:
 	const uint n;
-	std::vector<X86Asm>& code;
+	InstFun& fun;
 	DefUseAnalyser dua;
 	std::vector<Set<Operand>> live;
 	bool changed;
 
-	void visit(X86Asm& as, uint l);
+	void visit(Inst& inst, uint l);
 	void update(uint i, Set<Operand> opnds);
 
 public:
-	LivenessAnalyser(std::vector<X86Asm>& code);
+	LivenessAnalyser(InstFun& fun);
 	void run();
 	Set<Operand>& get(uint l);
 	Set<Operand>& getDef(uint l);

@@ -2,9 +2,9 @@
 #include "conversion.hpp"
 
 
-X86CodeGen::X86CodeGen(InstFun& fun, Generator& gen) :
+X86CodeGen::X86CodeGen(InstFun& fun, Alloc& alloc) :
 	fun(fun),
-	gen(gen)
+	alloc(alloc)
 {}
 
 
@@ -28,22 +28,7 @@ void X86CodeGen::emit(X86Asm::OpCode opcode, const Operand& dst, const Operand& 
 }
 
 
-void X86CodeGen::prologue() {
-	int i = 1;
-	for (const auto &param : fun.params) {
-		Reg reg = static_cast<Reg>(i++);
-		emit(X86Asm::MOV, param, reg);
-	}
-}
-
-
-void X86CodeGen::epilogue() {
-}
-
-
 void X86CodeGen::visit(Inst& inst) {
-	X86Asm::OpCode opcode = toOpcode(inst.getOpcode());
-
 	switch (inst.getOpcode()) {
 		case Inst::LBL:
 			return visitLabel(inst.getDst());
@@ -52,7 +37,7 @@ void X86CodeGen::visit(Inst& inst) {
 		case Inst::AND:
 		case Inst::OR:
 		case Inst::XOR:
-			return visitBinary(opcode, inst.getDst(), inst.getSrc1(), inst.getSrc2());
+			return visitBinary(inst.getOpcode(), inst.getDst(), inst.getSrc1(), inst.getSrc2());
 		case Inst::SUB:
 			return visitSub(inst.getDst(), inst.getSrc1(), inst.getSrc2());
 		case Inst::DIV:
@@ -69,14 +54,15 @@ void X86CodeGen::visit(Inst& inst) {
 		case Inst::JLE:
 		case Inst::JGT:
 		case Inst::JGE:
-			return visitCJmp(opcode, inst.getDst(), inst.getSrc1(), inst.getSrc2());
+			return visitCJmp(inst.getOpcode(), inst.getDst(), inst.getSrc1(), inst.getSrc2());
 		case Inst::RET:
 			return visitRet(inst.getDst());
+		case Inst::ENTER:
+			return visitEnter();
 		case Inst::CALL:
-			return visitCall(inst.getDst(), inst.getSrc1());
+			return visitCall(inst.getDst(), inst.getSrc1(), inst.getSrc2());
 		case Inst::ARG:
-			return visitParam(inst.getDst(), inst.getSrc1());
-
+			return visitArg(inst.getDst(), inst.getSrc1());
 	}
 }
 
@@ -102,7 +88,7 @@ void X86CodeGen::visitSub(Operand&& dst, Operand&& src1, Operand&& src2) {
 void X86CodeGen::visitDiv(Operand&& dst, Operand&& src1, Operand&& src2) {
 	Operand t;
 	if (src2.is(Operand::IMM)) {
-		t = gen.tmp();
+		t = Reg::R15D;
 		emit(X86Asm::MOV, t, src2);
 	}
 	else
@@ -118,7 +104,7 @@ void X86CodeGen::visitDiv(Operand&& dst, Operand&& src1, Operand&& src2) {
 void X86CodeGen::visitMod(Operand&& dst, Operand&& src1, Operand&& src2) {
 	Operand t;
 	if (src2.is(Operand::IMM)) {
-		t = gen.tmp();
+		t = Reg::R15D;
 		emit(X86Asm::MOV, t, src2);
 	}
 	else
@@ -146,44 +132,54 @@ void X86CodeGen::visitRet(Operand&& op) {
 }
 
 
-void X86CodeGen::visitCall(Operand&& name, Operand&& n) {
-	std::string label = "_" + name.getLabel();
-	emit(X86Asm::CALL, Operand::label(label), n);
+void X86CodeGen::visitEnter() {
+	int i = 1;
+	for (const auto &param : fun.params) {
+		Reg reg = static_cast<Reg>(i++);
+		emit(X86Asm::MOV, alloc[param], reg);
+	}
 }
 
 
-void X86CodeGen::visitParam(Operand&& i, Operand&& op) {
+void X86CodeGen::visitCall(Operand&& dst, Operand&& name, Operand&& n) {
+	std::string label = "_" + name.getLabel();
+	emit(X86Asm::CALL, Operand::label(label), n);
+	emit( X86Asm::MOV, dst, Reg::EAX);
+}
+
+
+void X86CodeGen::visitArg(Operand&& i, Operand&& op) {
 	Reg reg = static_cast<Reg>(i.getImm());
 	emit(X86Asm::MOV, reg, op);
 }
 
 
-void X86CodeGen::visitBinary(X86Asm::OpCode opcode, Operand&& dst, Operand&& src1, Operand&& src2) {
+void X86CodeGen::visitBinary(Inst::OpCode opcode, Operand&& dst, Operand&& src1, Operand&& src2) {
+	X86Asm::OpCode op = toOpcode(opcode);
+
 	if ( src2 == dst ) {
-		emit(opcode, dst, src1);
+		emit(op, dst, src1);
 	}
 	else {
 		if ( src1 != dst )
 			emit(X86Asm::MOV, dst, src1);
-		emit(opcode, dst, src2);
+		emit(op, dst, src2);
 	}
 }
 
 
-void X86CodeGen::visitCJmp(X86Asm::OpCode opcode, Operand&& op, Operand&& t, Operand&& f) {
-	emit(X86Asm::CMP, op, 0);
-	emit(opcode, t);
+void X86CodeGen::visitCJmp(Inst::OpCode opcode, Operand&& operand, Operand&& t, Operand&& f) {
+	X86Asm::OpCode op = toOpcode(opcode);
+
+	emit(X86Asm::CMP, operand, 0);
+	emit(op, t);
 	emit(X86Asm::JMP, f);
 }
 
 
 X86Fun X86CodeGen::run() {
-	prologue();
-
 	for (auto& inst : fun.insts)
 		visit(inst);
-
-	epilogue();
 
 	return {as, std::move(fun.params)};
 }

@@ -3,8 +3,8 @@
 #include <memory>
 #include "set.hpp"
 #include "graph.hpp"
-#include "inst/operand.hpp"
-#include "x86/liveness-analyser.hpp"
+#include "inst/inst.hpp"
+#include "regalloc/liveness-analyser.hpp"
 
 
 using IGPtr = std::unique_ptr<Graph<Operand>>;
@@ -13,14 +13,14 @@ using IGPtr = std::unique_ptr<Graph<Operand>>;
 class IGBuilder {
 private:
 	const uint n;
-	X86Fun& fun;
+	InstFun& fun;
 	LivenessAnalyser liveness;
 	IGPtr G;
 
-	void visit(X86Asm& as, uint l);
+	void visit(Inst& inst, uint l);
 	void addEdge(const Operand& u, const Operand& v);
 
 public:
-	IGBuilder(X86Fun&);
+	IGBuilder(InstFun&);
 	IGPtr run();
 };

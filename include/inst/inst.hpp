@@ -13,19 +13,10 @@ public:
 		AND, OR, XOR,
 		MOV,
 		JMP, JEQ, JNE, JLT, JLE, JGT, JGE,
-		RET, CALL, ARG,
+		RET, ENTER, CALL, ARG,
 	};
 
-	enum class Type {
-		LABEL,
-		BINARY,
-		UNARY,
-		RET,
-		CALL,
-		JMP,
-		CJMP,
-	};
-
+	Inst(OpCode opcode);
 	Inst(OpCode opcode, Operand dst);
 	Inst(OpCode opcode, Operand dst, Operand src1);
 	Inst(OpCode opcode, Operand dst, Operand src1, Operand src2);

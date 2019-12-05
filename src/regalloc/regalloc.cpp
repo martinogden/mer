@@ -1,15 +1,15 @@
 #include <unordered_map>
 #include "graph.hpp"
 #include "inst/operand.hpp"
-#include "x86/ig-builder.hpp"
-#include "x86/regalloc.hpp"
+#include "regalloc/regalloc.hpp"
+#include "regalloc/ig-builder.hpp"
 
 
 typedef std::unordered_map<Operand, uint> Colors;
 
 
 // ir operands already assigned a register are precolored
-Colors getPrecoloring(std::vector<X86Asm>& code) {
+Colors getPrecoloring(InstFun& fun) {
 	Colors colors;
 
 	for (uint i=0; i<=MAX_REG; ++i)
@@ -143,11 +143,11 @@ Alloc toColoring(const Colors& colors) {
 }
 
 
-Alloc regAlloc(X86Fun& fun) {
+Alloc regAlloc(InstFun& fun) {
 	IGBuilder builder(fun);
 	IGPtr IG = builder.run();
 
-	Colors precoloring = getPrecoloring(fun.code);
+	Colors precoloring = getPrecoloring(fun);
 	std::vector<Operand> order = mcs(IG, precoloring);
 	Colors colors = greedyColor(IG, order, precoloring);
 
@@ -155,7 +155,7 @@ Alloc regAlloc(X86Fun& fun) {
 }
 
 
-inline Operand assign(Operand& op, Alloc& regs) {
+inline Operand assign(const Operand& op, Alloc& regs) {
 	switch (op.getType()) {
 		case Operand::REG:
 		case Operand::TMP:
@@ -166,29 +166,46 @@ inline Operand assign(Operand& op, Alloc& regs) {
 };
 
 
-X86Fun regAssign(X86Fun& fun, Alloc& regs) {
-	std::vector<X86Asm> out;
+InstFun regAssign(InstFun& fun, Alloc& regs) {
+	std::vector<Inst> insts;
 
-	for (auto& as : fun.code) {
-		if (as.opcode == X86Asm::LBL) {
-			out.emplace_back(as);
+	for (auto &inst : fun.insts) {
+		Inst::OpCode opcode = inst.getOpcode();
+
+		if (opcode == Inst::LBL) {
+			insts.push_back(inst);
 			continue;
 		}
 
-		switch (as.parity) {
+		switch (inst.getParity()) {
 			case 0:
-				out.emplace_back(as);
+				insts.push_back(inst);
 				break;
 			case 1:
-				out.emplace_back( as.opcode, assign(as.dst, regs) );
+				insts.emplace_back(
+					opcode,
+					assign(inst.getDst(), regs)
+				);
 				break;
 			case 2:
-				out.emplace_back( as.opcode, assign(as.dst, regs), assign(as.src, regs) );
+				insts.emplace_back(
+					opcode,
+					assign(inst.getDst(), regs),
+					assign(inst.getSrc1(), regs)
+				);
+				break;
+			case 3:
+				insts.emplace_back(
+					opcode,
+					assign(inst.getDst(), regs),
+					assign(inst.getSrc1(), regs),
+					assign(inst.getSrc2(), regs)
+				);
 				break;
 			default:
 				throw 1;  // TODO: we should never get here
 		}
 	}
 
-	return {out, fun.params};
+	return {fun.id, fun.params, insts};
 }

@@ -1,16 +1,29 @@
-#include "x86/liveness-analyser.hpp"
+#include "regalloc/liveness-analyser.hpp"
 
 
-LivenessAnalyser::LivenessAnalyser(std::vector<X86Asm>& code) :
-	n(code.size()),
-	code(code),
-	dua(code),
-	live(n),
-	changed(true)
+LivenessAnalyser::LivenessAnalyser(InstFun& fun) :
+		n(fun.insts.size()),
+		fun(fun),
+		dua(fun),
+		live(n),
+		changed(true)
 {}
 
 
-void LivenessAnalyser::visit(X86Asm& as, uint l) {
+/*
+ * Inference rule for liveness relation
+ *
+ * use(l, u)
+ * ----------
+ * live(l, u)
+ *
+ * live(i, u)
+ * succ(l, i)
+ * !def(l, u)
+ * ----------
+ * live(l, u)
+ */
+void LivenessAnalyser::visit(Inst& inst, uint l) {
 	update(l, dua.getUse(l));
 
 	for (uint i : dua.getSucc(l)) {
@@ -31,12 +44,12 @@ void LivenessAnalyser::update(uint i, Set<Operand> opnds) {
 void LivenessAnalyser::run() {
 	dua.run();
 
-	#ifdef DEBUG
+#ifdef DEBUG
 	std::cout << "def\n====" << std::endl;
 	uint i = 0;
-	for (auto& as : code) {
-		if (as.opcode == X86Asm::LBL)
-			std::cout << as << std::endl;
+	for (auto& inst : fun.insts) {
+		if ( inst.is(Inst::LBL) )
+			std::cout << inst << std::endl;
 		else
 			std::cout << i << ' ' << dua.getDef(i) << std::endl;
 		i++;
@@ -44,9 +57,9 @@ void LivenessAnalyser::run() {
 	std::cout << "\nuse\n====" << std::endl;
 
 	i = 0;
-	for (auto& as : code) {
-		if (as.opcode == X86Asm::LBL)
-			std::cout << as << std::endl;
+	for (auto& inst : fun.insts) {
+		if ( inst.is(Inst::LBL) )
+			std::cout << inst << std::endl;
 		else
 			std::cout << i << ' ' << dua.getUse(i) << std::endl;
 		i++;
@@ -54,44 +67,44 @@ void LivenessAnalyser::run() {
 	std::cout << "\nsucc\n====" << std::endl;
 
 	i = 0;
-	for (auto& as : code) {
-		if (as.opcode == X86Asm::LBL)
-			std::cout << as << std::endl;
+	for (auto& inst : fun.insts) {
+		if ( inst.is(Inst::LBL) )
+			std::cout << inst << std::endl;
 		else
 			std::cout << i << ' ' << dua.getSucc(i) << std::endl;
 		i++;
 	}
-	#endif
+#endif
 
 	changed = true;
 	while(changed) {
 		changed = false;
 		uint l = 0;
-		for (auto& as : code)
-			visit(as, l++);
+		for (auto& inst : fun.insts)
+			visit(inst, l++);
 	}
 }
 
 
 Set<Operand>& LivenessAnalyser::get(uint l) {
-	assert(l <= n);
+	assert(l < n);
 	return live[l];
 }
 
 
 Set<Operand>& LivenessAnalyser::getDef(uint l) {
-	assert(l <= n);
+	assert(l < n);
 	return dua.getDef(l);
 }
 
 
 Set<Operand>& LivenessAnalyser::getUse(uint l) {
-	assert(l <= n);
+	assert(l < n);
 	return dua.getUse(l);
 }
 
 
 Set<uint>& LivenessAnalyser::getSucc(uint l) {
-	assert(l <= n);
+	assert(l < n);
 	return dua.getSucc(l);
 }

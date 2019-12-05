@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
-#include "x86/asm.hpp"
 #include "inst/inst.hpp"
 #include "set.hpp"
 
@@ -10,23 +9,23 @@ class DefUseAnalyser {
 private:
 	const uint n;
 
-	std::vector<X86Asm>& code;
+	InstFun& fun;
 	std::vector<Set<Operand>> def;
 	std::vector<Set<Operand>> use;
 	std::vector<Set<uint>> succ;
 	std::unordered_map<std::string, uint> line;
 
-	void visit(X86Asm& as, uint l);
+	void visit(Inst& as, uint l);
 
 	void setDef(uint l, Set<Operand>&& ops);
 	void setUse(uint l, Set<Operand>&& ops);
 
-	uint label2Line(Operand& op);
+	uint label2Line(const Operand& op);
 	void loadLabels();
 	uint nextLine(uint i);
 
 public:
-	DefUseAnalyser(std::vector<X86Asm>& code);
+	DefUseAnalyser(InstFun& fun);
 	void run();
 
 	Set<Operand>& getDef(uint l);

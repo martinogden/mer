@@ -4,9 +4,6 @@
 #include "inst/operand.hpp"
 
 
-constexpr uint MAX_REG = 15;
-
-
 struct X86Asm {
 	enum OpCode {
 		LBL,

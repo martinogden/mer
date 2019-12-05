@@ -1,11 +1,12 @@
-#include "x86/ig-builder.hpp"
+#include "regalloc/regalloc.hpp"
+#include "regalloc/ig-builder.hpp"
 
 
-IGBuilder::IGBuilder(X86Fun& fun) :
-	n(fun.code.size()),
-	fun(fun),
-	liveness(fun.code),
-	G(std::make_unique<Graph<Operand>>())
+IGBuilder::IGBuilder(InstFun& fun) :
+		n(fun.insts.size()),
+		fun(fun),
+		liveness(fun),
+		G(std::make_unique<Graph<Operand>>())
 {}
 
 
@@ -28,21 +29,21 @@ std::unique_ptr<Graph<Operand>> IGBuilder::run() {
 		++i;
 	}
 
-	#ifdef DEBUG
-	std::cout << "liveness\n========" << std::endl;
-	uint i = 0;
-	for (auto& as : code) {
-		if (as.opcode == X86Asm::LBL)
-			std::cout << as << std::endl;
+#ifdef DEBUG
+	std::cout << "\nliveness\n========" << std::endl;
+	i = 0;
+	for (auto& inst : fun.insts) {
+		if ( inst.is(Inst::LBL) )
+			std::cout << inst << std::endl;
 		else
 			std::cout << i << ' ' << liveness.get(i) << std::endl;
 		i++;
 	}
-	#endif
+#endif
 
 	uint l = 0;
-	for (auto& as : fun.code)
-		visit(as, l++);
+	for (auto& inst : fun.insts)
+		visit(inst, l++);
 
 	return std::move(G);
 }
@@ -53,24 +54,24 @@ Inference rule for interference relation on operands
 
 isTmpOrReg(d)
 isTmpOrReg(u)
-succ(l, l')
+succ(l, i)
 def(l, d)
-live(l+1, u)
+live(i, u)
 ------------
 inter(d, u)
 */
-void IGBuilder::visit(X86Asm& as, uint l) {
-	if (as.opcode == X86Asm::LBL)
+void IGBuilder::visit(Inst& inst, uint l) {
+	if ( inst.is(Inst::LBL) )
 		return;
 
-	for (const uint i : liveness.getSucc(l)) {
-		if (i >= n-1)
+	for (uint i : liveness.getSucc(l)) {
+		if (i > n-1)
 			continue;
 
-		for (const Operand& d : liveness.getDef(i)) {
+		for (const Operand& d : liveness.getDef(l)) {
 			for (const Operand& u : liveness.get(i)) {
 				// mov optimization
-				if (as.opcode == X86Asm::MOV && u == as.src)
+				if ( inst.is(Inst::MOV) && u == inst.getSrc1() )
 					continue;
 
 				addEdge(d, u);

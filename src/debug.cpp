@@ -355,6 +355,9 @@ std::ostream& operator<<(std::ostream& output, const Inst::OpCode& opcode) {
 		case Inst::RET:
 			output << "ret";
 			break;
+		case Inst::ENTER:
+			output << "enter";
+			break;
 		case Inst::CALL:
 			output << "call";
 			break;
@@ -466,7 +469,7 @@ std::ostream& operator<<(std::ostream& output, const Inst& inst) {
 	else if (inst.is({ Inst::JEQ, Inst::JNE, Inst::JLT, Inst::JLE, Inst::JGT, Inst::JGE }))
 		output << '\t' << inst.getOpcode() << ' ' << inst.getDst()\
 			<< ", " << inst.getSrc1() << ", " << inst.getSrc2();
-	else if (inst.is({ Inst::ARG, Inst::CALL }))
+	else if (inst.is(Inst::ARG))
 		output << '\t' << inst.getOpcode() << ' ' << inst.getDst() << ", " << inst.getSrc1();
 	else {
 		uint parity = inst.getParity();

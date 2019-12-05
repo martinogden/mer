@@ -1,6 +1,15 @@
 #include "inst/inst.hpp"
 
 
+Inst::Inst(OpCode opcode) :
+		parity(0),
+		opcode(opcode),
+		dst(0),
+		src1(0),
+		src2(0)
+{}
+
+
 Inst::Inst(OpCode opcode, Operand dst) :
 	parity(1),
 	opcode(opcode),
