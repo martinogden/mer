@@ -3,7 +3,7 @@
 #include "inst/inst.hpp"
 
 
-constexpr uint MAX_REG = 14;
+constexpr uint MAX_REG = 12;  // %r14d
 typedef std::unordered_map<Operand, Reg> Alloc;
 
 Alloc regAlloc(InstFun& fun);

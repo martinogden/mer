@@ -24,30 +24,6 @@
 const std::string MAIN_PREFIX("_c0_");
 
 
-std::vector<Reg> getUsedRegs(X86Fun& fun, const std::vector<Reg>& filter) {
-	std::vector<Reg> out;
-	std::set<Reg> regs;
-	std::set<Reg> used;
-
-	for (const auto &reg : filter)
-		regs.insert(reg);
-
-	for (const auto& as : fun.code) {
-		if (as.parity > 1 && as.src.getType() == Operand::REG)
-			used.insert(as.src.getReg());
-		if (as.parity > 0 && as.dst.getType() == Operand::REG)
-			used.insert(as.dst.getReg());
-	}
-
-	for (const auto& reg : used) {
-		if (regs.find(reg) != regs.end())
-			out.push_back(reg);
-	}
-
-	return out;
-}
-
-
 std::pair<bool, std::string> compile(std::string src, Stage stage) {
 	Lexer lexer(std::move(src));
 
@@ -162,40 +138,14 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		fun = regAssign(fun, alloc);
 
 
-		X86CodeGen x86codegen(fun, alloc);
+		Set<Reg> usedRegs = fun.getUsedRegs();
+//		std::cout << usedRegs << std::endl;
+		X86CodeGen x86codegen(fun, alloc, usedRegs);
 		X86Fun x86fun = x86codegen.run();
 
 		if (stage == Stage::ASM) {
-			std::vector<Reg> saved_regs = getUsedRegs(x86fun, calleeSaved);
-
-			// TODO: extract to x86
-			std::cout << X86Asm(X86Asm::PUSH, Reg::RBP) << std::endl;
-			std::cout << X86Asm(X86Asm::MOV, Reg::RBP, Reg::RSP) << std::endl;
-
-			// ensure stack is 16-byte aligned
-			uint num_slots = (saved_regs.size() + 1) & ~1U;
-
-			if (num_slots > 0) {
-				std::cout << X86Asm(X86Asm::SUB, Reg::RSP, 8 * num_slots) << std::endl;
-				int i = 1;
-				for (auto reg : saved_regs)
-					std::cout << X86Asm(X86Asm::MOV, Operand(Reg::RBP, -8 * i++), reg) << std::endl;
-			}
-
 			for (auto& as : x86fun.code)
 				std::cout << as << std::endl;
-
-			if (num_slots > 0) {
-				int i = 1;
-				for (auto reg : saved_regs)
-					std::cout << X86Asm(X86Asm::MOV, reg, Operand(Reg::RBP, -8 * i++)) << std::endl;
-
-				std::cout << X86Asm(X86Asm::ADD, Reg::RSP, 8*num_slots) << std::endl;
-			}
-
-			std::cout << X86Asm(X86Asm::POP, Reg::RBP) << std::endl;
-			std::cout << X86Asm(X86Asm::RET) << std::endl;
-			continue;
 		}
 	}
 

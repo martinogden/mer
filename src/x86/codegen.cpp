@@ -2,10 +2,24 @@
 #include "conversion.hpp"
 
 
-X86CodeGen::X86CodeGen(InstFun& fun, Alloc& alloc) :
+X86CodeGen::X86CodeGen(InstFun& fun, Alloc& alloc, Set<Reg>& usedRegs) :
 	fun(fun),
-	alloc(alloc)
+	alloc(alloc),
+	calleeSavedRegs(usedRegs & calleeSaved),
+	callerSavedRegs(usedRegs & callerSaved)
 {}
+
+
+X86Fun X86CodeGen::run() {
+	prologue();
+
+	for (auto& inst : fun.insts)
+		visit(inst);
+
+	epilogue();
+
+	return {as, std::move(fun.params)};
+}
 
 
 void X86CodeGen::emitLabel(const std::string& label) {
@@ -67,18 +81,49 @@ void X86CodeGen::visit(Inst& inst) {
 }
 
 
+void X86CodeGen::prologue() {
+	// setup stack frame
+	emit(X86Asm::PUSH, Reg::RBP);
+	emit(X86Asm::MOV, Reg::RBP, Reg::RSP);
+
+	// save callee-saved regs
+	uint n = numSlots(calleeSavedRegs);
+
+	if (n > 0)
+		emit(X86Asm::SUB, Reg::RSP, 8 * n);
+	int i = 1;
+	for (auto reg : calleeSavedRegs)
+		emit(X86Asm::MOV, Operand(Reg::RBP, -8 * i++), reg);
+}
+
+
+void X86CodeGen::epilogue() {
+	// restore callee saved regs
+	uint n = numSlots(calleeSavedRegs);
+
+	int i = 1;
+	for (auto reg : calleeSavedRegs)
+		emit(X86Asm::MOV, reg, Operand(Reg::RBP, -8 * i++));
+	if (n > 0)
+		emit(X86Asm::ADD, Reg::RSP, 8*n);
+
+	// restore stack frame and return control to caller
+	emit(X86Asm::POP, Reg::RBP);
+	emit(X86Asm::RET);
+}
+
+
 void X86CodeGen::visitLabel(Operand&& op) {
 	emitLabel(op.getLabel());
 }
 
 
 void X86CodeGen::visitSub(Operand&& dst, Operand&& src1, Operand&& src2) {
-	if ( src2 == dst ) {
+	if (src2 == dst) {
 		emit(X86Asm::NEG, dst);
 		emit(X86Asm::ADD, dst, src1);
-	}
-	else {
-		if ( src1 != dst )
+	} else {
+		if (src1 != dst)
 			emit(X86Asm::MOV, dst, src1);
 		emit(X86Asm::SUB, dst, src2);
 	}
@@ -142,8 +187,27 @@ void X86CodeGen::visitEnter() {
 
 
 void X86CodeGen::visitCall(Operand&& dst, Operand&& name, Operand&& n) {
+	// save caller-saved regs
+	uint numCalleeSlots = numSlots(calleeSavedRegs);
+	uint numCallerSlots = numSlots(callerSavedRegs);
+
+	if (numCallerSlots > 0)
+		emit(X86Asm::SUB, Reg::RSP, 8 * numCallerSlots);
+	int i = 1;
+	for (auto reg : callerSavedRegs)
+			emit(X86Asm::MOV, Operand(Reg::RBP, -8 * (numCalleeSlots + i++)), reg);
+
+
 	std::string label = "_" + name.getLabel();
 	emit(X86Asm::CALL, Operand::label(label), n);
+
+	i = 1;
+	for (auto reg : callerSavedRegs)
+		emit(X86Asm::MOV, reg, Operand(Reg::RBP, -8 * (numCalleeSlots + i++)));
+
+	if (numCallerSlots > 0)
+		emit(X86Asm::ADD, Reg::RSP, 8*numCallerSlots);
+
 	emit( X86Asm::MOV, dst, Reg::EAX);
 }
 
@@ -177,9 +241,7 @@ void X86CodeGen::visitCJmp(Inst::OpCode opcode, Operand&& operand, Operand&& t, 
 }
 
 
-X86Fun X86CodeGen::run() {
-	for (auto& inst : fun.insts)
-		visit(inst);
-
-	return {as, std::move(fun.params)};
+uint X86CodeGen::numSlots(Set<Reg>& regs) {
+	// ensure stack is 16-byte aligned
+	return (regs.size() + 1) & ~1U;
 }

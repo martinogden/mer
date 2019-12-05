@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <set>
+#include "set.hpp"
 
 
 typedef unsigned int uint;
@@ -43,8 +44,8 @@ enum class Reg {
 std::ostream& operator<<(std::ostream&, const Reg&);
 
 
-extern std::vector<Reg> callerSaved;
-extern std::vector<Reg> calleeSaved;
+extern Set<Reg> callerSaved;
+extern Set<Reg> calleeSaved;
 
 
 std::string promote(Reg reg);

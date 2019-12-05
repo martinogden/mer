@@ -33,7 +33,7 @@ int main () {
   /* adding tolerance and rounding down should yield
    * exact answer on intergers
    */
-  int i27 = ftoi(fadd(f27,epsilon));
+  int i27 = ftoi(fadd(q27,epsilon));
 
   print_fpt(q27);
   print_fpt(f27);

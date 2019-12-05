@@ -80,6 +80,10 @@ public:
 		return elts.size() == 0;
 	}
 
+	unsigned size() {
+		return elts.size();
+	}
+
 	friend std::ostream& operator<<(std::ostream& output, const Set<T>& set) {
 		output << "{ ";
 		for (const T& elt : set.elts)

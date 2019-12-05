@@ -40,7 +40,9 @@ void DefUseAnalyser::visit(Inst& inst, uint l) {
 		case Inst::DIV:
 		case Inst::MOD:
 			setDef(l, {{ Reg::EAX, Reg::EDX, inst.getDst() }});
-			setUse(l, {{ Reg::EAX, Reg::EDX, inst.getSrc1(), inst.getSrc2() }});
+			setUse(l, {{
+				Reg::EAX, Reg::EDX, inst.getSrc1(), inst.getSrc2()
+			}});
 			break;
 		case Inst::MOV:
 			setDef(l, {{ inst.getDst() }});
@@ -57,8 +59,7 @@ void DefUseAnalyser::visit(Inst& inst, uint l) {
 		case Inst::JGE:
 			setUse(l, {{ inst.getDst() }});
 			succ[l] = succ[l] | Set<uint>({
-				label2Line(inst.getSrc1()),
-				label2Line(inst.getSrc2()),
+				label2Line(inst.getSrc1()), label2Line(inst.getSrc2()),
 			});
 			break;
 		case Inst::RET:
@@ -67,12 +68,13 @@ void DefUseAnalyser::visit(Inst& inst, uint l) {
 			succ[l] = {};
 			break;
 		case Inst::ENTER:
-			setDef(l, std::unordered_set<Operand>(fun.params.begin(), fun.params.end()));
+			setDef(l, std::unordered_set<Operand>(
+			       fun.params.begin(), fun.params.end()));
 			break;
 		case Inst::CALL:
 			// TODO remove for void functions
 			setDef(l, {{ inst.getDst(), Reg::EAX }});
-			setUse(l, getNRegs( inst.getSrc1().getImm() ));
+			setUse(l, getNRegs( inst.getSrc2().getImm() ));
 			break;
 		case Inst::ARG:
 			setDef(l, {{ static_cast<Reg>(inst.getDst().getImm()) }});

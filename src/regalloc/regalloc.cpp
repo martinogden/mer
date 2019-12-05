@@ -86,7 +86,7 @@ Colors greedyColor(IGPtr& G, std::vector<Operand>& order, Colors& precoloring) {
 		// color vertex using least unused color among neighbors
 		std::unordered_set<Operand> adj = G->getAdj(u);
 		colors[u] = leastUnusedColor(adj, colors);
-		assert(colors[u] <= MAX_REG-2 && "TODO: register spilling");
+		assert(colors[u] <= MAX_REG && "TODO: register spilling");
 	}
 
 	return colors;
