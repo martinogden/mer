@@ -11,7 +11,7 @@ Set<Reg> callerSaved ({
 
 Set<Reg> calleeSaved({
 	Reg::EBX, Reg::R12D, Reg::R13D,
-	Reg::R14D, Reg::R15D,
+	Reg::R14D, //Reg::R15D,
 });
 
 
@@ -116,6 +116,12 @@ int Operand::getImm() const {
 Reg Operand::getReg() const {
 	assert(type == REG);
 	return reg;
+}
+
+
+Mem Operand::getMem() const {
+	assert(type == MEM);
+	return mem;
 }
 
 

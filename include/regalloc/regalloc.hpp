@@ -3,8 +3,19 @@
 #include "inst/inst.hpp"
 
 
-constexpr uint MAX_REG = 12;  // %r14d
-typedef std::unordered_map<Operand, Reg> Alloc;
+constexpr int MAX_REG = 11;  // %r13d
 
-Alloc regAlloc(InstFun& fun);
-InstFun regAssign(InstFun& fun, Alloc& regs);
+
+struct Alloc {
+	std::unordered_map<Operand, Operand> map;
+	uint num_used_regs;
+	uint num_spilled;
+
+	Alloc();
+	Operand lookup(const Operand& operand) const;
+	void assign(const Operand& src, const Operand& dst);
+};
+
+
+Alloc regAlloc(const InstFun& fun);
+InstFun regAssign(const InstFun& fun, const Alloc& regs);

@@ -8,8 +8,34 @@
 typedef std::unordered_map<Operand, uint> Colors;
 
 
+Alloc::Alloc() :
+	num_used_regs(0),
+	num_spilled(0)
+{}
+
+
+Operand Alloc::lookup(const Operand& operand) const {
+	switch (operand.getType()) {
+		case Operand::REG:
+		case Operand::TMP:
+			assert(map.find(operand) != map.end());
+			return map.at(operand);
+		case Operand::IMM:
+		case Operand::MEM:
+		case Operand::LBL:
+			return operand;
+	}
+}
+
+
+void Alloc::assign(const Operand& src, const Operand& dst) {
+	assert(map.find(src) == map.end());
+	map[src] = dst;
+}
+
+
 // ir operands already assigned a register are precolored
-Colors getPrecoloring(InstFun& fun) {
+Colors getPrecoloring(const InstFun& fun) {
 	Colors colors;
 
 	for (uint i=0; i<=MAX_REG; ++i)
@@ -86,7 +112,6 @@ Colors greedyColor(IGPtr& G, std::vector<Operand>& order, Colors& precoloring) {
 		// color vertex using least unused color among neighbors
 		std::unordered_set<Operand> adj = G->getAdj(u);
 		colors[u] = leastUnusedColor(adj, colors);
-		assert(colors[u] <= MAX_REG && "TODO: register spilling");
 	}
 
 	return colors;
@@ -94,18 +119,29 @@ Colors greedyColor(IGPtr& G, std::vector<Operand>& order, Colors& precoloring) {
 
 
 Alloc toColoring(const Colors& colors) {
-	Alloc regs;
+	Alloc alloc;
+	uint offset = callerSaved.size() + 1;
+	std::unordered_set<Reg> used_regs;
 
 	for (auto const& pair : colors) {
-		assert( pair.second <= MAX_REG && "invalid allocation" );
-		regs[pair.first] = static_cast<Reg>(pair.second);
+		if (pair.second <= MAX_REG) {
+			Reg reg = static_cast<Reg>(pair.second);
+			alloc.assign(pair.first, reg);
+			if (!pair.first.is(Operand::REG))
+				used_regs.insert(reg);
+		}
+		else {
+			alloc.assign(pair.first, Operand(Reg::RBP, -8 * (pair.second - offset)));
+			alloc.num_spilled++;
+		}
 	}
 
-	return regs;
+	alloc.num_used_regs = used_regs.size();
+	return alloc;
 }
 
 
-Alloc regAlloc(InstFun& fun) {
+Alloc regAlloc(const InstFun& fun) {
 	IGBuilder builder(fun);
 	IGPtr IG = builder.run();
 
@@ -117,18 +153,7 @@ Alloc regAlloc(InstFun& fun) {
 }
 
 
-inline Operand assign(const Operand& op, Alloc& regs) {
-	switch (op.getType()) {
-		case Operand::REG:
-		case Operand::TMP:
-			return regs[op];
-		default:
-			return op;
-	}
-};
-
-
-InstFun regAssign(InstFun& fun, Alloc& regs) {
+InstFun regAssign(const InstFun& fun, const Alloc& alloc) {
 	std::vector<Inst> insts;
 
 	for (auto &inst : fun.insts) {
@@ -146,22 +171,22 @@ InstFun regAssign(InstFun& fun, Alloc& regs) {
 			case 1:
 				insts.emplace_back(
 					opcode,
-					assign(inst.getDst(), regs)
+					alloc.lookup(inst.getDst())
 				);
 				break;
 			case 2:
 				insts.emplace_back(
 					opcode,
-					assign(inst.getDst(), regs),
-					assign(inst.getSrc1(), regs)
+					alloc.lookup(inst.getDst()),
+					alloc.lookup(inst.getSrc1())
 				);
 				break;
 			case 3:
 				insts.emplace_back(
 					opcode,
-					assign(inst.getDst(), regs),
-					assign(inst.getSrc1(), regs),
-					assign(inst.getSrc2(), regs)
+					alloc.lookup(inst.getDst()),
+					alloc.lookup(inst.getSrc1()),
+					alloc.lookup(inst.getSrc2())
 				);
 				break;
 			default:

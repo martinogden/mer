@@ -84,6 +84,7 @@ public:
 	std::string getTmp() const;
 	int getImm() const;
 	Reg getReg() const;
+	Mem getMem() const;
 
 	friend bool operator==(Operand a, Operand b);
 	friend bool operator!=(Operand a, Operand b);

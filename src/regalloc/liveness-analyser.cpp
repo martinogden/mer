@@ -1,7 +1,7 @@
 #include "regalloc/liveness-analyser.hpp"
 
 
-LivenessAnalyser::LivenessAnalyser(InstFun& fun) :
+LivenessAnalyser::LivenessAnalyser(const InstFun& fun) :
 		n(fun.insts.size()),
 		fun(fun),
 		dua(fun),
@@ -23,7 +23,7 @@ LivenessAnalyser::LivenessAnalyser(InstFun& fun) :
  * ----------
  * live(l, u)
  */
-void LivenessAnalyser::visit(Inst& inst, uint l) {
+void LivenessAnalyser::visit(const Inst& inst, uint l) {
 	update(l, dua.getUse(l));
 
 	for (uint i : dua.getSucc(l)) {
@@ -80,7 +80,7 @@ void LivenessAnalyser::run() {
 	while(changed) {
 		changed = false;
 		uint l = 0;
-		for (auto& inst : fun.insts)
+		for (const auto& inst : fun.insts)
 			visit(inst, l++);
 	}
 }

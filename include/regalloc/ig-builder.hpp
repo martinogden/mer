@@ -13,14 +13,15 @@ using IGPtr = std::unique_ptr<Graph<Operand>>;
 class IGBuilder {
 private:
 	const uint n;
-	InstFun& fun;
+	const InstFun& fun;
 	LivenessAnalyser liveness;
 	IGPtr G;
 
-	void visit(Inst& inst, uint l);
+	void visit(const Inst& inst, uint l);
 	void addEdge(const Operand& u, const Operand& v);
+	void addVertices(const Inst& inst);
 
 public:
-	IGBuilder(InstFun&);
+	IGBuilder(const InstFun&);
 	IGPtr run();
 };

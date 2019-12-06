@@ -49,6 +49,4 @@ public:
 	std::vector<Inst> insts;
 
 	InstFun(std::string id, std::vector<std::string> params, std::vector<Inst> insts);
-
-	Set<Reg> getUsedRegs();
 };

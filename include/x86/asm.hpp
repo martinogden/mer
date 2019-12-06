@@ -12,7 +12,7 @@ struct X86Asm {
 		ADD, SUB, IMUL,
 		IDIV, MOD, CDQ,
 		AND, OR, XOR,
-		MOV,
+		MOVQ, MOVL,
 		JMP, JE, JNE, JL, JLE, JG, JGE,
 		RET, CALL,
 		PUSH, POP,

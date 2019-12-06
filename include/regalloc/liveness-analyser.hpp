@@ -7,16 +7,16 @@
 class LivenessAnalyser {
 private:
 	const uint n;
-	InstFun& fun;
+	const InstFun& fun;
 	DefUseAnalyser dua;
 	std::vector<Set<Operand>> live;
 	bool changed;
 
-	void visit(Inst& inst, uint l);
+	void visit(const Inst& inst, uint l);
 	void update(uint i, Set<Operand> opnds);
 
 public:
-	LivenessAnalyser(InstFun& fun);
+	LivenessAnalyser(const InstFun& fun);
 	void run();
 	Set<Operand>& get(uint l);
 	Set<Operand>& getDef(uint l);

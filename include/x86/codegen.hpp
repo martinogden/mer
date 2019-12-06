@@ -11,12 +11,13 @@
 // Emit MACH-O x86-64 asm for OS X
 class X86CodeGen {
 private:
-	InstFun& fun;
-	Alloc& alloc;
-	std::vector<X86Asm> as;
+	uint num_callee_saved;
+	uint num_caller_saved;
+	uint num_spilled;
 
-	Set<Reg> calleeSavedRegs;
-	Set<Reg> callerSavedRegs;
+	const InstFun& fun;
+	const Alloc& alloc;
+	std::vector<X86Asm> as;
 
 	void prologue();
 	void epilogue();
@@ -26,23 +27,25 @@ private:
 	void emit(X86Asm::OpCode opcode, const Operand& dst);
 	void emit(X86Asm::OpCode opcode, const Operand& dst, const Operand& src);
 
-	void visit(Inst& inst);
-	void visitLabel(Operand&& op);
-	void visitSub(Operand&& dst, Operand&& src1, Operand&& src2);
-	void visitDiv(Operand&& dst, Operand&& src1, Operand&& src2);
-	void visitMod(Operand&& dst, Operand&& src1, Operand&& src2);
-	void visitMov(Operand&& dst, Operand&& src);
-	void visitJmp(Operand&& op);
-	void visitRet(Operand&& op);
+	void visit(const Inst& inst);
+	void visitLabel(const Operand& op);
+	void visitSub(const Operand& dst, const Operand& src1, const Operand& src2);
+	void visitDiv(const Operand& dst, const Operand& src1, const Operand& src2);
+	void visitMod(const Operand& dst, const Operand& src1, const Operand& src2);
+	void visitMov(const Operand& dst, const Operand& src);
+	void visitJmp(const Operand& op);
+	void visitRet(const Operand& op);
 	void visitEnter();
-	void visitCall(Operand&& dst, Operand&& name, Operand&& src);
-	void visitArg(Operand&& i, Operand&& op);
-	void visitBinary(Inst::OpCode opcode, Operand&& dst, Operand&& src1, Operand&& src2);
-	void visitCJmp(Inst::OpCode opcode, Operand&& operand, Operand&& t, Operand&& f);
+	void visitCall(const Operand& dst, const Operand& name, const Operand& src);
+	void visitArg(const Operand& i, const Operand& op);
+	void visitBinary(Inst::OpCode opcode, const Operand& dst, const Operand& src1, const Operand& src2);
+	void visitCJmp(Inst::OpCode opcode, const Operand& operand, const Operand& t, const Operand& f);
 
-	uint numSlots(Set<Reg>& regs);
+	Operand getDst(const Operand& dst);
+	void storeDst(const Operand& dst);
+	uint getNumSlots(uint n);
 
 public:
-	X86CodeGen(InstFun& fun, Alloc& alloc, Set<Reg>& usedRegs);
+	X86CodeGen(const InstFun& fun, const Alloc& alloc);
 	X86Fun run();
 };

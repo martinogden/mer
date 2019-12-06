@@ -128,7 +128,7 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		Alloc alloc = regAlloc(fun);
 
 		if (stage == Stage::REGALLOC) {
-			for (const auto& pair : alloc) {
+			for (const auto& pair : alloc.map) {
 				if (pair.first.is(Operand::TMP))
 					std::cout << pair.first << " -> " << pair.second << std::endl;
 			}
@@ -138,9 +138,7 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		fun = regAssign(fun, alloc);
 
 
-		Set<Reg> usedRegs = fun.getUsedRegs();
-//		std::cout << usedRegs << std::endl;
-		X86CodeGen x86codegen(fun, alloc, usedRegs);
+		X86CodeGen x86codegen(fun, alloc);
 		X86Fun x86fun = x86codegen.run();
 
 		if (stage == Stage::ASM) {

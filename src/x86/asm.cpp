@@ -96,8 +96,10 @@ std::ostream& operator<<(std::ostream& output, const X86Asm::OpCode& op) {
 			output << "or"; break;
 		case X86Asm::XOR:
 			output << "xor"; break;
-		case X86Asm::MOV:
-			output << "mov"; break;
+		case X86Asm::MOVQ:
+			output << "movq"; break;
+		case X86Asm::MOVL:
+			output << "movl"; break;
 		case X86Asm::JMP:
 			output << "jmp"; break;
 		case X86Asm::JE:

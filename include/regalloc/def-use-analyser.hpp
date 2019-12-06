@@ -9,13 +9,13 @@ class DefUseAnalyser {
 private:
 	const uint n;
 
-	InstFun& fun;
+	const InstFun& fun;
 	std::vector<Set<Operand>> def;
 	std::vector<Set<Operand>> use;
 	std::vector<Set<uint>> succ;
 	std::unordered_map<std::string, uint> line;
 
-	void visit(Inst& as, uint l);
+	void visit(const Inst& as, uint l);
 
 	void setDef(uint l, Set<Operand>&& ops);
 	void setUse(uint l, Set<Operand>&& ops);
@@ -25,7 +25,7 @@ private:
 	uint nextLine(uint i);
 
 public:
-	DefUseAnalyser(InstFun& fun);
+	DefUseAnalyser(const InstFun& fun);
 	void run();
 
 	Set<Operand>& getDef(uint l);

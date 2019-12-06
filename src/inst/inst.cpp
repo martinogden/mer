@@ -83,21 +83,3 @@ InstFun::InstFun(std::string id, std::vector<std::string> params, std::vector<In
 	params(std::move(params)),
 	insts(std::move(insts))
 {}
-
-
-Set<Reg> InstFun::getUsedRegs() {
-	std::unordered_set<Reg> used;
-
-	for (const auto& inst : insts) {
-		uint parity = inst.getParity();
-
-		if ( parity > 0 && inst.getDst().is(Operand::REG) )
-			used.insert(inst.getDst().getReg());
-		if ( parity > 1 && inst.getSrc1().is(Operand::REG) )
-			used.insert(inst.getSrc1().getReg());
-		if ( parity > 2 && inst.getSrc2().is(Operand::REG) )
-			used.insert(inst.getSrc2().getReg());
-	}
-
-	return used;
-}

@@ -166,7 +166,7 @@ X86Asm::OpCode toOpcode(Inst::OpCode opcode) {
 			return X86Asm::XOR;
 
 		case Inst::MOV:
-			return X86Asm::MOV;
+			return X86Asm::MOVL;
 
 		case Inst::JMP:
 			return X86Asm::JMP;

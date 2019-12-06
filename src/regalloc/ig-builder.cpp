@@ -2,7 +2,7 @@
 #include "regalloc/ig-builder.hpp"
 
 
-IGBuilder::IGBuilder(InstFun& fun) :
+IGBuilder::IGBuilder(const InstFun& fun) :
 		n(fun.insts.size()),
 		fun(fun),
 		liveness(fun),
@@ -60,9 +60,11 @@ live(i, u)
 ------------
 inter(d, u)
 */
-void IGBuilder::visit(Inst& inst, uint l) {
+void IGBuilder::visit(const Inst& inst, const uint l) {
 	if ( inst.is(Inst::LBL) )
 		return;
+
+	addVertices(inst);
 
 	for (uint i : liveness.getSucc(l)) {
 		if (i > n-1)
@@ -94,4 +96,16 @@ void IGBuilder::addEdge(const Operand& u, const Operand& v) {
 	G->addVertex(u);
 	G->addVertex(v);
 	G->addEdge(u, v);
+}
+
+
+void IGBuilder::addVertices(const Inst& inst) {
+	uint parity = inst.getParity();
+
+	if (parity > 0)
+		G->addVertex(inst.getDst());
+	if (parity > 1)
+		G->addVertex(inst.getSrc1());
+	if (parity > 2)
+		G->addVertex(inst.getSrc2());
 }

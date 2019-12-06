@@ -1,7 +1,7 @@
 #include "regalloc/def-use-analyser.hpp"
 
 
-DefUseAnalyser::DefUseAnalyser(InstFun& fun) :
+DefUseAnalyser::DefUseAnalyser(const InstFun& fun) :
 		n(fun.insts.size()),
 		fun(fun),
 		def(n),
@@ -21,7 +21,7 @@ Set<Operand> getNRegs(uint n) {
 }
 
 
-void DefUseAnalyser::visit(Inst& inst, uint l) {
+void DefUseAnalyser::visit(const Inst& inst, uint l) {
 	succ[l] = {{ nextLine(l) }};
 
 	switch (inst.getOpcode()) {
@@ -138,7 +138,7 @@ void DefUseAnalyser::run() {
 	loadLabels();
 
 	uint l = 0;
-	for (auto& as : fun.insts)
+	for (const auto& as : fun.insts)
 		visit(as, l++);
 }
 
