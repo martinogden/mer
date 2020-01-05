@@ -43,14 +43,6 @@ std::ostream& operator<<(std::ostream& output, const X86Asm& as) {
 		case X86Asm::CALL:
 			output << '\t' << as.opcode << " " << as.dst;
 			return output;
-		case X86Asm::PUSH:
-		case X86Asm::POP:
-			if (as.dst.getType() == Operand::REG) {
-				output << '\t' << as.opcode << " " << promote(as.dst.getReg());
-				return output;
-			}
-			else
-				break;
 		default:
 			break;
 	}
@@ -88,18 +80,16 @@ std::ostream& operator<<(std::ostream& output, const X86Asm::OpCode& op) {
 			output << "idiv"; break;
 		case X86Asm::MOD:
 			output << "mod"; break;
-		case X86Asm::CDQ:
-			output << "cdq"; break;
+		case X86Asm::CQO:
+			output << "cqo"; break;
 		case X86Asm::AND:
 			output << "and"; break;
 		case X86Asm::OR:
 			output << "or"; break;
 		case X86Asm::XOR:
 			output << "xor"; break;
-		case X86Asm::MOVQ:
+		case X86Asm::MOV:
 			output << "movq"; break;
-		case X86Asm::MOVL:
-			output << "movl"; break;
 		case X86Asm::JMP:
 			output << "jmp"; break;
 		case X86Asm::JE:

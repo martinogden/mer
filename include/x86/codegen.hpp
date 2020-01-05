@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "inst/generator.hpp"
+#include "generator.hpp"
 #include "inst/inst.hpp"
 #include "regalloc/regalloc.hpp"
 #include "x86/asm.hpp"
@@ -11,8 +11,8 @@
 // Emit MACH-O x86-64 asm for OS X
 class X86CodeGen {
 private:
-	uint num_callee_saved;
-	uint num_caller_saved;
+	std::vector<Reg> callee_saved_regs;
+	std::vector<Reg> caller_saved_regs;
 	uint num_spilled;
 
 	const InstFun& fun;
