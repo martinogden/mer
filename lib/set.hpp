@@ -92,8 +92,8 @@ public:
 		return output;
 	}
 
-	// expose set iterator
-	using iterator= typename std::unordered_set<T>::iterator;
+	// expose underlying iterator
+	using iterator = typename std::unordered_set<T>::iterator;
 
 	iterator begin() {
 		return elts.begin();
