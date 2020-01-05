@@ -2,22 +2,25 @@
 #include <sstream>
 #include <set>
 #include "compiler.hpp"
+#include "generator.hpp"
 #include "parser/lexer.hpp"
 #include "parser/parser.hpp"
 #include "sca/return-checker.hpp"
-#include "type/checker.hpp"
-#include "ast/elaborator.hpp"
-#include "inst/codegen.hpp"
-#include "cst/printer.hpp"
-#include "ast/printer.hpp"
 #include "sca/init-checker.hpp"
 #include "sca/use-checker.hpp"
+#include "type/checker.hpp"
+#include "inst/codegen.hpp"
+#include "cst/printer.hpp"
+#include "ast/elaborator/stmt.hpp"
+#include "ast/printer.hpp"
 #include "irt/translator/translator.hpp"
 #include "irt/printer.hpp"
-#include "inst/generator.hpp"
+#include "irt/translator/structs.hpp"
 #include "graph.hpp"
 #include "x86/codegen.hpp"
 #include "regalloc/regalloc.hpp"
+
+
 #include "print-utils.hpp"
 
 
@@ -25,6 +28,9 @@ const std::string MAIN_PREFIX("_c0_");
 
 
 std::pair<bool, std::string> compile(std::string src, Stage stage) {
+	Generator gen;
+
+	// Front end
 	Lexer lexer(std::move(src));
 
 	Parser parser(lexer);
@@ -33,39 +39,33 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		return {false, join( parser.errors.get(), "\n" )};
 
 	if (stage == Stage::PARSE) {
-		CSTPrinter printer(tree);
-		return {true, printer.run()};
+		CSTPrinter printer;
+		return {true, printer.get(tree)};
 	}
 
 
-	Elaborator elab(tree);
+	Elaborator elab(tree, gen);
 	std::vector<FunNodePtr> defns = elab.run();
-	SymTab<FunType> decls = elab.getDecls();
+
+	Map<FunTypePtr> funTypes = elab.getFunTypes();
+	Map<StructTypePtr> structTypes = elab.getStructTypes();
 
 	if (elab.errors.exist())
 		return {false, join( elab.errors.get(), "\n" )};
 
 	if (stage == Stage::AST) {
-		for (auto& ast : defns) {
-			ASTPrinter printer(ast);
-			std::cout << printer.run() << std::endl;
-		}
+		ASTPrinter printer;
+		for (auto& ast : defns)
+			std::cout << printer.get(ast) << std::endl;
+
 		return {true, ""};
 	}
+
 
 	// Semantic analysis stage
 	Errors errors;
 
 	for (auto& ast : defns) {
-		// TODO check main: () -> int is defined
-
-		ReturnChecker retChecker(ast);
-		retChecker.run();
-		if (retChecker.errors.exist()) {
-			errors.append(retChecker.errors);
-			continue;
-		}
-
 		InitChecker initChecker(ast);
 		initChecker.run();
 		if (initChecker.errors.exist()) {
@@ -80,7 +80,14 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 			continue;
 		}
 
-		TypeChecker typeChecker(ast, decls);
+		ReturnChecker retChecker(ast);
+		retChecker.run();
+		if (retChecker.errors.exist()) {
+			errors.append(retChecker.errors);
+			continue;
+		}
+
+		TypeChecker typeChecker(ast, funTypes, structTypes);
 		typeChecker.run();
 		if (typeChecker.errors.exist()) {
 			errors.append(typeChecker.errors);
@@ -92,8 +99,10 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		return {false, join( errors.get(), "\n" )};
 
 
-	// Middle end (intermediate code)
-	Generator gen;
+	Map<IRTStruct> structs = toIRTStructs(structTypes);
+
+
+	// Middle end (intermediate code gen)
 
 	if (stage == Stage::ASM) {
 		// TODO: tidy up
@@ -102,8 +111,8 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 	}
 
 	for (auto& ast : defns) {
-		Translator tr(gen);
-		IRTFunPtr irt = tr.get(ast);
+		Translator tr(gen, structs);
+		IRTFun irt = tr.get(ast);
 
 		if (stage == Stage::HIR) {
 			IRTPrinter printer;
@@ -125,6 +134,7 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 		}
 
 
+		// Back end
 		Alloc alloc = regAlloc(fun);
 
 		if (stage == Stage::REGALLOC) {
@@ -132,11 +142,15 @@ std::pair<bool, std::string> compile(std::string src, Stage stage) {
 				if (pair.first.is(Operand::TMP))
 					std::cout << pair.first << " -> " << pair.second << std::endl;
 			}
-			continue;
 		}
 
 		fun = regAssign(fun, alloc);
 
+		if (stage == Stage::REGALLOC) {
+			for (Inst& inst : fun.insts)
+				std::cout << inst << std::endl;
+			continue;
+		}
 
 		X86CodeGen x86codegen(fun, alloc);
 		X86Fun x86fun = x86codegen.run();

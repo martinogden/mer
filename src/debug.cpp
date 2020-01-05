@@ -3,10 +3,11 @@
 #include "parser/token.hpp"
 #include "cst/cst.hpp"
 #include "cst/operator.hpp"
-#include "graph.hpp"
 #include "inst/operand.hpp"
 #include "inst/inst.hpp"
-
+/*
+#include "graph.hpp"
+*/
 
 bool Token::operator==(const Token& other) const {
 	return (
@@ -76,6 +77,8 @@ std::ostream& operator<<(std::ostream& output, const TokenType& type) {
 			str = "SUB_SUB"; break;
 		case TokenType::ADD_ADD:
 			str = "ADD_ADD"; break;
+		case TokenType::SUB_GT:
+			str = "SUB_GT"; break;
 
 		case TokenType::ADD_EQL:
 			str = "ADD_EQL"; break;
@@ -112,6 +115,8 @@ std::ostream& operator<<(std::ostream& output, const TokenType& type) {
 			str = "SEMICOLON"; break;
 		case TokenType::COMMA:
 			str = "COMMA"; break;
+		case TokenType::FULL_STOP:
+			str = "FULL_STOP"; break;
 		case TokenType::LPAREN:
 			str = "LPAREN"; break;
 		case TokenType::RPAREN:
@@ -120,6 +125,10 @@ std::ostream& operator<<(std::ostream& output, const TokenType& type) {
 			str = "LBRACE"; break;
 		case TokenType::RBRACE:
 			str = "RBRACE"; break;
+		case TokenType::LBRACK:
+			str = "LBRACK"; break;
+		case TokenType::RBRACK:
+			str = "RBRACK"; break;
 
 		case TokenType::RETURN:
 			str = "RETURN"; break;
@@ -135,9 +144,17 @@ std::ostream& operator<<(std::ostream& output, const TokenType& type) {
 			str = "TRUE"; break;
 		case TokenType::FALSE:
 			str = "FALSE"; break;
-
+		case TokenType::NUL:
+			str = "NULL"; break;
 		case TokenType::TYPEDEF:
 			str = "TYPEDEF"; break;
+		case TokenType::STRUCT:
+			str = "STRUCT"; break;
+		case TokenType::ALLOC:
+			str = "ALLOC"; break;
+		case TokenType::ALLOC_ARRAY:
+			str = "ALLOC_ARRAY"; break;
+
 		case TokenType::TYPE:
 			str = "TYPE"; break;
 	}
@@ -207,24 +224,27 @@ std::ostream& operator<<(std::ostream& output, const BinOp& op) {
 }
 
 
-std::ostream& operator<<(std::ostream& output, const Type& type) {
+std::ostream& operator<<(std::ostream& output, const Type::Name& type) {
 	std::string str;
 
 	switch (type) {
-		case Type::BOOL:
+		case Type::Name::BOOL:
 			str = "bool";
 			break;
-		case Type::INT:
+		case Type::Name::INT:
 			str = "int";
 			break;
-		case Type::VOID:
+		case Type::Name::VOID:
 			str = "void";
 			break;
-		case Type::ERROR:
+		case Type::Name::ERROR:
 			str = "error";
 			break;
-		case Type::UNKNOWN:
+		case Type::Name::UNKNOWN:
 			str = "unknown";
+			break;
+		case Type::Name::INDEF:
+			str = "any*";
 			break;
 	}
 
@@ -237,48 +257,48 @@ std::ostream& operator<<(std::ostream& output, const Reg& reg) {
 	std::string name;
 
 	switch (reg) {
-		case Reg::EAX:
-			name = "eax";
+		case Reg::RAX:
+			name = "rax";
 			break;
-		case Reg::EBX:
-			name = "ebx";
+		case Reg::RBX:
+			name = "rbx";
 			break;
-		case Reg::ECX:
-			name = "ecx";
+		case Reg::RCX:
+			name = "rcx";
 			break;
-		case Reg::EDX:
-			name = "edx";
+		case Reg::RDX:
+			name = "rdx";
 			break;
-		case Reg::ESI:
-			name = "esi";
+		case Reg::RSI:
+			name = "rsi";
 			break;
-		case Reg::EDI:
-			name = "edi";
+		case Reg::RDI:
+			name = "rdi";
 			break;
 
-		case Reg::R8D:
-			name = "r8d";
+		case Reg::R8:
+			name = "r8";
 			break;
-		case Reg::R9D:
-			name = "r9d";
+		case Reg::R9:
+			name = "r9";
 			break;
-		case Reg::R10D:
-			name = "r10d";
+		case Reg::R10:
+			name = "r10";
 			break;
-		case Reg::R11D:
-			name = "r11d";
+		case Reg::R11:
+			name = "r11";
 			break;
-		case Reg::R12D:
-			name = "r12d";
+		case Reg::R12:
+			name = "r12";
 			break;
-		case Reg::R13D:
-			name = "r13d";
+		case Reg::R13:
+			name = "r13";
 			break;
-		case Reg::R14D:
-			name = "r14d";
+		case Reg::R14:
+			name = "r14";
 			break;
-		case Reg::R15D:
-			name = "r15d";
+		case Reg::R15:
+			name = "r15";
 			break;
 
 		case Reg::RSP:
@@ -373,6 +393,61 @@ std::ostream& operator<<(std::ostream& output, const Inst::OpCode& opcode) {
 }
 
 
+
+std::ostream& operator<<(std::ostream& output, const Operand& op) {
+	switch (op.type) {
+		case Operand::TMP:
+			output << op.tmp;
+//			if (op.getWidth() == WIDE)
+//				output << ":w";
+			break;
+		case Operand::IMM:
+			output << '$' << op.imm;
+			break;
+		case Operand::REG:
+			output << op.reg;
+			break;
+		case Operand::MEM:
+			// all stack access is 8-byte aligned, so we promote reg to 64-bit
+			output << op.getMemOffset() << '(' << op.getMemOperand() << ')';
+			break;
+		case Operand::LBL:
+			output << op.tmp;
+			break;
+	}
+
+	return output;
+}
+
+
+std::ostream& operator<<(std::ostream& output, const Inst& inst) {
+	if (inst.is(Inst::LBL))
+		output << '.' << inst.getDst() << ':';
+
+	else if (inst.is({ Inst::JEQ, Inst::JNE, Inst::JLT, Inst::JLE, Inst::JGT, Inst::JGE }))
+		output << '\t' << inst.getOpcode() << ' ' << inst.getDst()\
+			<< ", " << inst.getSrc1() << ", " << inst.getSrc2();
+	else if (inst.is(Inst::ARG))
+		output << '\t' << inst.getOpcode() << ' ' << inst.getDst() << ", " << inst.getSrc1();
+	else {
+		uint parity = inst.getParity();
+		output << '\t' << inst.getOpcode();
+
+		if (parity > 0)
+			output << ' ' << inst.getDst();
+
+		if (parity > 1)
+			output << " <- " << inst.getSrc1();
+
+		if (parity > 2)
+			output << ", " << inst.getSrc2();
+	}
+
+	return output;
+}
+
+
+/*
 // TODO: generalize: only works for T with a to_string method
 template <typename T>
 std::ostream& operator<<(std::ostream& output, const Graph<T>& G) {
@@ -436,54 +511,4 @@ std::string printGraph(Graph<Operand>* G, std::unordered_map<Operand, uint>& col
 
 	return output.str();
 }
-
-
-std::ostream& operator<<(std::ostream& output, const Operand& op) {
-	switch (op.type) {
-		case Operand::TMP:
-			output << op.tmp;
-			break;
-		case Operand::IMM:
-			output << '$' << op.imm;
-			break;
-		case Operand::REG:
-			output << op.reg;
-			break;
-		case Operand::MEM:
-			// all stack access is 8-byte aligned, so we promote reg to 64-bit
-			output << op.mem.offset << '(' << promote(op.mem.reg) << ')';
-			break;
-		case Operand::LBL:
-			output << op.tmp;
-			break;
-	}
-
-	return output;
-}
-
-
-std::ostream& operator<<(std::ostream& output, const Inst& inst) {
-	if (inst.is(Inst::LBL))
-		output << '.' << inst.getDst() << ':';
-
-	else if (inst.is({ Inst::JEQ, Inst::JNE, Inst::JLT, Inst::JLE, Inst::JGT, Inst::JGE }))
-		output << '\t' << inst.getOpcode() << ' ' << inst.getDst()\
-			<< ", " << inst.getSrc1() << ", " << inst.getSrc2();
-	else if (inst.is(Inst::ARG))
-		output << '\t' << inst.getOpcode() << ' ' << inst.getDst() << ", " << inst.getSrc1();
-	else {
-		uint parity = inst.getParity();
-		output << '\t' << inst.getOpcode();
-
-		if (parity > 0)
-			output << ' ' << inst.getDst();
-
-		if (parity > 1)
-			output << " <- " << inst.getSrc1();
-
-		if (parity > 2)
-			output << ", " << inst.getSrc2();
-	}
-
-	return output;
-}
+*/
