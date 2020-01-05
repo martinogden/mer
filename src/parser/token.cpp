@@ -1,14 +1,19 @@
 #include <sstream>
-#include "cst/token.hpp"
+#include "parser/token.hpp"
+#include <cstdint>
 
 
-Token::Token(TokenType type, std::string lexeme, int value, uint line, uint col) :
+Token::Token(TokenType type, std::string lexeme, int64_t value, uint line, uint col, bool isTypeAlias=false) :
 	type(type),
 	lexeme(std::move(lexeme)),
 	value(value),
 	line(line),
-	col(col)
+	col(col),
+	isTypeAlias(isTypeAlias)
 {}
+
+
+Token END(TokenType::END, "", true, 0, 0);
 
 
 std::unordered_set<std::string> reserved = {
@@ -43,7 +48,11 @@ std::unordered_map<std::string, TokenType> keywords = {
 	{"for", TokenType::FOR},
 	{"true", TokenType::TRUE},
 	{"false", TokenType::FALSE},
+	{"NULL", TokenType::NUL},
 	{"typedef", TokenType::TYPEDEF},
+	{"struct", TokenType::STRUCT},
+	{"alloc", TokenType::ALLOC},
+	{"alloc_array", TokenType::ALLOC_ARRAY},
 };
 
 

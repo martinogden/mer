@@ -36,6 +36,8 @@ enum struct TokenType {
 	PIPE_PIPE,
 	SUB_SUB,
 	ADD_ADD,
+	SUB_GT,
+
 	// ...are in the same order as these
 	ADD_EQL,
 	SUB_EQL,
@@ -56,10 +58,13 @@ enum struct TokenType {
 	COLON,
 	SEMICOLON,
 	COMMA,
+	FULL_STOP,
 	LPAREN,
 	RPAREN,
 	LBRACE,
 	RBRACE,
+	LBRACK,
+	RBRACK,
 
 	// keywords
 	RETURN,
@@ -69,8 +74,12 @@ enum struct TokenType {
 	FOR,
 	TRUE,
 	FALSE,
-
+	NUL,
 	TYPEDEF,
+	STRUCT,
+	ALLOC,
+	ALLOC_ARRAY,
+
 	TYPE,
 };
 
@@ -78,14 +87,18 @@ enum struct TokenType {
 struct Token {
 	TokenType type;
 	std::string lexeme;
-	int value;
+	int64_t value;
 	uint line;
 	uint col;
+	bool isTypeAlias;
 
-	Token(TokenType type, std::string lexeme, int value, uint line, uint col);
+	Token(TokenType type, std::string lexeme, int64_t value, uint line, uint col, bool isTypeAlias);
 	bool operator==(const Token& other) const;
 	friend std::ostream& operator<<(std::ostream& output, const Token& token);
 };
+
+
+extern Token END;
 
 
 std::string error(const std::string& msg, Token& token);
