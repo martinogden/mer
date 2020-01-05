@@ -4,38 +4,19 @@
 #include "print-utils.hpp"
 
 
-ASTPrinter::ASTPrinter(FunNodePtr& node) :
-	node(node)
-{}
-
-
-std::string ASTPrinter::run() {
-	std::stringstream buf;
-	node->accept(*this);
-	buf << retval << std::endl;
-	return buf.str();
-}
-
-
 void ASTPrinter::visit(FunNode& node) {
-	std::stringstream buf;
+	std::vector<std::string> domain;
 
-	buf << "<(";
-	std::vector<std::string> pairs;
-	for (auto const& param : node.params) {
-		std::stringstream b;
-		b << param.name << ":" << param.type;
-		pairs.push_back(b.str());
-	}
-	buf << join(pairs, ", ");
-	buf << ") -> " << node.type << ">";
+	for (uint i=0; i<node.params.size(); ++i)
+		domain.push_back( node.params[i].name + ":" + get(node.type->domain[i]) );
 
-	ret("fun(" + node.id + " " + buf.str() + " " + get(node.body) + ")");
+	std::string sig = " <(" + join(domain, ", ") + ") -> " + get(node.type->codomain) + "> ";
+	ret("fun(" + node.id + sig + get(node.body) + ")");
 }
 
 
 void ASTPrinter::visit(AssignNode& node) {
-	ret("assign(" + node.id + " " + get(node.expr) + ")");
+	ret("assign(" + get(node.lvalue) + " " + get(node.rvalue) + ")");
 }
 
 
@@ -65,27 +46,7 @@ void ASTPrinter::visit(SeqNode& node) {
 
 
 void ASTPrinter::visit(DeclNode& node) {
-	// TODO: move to debug
-	std::string type;
-	switch (node.type) {
-		case Type::BOOL:
-			type = "bool";
-			break;
-		case Type::ERROR:
-			type = "error";
-			break;
-		case Type::INT:
-			type = "int";
-			break;
-		case Type::VOID:
-			type = "void";
-			break;
-		case Type::UNKNOWN:
-			type = "unknown";
-			break;
-	}
-
-	ret("declare(" + node.id + " " + type + " " + get(node.scope) + ")");
+	ret("declare(" + node.id + " <" + get(node.type) + "> " + get(node.scope) + ")");
 }
 
 
@@ -100,15 +61,25 @@ void ASTPrinter::ret(std::string s) {
 }
 
 
+std::string ASTPrinter::get(FunNodePtr& node) {
+	node->accept(*this);
+	return retval;
+}
+
+
 std::string ASTPrinter::get(ASTNodePtr& node) {
 	node->accept(*this);
-	std::string s = retval;
-	retval = "";
-	return s;
+	return retval;
 }
 
 
 std::string ASTPrinter::get(ExprPtr& expr) {
-	ExprPrinter printer(expr);
-	return printer.run();
+	ExprPrinter printer;
+	return printer.get(expr);
+}
+
+
+std::string ASTPrinter::get(TypePtr& type) {
+	TypePrinter printer;
+	return printer.get(type);
 }

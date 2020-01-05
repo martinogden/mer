@@ -1,23 +1,23 @@
 #include "ast/ast.hpp"
 
 
-Param::Param(std::string name, Type type) :
-	name(std::move(name)),
-	type(type)
-{}
-
-
 ASTNode::ASTNode(Token token) :
 	token(std::move(token))
 {}
 
 
-FunNode::FunNode(Token token, std::string id, Type type, std::vector<Param> params, ASTNodePtr body) :
+FunNode::FunNode(Token token, std::string id, FunTypePtr type, std::vector<Param> params, ASTNodePtr body) :
 	ASTNode(std::move(token)),
 	id(std::move(id)),
-	type(type),
+	type(std::move(type)),
 	params(std::move(params)),
 	body(std::move(body))
+{}
+
+
+FunNode::Param::Param(Token token, std::string name) :
+	token(std::move(token)),
+	name(std::move(name))
 {}
 
 
@@ -26,10 +26,10 @@ void FunNode::accept(ASTVisitor& visitor) {
 };
 
 
-AssignNode::AssignNode(Token token, std::string id, ExprPtr expr) :
+AssignNode::AssignNode(Token token, ExprPtr lvalue, ExprPtr rvalue) :
 	ASTNode(std::move(token)),
-	id(std::move(id)),
-	expr(std::move(expr))
+	lvalue(std::move(lvalue)),
+	rvalue(std::move(rvalue))
 {}
 
 
@@ -96,10 +96,10 @@ void SeqNode::accept(ASTVisitor& visitor) {
 };
 
 
-DeclNode::DeclNode(Token token, std::string id, Type type, ASTNodePtr scope) :
+DeclNode::DeclNode(Token token, std::string id, TypePtr type, ASTNodePtr scope) :
 	ASTNode(std::move(token)),
 	id(std::move(id)),
-	type(type),
+	type(std::move(type)),
 	scope(std::move(scope))
 {}
 

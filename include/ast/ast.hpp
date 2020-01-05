@@ -8,12 +8,8 @@
 #include "cst/cst.hpp"
 
 
-struct Param {
-	std::string name;
-	Type type;
-
-	Param(std::string name, Type type);
-};
+struct Decl;
+typedef std::unique_ptr<Decl> DeclPtr;
 
 
 class ASTNode {
@@ -30,12 +26,18 @@ typedef std::unique_ptr<ASTNode> ASTNodePtr;
 
 class FunNode : public ASTNode {
 public:
+	struct Param {
+		Token token;
+		std::string name;
+		Param(Token token, std::string name);
+	};
+
 	std::string id;
-	Type type;
+	FunTypePtr type;
 	std::vector<Param> params;
 	ASTNodePtr body;
 
-	FunNode(Token token, std::string id, Type type, std::vector<Param> params, ASTNodePtr body);
+	FunNode(Token token, std::string id, FunTypePtr type, std::vector<Param> params, ASTNodePtr body);
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -45,10 +47,10 @@ typedef std::unique_ptr<FunNode> FunNodePtr;
 
 class AssignNode : public ASTNode {
 public:
-	std::string id;
-	ExprPtr expr;
+	ExprPtr lvalue;
+	ExprPtr rvalue;
 
-	AssignNode(Token token, std::string id, ExprPtr expr);
+	AssignNode(Token token, ExprPtr lvalue, ExprPtr rvalue);
 	void accept(ASTVisitor& visitor) override;
 };
 
@@ -104,10 +106,10 @@ public:
 class DeclNode : public ASTNode {
 public:
 	std::string id;
-	Type type;
+	TypePtr type;
 	ASTNodePtr scope;
 
-	DeclNode(Token token, std::string id, Type type, ASTNodePtr scope);
+	DeclNode(Token token, std::string id, TypePtr type, ASTNodePtr scope);
 	void accept(ASTVisitor& visitor) override;
 };
 

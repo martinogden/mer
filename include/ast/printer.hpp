@@ -2,11 +2,11 @@
 #include "visitor.hpp"
 #include "cst/printer.hpp"
 #include "ast.hpp"
+#include "type/printer.hpp"
 
 
 class ASTPrinter : public ASTVisitor {
 private:
-	FunNodePtr& node;
 	std::string retval;
 
 	void visit(FunNode&) override;
@@ -20,10 +20,10 @@ private:
 	void visit(ExprNode&) override;
 
 	void ret(std::string s);
-	std::string get(ASTNodePtr& node);
-	std::string get(ExprPtr& expr);
 
 public:
-	ASTPrinter(FunNodePtr& node);
-	std::string run();
+	std::string get(FunNodePtr& node);
+	std::string get(ASTNodePtr& node);
+	std::string get(ExprPtr& expr);
+	std::string get(TypePtr& type);
 };
