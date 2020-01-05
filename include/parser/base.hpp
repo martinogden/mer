@@ -5,9 +5,14 @@
 
 
 class BaseParser {
+private:
+	void fetch();
+
 protected:
 	Lexer& lexer;
-	Token curr;
+	std::vector<Token> tokens;
+	uint curr;
+	uint lookahead;
 	TokenType terminator;
 
 public:
@@ -15,6 +20,7 @@ public:
 
 	bool isAtEnd();
 	Token get();
+	Token peek(uint lhd);
 	Token advance();
 	bool match(TokenType type);
 	bool match(const std::set<TokenType> &types);
@@ -23,7 +29,7 @@ public:
 	Token expect(TokenType type);
 	void consumeLine();
 
-	BaseParser(Lexer& lexer, TokenType terminator=TokenType::SEMICOLON);
+	BaseParser(Lexer& lexer, uint lookahead=0, TokenType terminator=TokenType::SEMICOLON);
 	virtual ~BaseParser() = default;
 };
 

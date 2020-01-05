@@ -1,8 +1,8 @@
 #include "parser/pratt.hpp"
 
 
-PrattParser::PrattParser(ParserSpec&& spec, Lexer& lexer) :
-	BaseParser(lexer),
+PrattParser::PrattParser(ParserSpec&& spec, Lexer& lexer, uint lookahead) :
+	BaseParser(lexer, lookahead),
 	spec(spec)
 {}
 

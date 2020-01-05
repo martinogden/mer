@@ -1,5 +1,5 @@
 #pragma once
-#include "cst/token.hpp"
+#include "token.hpp"
 #include "cst/cst.hpp"
 #include "parser/base.hpp"
 #include "parser/spec.hpp"
@@ -43,6 +43,6 @@ protected:
 
 public:
 	ExprPtr expression(int rbp=0);
-	PrattParser(ParserSpec&& spec, Lexer& lexer);
+	PrattParser(ParserSpec&& spec, Lexer& lexer, uint lookahead);
 	~PrattParser() override = default;
 };

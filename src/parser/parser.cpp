@@ -4,6 +4,7 @@
 
 
 ParserSpec createParserSpec();
+constexpr uint LHD = 0;
 
 
 std::set<TokenType> asnOps = {
@@ -19,7 +20,9 @@ std::set<TokenType> postOps = {
 };
 
 
-Parser::Parser(Lexer& lexer) : PrattParser(createParserSpec(), lexer) {
+Parser::Parser(Lexer& lexer) :
+	PrattParser(createParserSpec(), lexer, LHD)
+{
 	seedTypes();
 }
 

@@ -2,12 +2,11 @@
 #include "parser/base.hpp"
 
 
-Token END(TokenType::END, "", true, 0, 0);
-
-
-BaseParser::BaseParser(Lexer& lexer, TokenType terminator) :
+BaseParser::BaseParser(Lexer& lexer, uint lookahead, TokenType terminator) :
 	lexer(lexer),
-	curr(END),
+	tokens(lookahead+1, END),
+	curr(0),
+	lookahead(lookahead),
 	terminator(terminator),
 	errors("Parse error")
 {}
@@ -19,19 +18,30 @@ bool BaseParser::isAtEnd() {
 
 
 Token BaseParser::get() {
-	return curr;
+	return tokens[curr % (lookahead+1)];
+}
+
+
+Token BaseParser::peek(uint lhd) {
+	assert(lhd <= lookahead && "invalid lookahead");
+	return tokens[(curr+lhd) % (lookahead+1)];
+}
+
+
+void BaseParser::fetch() {
+	tokens[curr++ % (lookahead + 1)] = lexer.nextToken();
 }
 
 
 Token BaseParser::advance() {
 	Token token = get();
 	// skip lexical errors
-	while (curr.type == TokenType::ERROR) {
-		errors.add(curr.lexeme, curr);
-		curr = lexer.nextToken();
+	while (get().type == TokenType::ERROR) {
+		errors.add(get().lexeme, get());
+		fetch();
 	}
 
-	curr = lexer.nextToken();
+	fetch();
 	return token;
 }
 
