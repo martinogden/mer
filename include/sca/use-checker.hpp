@@ -13,6 +13,7 @@ typedef Set<std::string> VarSet;
 class UseChecker : public ASTVisitor {
 private:
 	FunNodePtr& root;
+
 	VarSet init;
 	VarSet decl;
 

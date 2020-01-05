@@ -1,11 +1,11 @@
 #pragma once
-#include "cst/visitor.hpp"
-#include "cst/cst.hpp"
+#include "expr/visitor.hpp"
+#include "expr/expr.hpp"
 #include "set.hpp"
 #include "errors.hpp"
 
 
-class ExprUseChecker : public CSTVisitor {
+class ExprUseChecker : public ExprVisitor {
 private:
 	ExprPtr& root;
 	Set<std::string>& scope;

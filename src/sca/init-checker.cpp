@@ -20,7 +20,7 @@ void InitChecker::visit(ExprNode& node) {}
 void InitChecker::visit(FunNode& node) {
 	std::unordered_set<std::string> ids;
 
-	for (Param& param : node.params)
+	for (const auto& param : node.params)
 		ids.insert(param.name);
 
 	Set<std::string> encl = scope;
@@ -33,9 +33,12 @@ void InitChecker::visit(FunNode& node) {
 
 
 void InitChecker::visit(AssignNode& node) {
-	std::string id = node.id;
-	if (!scope.contains(id))
-		errors.add("attempt to initialize an undeclared variable: " + id, node.token);
+	// TODO: handle other types of lvalue
+	if (auto lvalue = dynamic_cast<IdExpr*>(node.lvalue.get())) {
+		std::string id = lvalue->identifier;
+		if (!scope.contains(id))
+			errors.add("attempt to initialize an undeclared variable: " + id, node.token);
+	}
 }
 
 

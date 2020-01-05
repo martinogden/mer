@@ -1,3 +1,4 @@
+#include "type/comparison.hpp"
 #include "sca/return-checker.hpp"
 
 
@@ -7,7 +8,7 @@ ReturnChecker::ReturnChecker(FunNodePtr& node) :
 
 
 void ReturnChecker::run() {
-	if (root->type == Type::VOID)
+	if (eq(root->type->codomain, Type::VOID))
 		return;
 
 	if (!get(root->body))

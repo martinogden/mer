@@ -1,14 +1,16 @@
 #pragma once
-#include "cst/visitor.hpp"
-#include "cst/cst.hpp"
-#include "errors.hpp"
 #include "symtab.hpp"
+#include "map.hpp"
+#include "errors.hpp"
+#include "expr/visitor.hpp"
+#include "expr/expr.hpp"
 
 
-class TypeAnnotator : public CSTVisitor {
+class TypeAnnotator : public ExprVisitor {
 private:
-	SymTab<Type>& env;
-	SymTab<FunType>& decls;
+	SymTab<TypePtr>& env;
+	Map<FunTypePtr>& funTypes;
+	Map<StructTypePtr>& structTypes;
 
 	void visit(CallExpr&) override;
 	void visit(TernaryExpr&) override;
@@ -16,11 +18,17 @@ private:
 	void visit(UnaryExpr&) override;
 	void visit(LiteralExpr&) override;
 	void visit(IdExpr&) override;
+	void visit(SubscriptExpr&) override;
+	void visit(ArrowExpr&) override;
+	void visit(DotExpr&) override;
+	void visit(DerefExpr&) override;
+	void visit(AllocExpr&) override;
 
-	void annotate(Expr& expr, Type type);
+	TypePtr canon(TypePtr& type);
+	void annotate(Expr& expr, TypePtr& type);
 public:
 	Errors errors;
 
-	TypeAnnotator(SymTab<Type>& env, SymTab<FunType>& decls);
-	Type get(ExprPtr& expr);
+	TypeAnnotator(SymTab<TypePtr>& env, Map<FunTypePtr>& funTypes, Map<StructTypePtr>& structTypes);
+	TypePtr get(ExprPtr& expr);
 };

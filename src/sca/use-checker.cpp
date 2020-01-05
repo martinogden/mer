@@ -16,7 +16,7 @@ void UseChecker::run() {
 void UseChecker::visit(FunNode& node) {
 	std::unordered_set<std::string> ids;
 
-	for (const Param& param : node.params)
+	for (const auto& param : node.params)
 		ids.insert(param.name);
 
 	VarSet vars( std::move(ids) );
@@ -30,10 +30,14 @@ void UseChecker::visit(FunNode& node) {
 void UseChecker::visit(AssignNode& node) {
 	VarSet init_ = getInit();
 
-	check(node.expr);
+	check(node.rvalue);
 
-	VarSet vars({node.id});
-	setInit(init_ | vars);
+	if (auto lvalue = dynamic_cast<IdExpr*>(node.lvalue.get())) {
+		VarSet vars({lvalue->identifier});
+		setInit(init_ | vars);
+	}
+	else
+		setInit(init_);
 }
 
 
