@@ -57,6 +57,7 @@ isTmpOrReg(u)
 succ(l, i)
 def(l, d)
 live(i, u)
+u != d
 ------------
 inter(d, u)
 */
@@ -99,13 +100,28 @@ void IGBuilder::addEdge(const Operand& u, const Operand& v) {
 }
 
 
+void IGBuilder::addVertex(const Operand& op) {
+	switch (op.getType()) {
+		case Operand::REG:
+		case Operand::TMP:
+			G->addVertex(op);
+			break;
+		case Operand::MEM:
+			G->addVertex(op.getMemOperand());
+		case Operand::LBL:
+		case Operand::IMM:
+			break;
+	}
+}
+
+
 void IGBuilder::addVertices(const Inst& inst) {
 	uint parity = inst.getParity();
 
 	if (parity > 0)
-		G->addVertex(inst.getDst());
+		addVertex(inst.getDst());
 	if (parity > 1)
-		G->addVertex(inst.getSrc1());
+		addVertex(inst.getSrc1());
 	if (parity > 2)
-		G->addVertex(inst.getSrc2());
+		addVertex(inst.getSrc2());
 }

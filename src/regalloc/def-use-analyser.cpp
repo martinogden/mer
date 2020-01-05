@@ -39,15 +39,24 @@ void DefUseAnalyser::visit(const Inst& inst, uint l) {
 			break;
 		case Inst::DIV:
 		case Inst::MOD:
-			setDef(l, {{ Reg::EAX, Reg::EDX, inst.getDst() }});
+			setDef(l, {{ Reg::RAX, Reg::RDX, inst.getDst() }});
 			setUse(l, {{
-				Reg::EAX, Reg::EDX, inst.getSrc1(), inst.getSrc2()
+				Reg::RAX, Reg::RDX, inst.getSrc1(), inst.getSrc2()
 			}});
 			break;
-		case Inst::MOV:
-			setDef(l, {{ inst.getDst() }});
-			setUse(l, {{ inst.getSrc1() }});
+		case Inst::MOV: {
+
+			if (inst.getDst().is(Operand::MEM)) {
+				setDef(l, {});
+				setUse(l, {{inst.getDst(), inst.getSrc1()}});
+			}
+			else {
+				setDef(l, {{inst.getDst()}});
+				setUse(l, {{inst.getSrc1()}});
+			}
 			break;
+
+		}
 		case Inst::JMP:
 			succ[l] = Set<uint>({ label2Line(inst.getDst()) });
 			break;
@@ -63,7 +72,7 @@ void DefUseAnalyser::visit(const Inst& inst, uint l) {
 			});
 			break;
 		case Inst::RET:
-			setDef(l, {{ Reg::EAX }});
+			setDef(l, {{ Reg::RAX }});
 			setUse(l, {{ inst.getDst() }});
 			succ[l] = {};
 			break;
@@ -73,7 +82,7 @@ void DefUseAnalyser::visit(const Inst& inst, uint l) {
 			break;
 		case Inst::CALL:
 			// TODO remove for void functions
-			setDef(l, {{ inst.getDst(), Reg::EAX }});
+			setDef(l, {{ inst.getDst(), Reg::RAX }});
 			setUse(l, getNRegs( inst.getSrc2().getImm() ));
 			break;
 		case Inst::ARG:
@@ -90,6 +99,8 @@ void DefUseAnalyser::setDef(uint l, Set<Operand>&& ops) {
 	for (auto& op : ops) {
 		if (op.is(Operand::REG) || op.is(Operand::TMP))
 			valid.insert(op);
+		if (op.is(Operand::MEM))
+			valid.insert(op.getMemOperand());
 	}
 
 	def[l] = std::move(valid);
@@ -102,6 +113,8 @@ void DefUseAnalyser::setUse(uint l, Set<Operand>&& ops) {
 	for (auto& op : ops) {
 		if (op.is(Operand::REG) || op.is(Operand::TMP))
 			valid.insert(op);
+		if (op.is(Operand::MEM))
+			valid.insert(op.getMemOperand());
 	}
 
 	use[l] = std::move(valid);

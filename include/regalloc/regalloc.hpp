@@ -8,7 +8,7 @@ constexpr int MAX_REG = 11;  // %r13d
 
 struct Alloc {
 	std::unordered_map<Operand, Operand> map;
-	uint num_used_regs;
+	std::vector<Reg> used_regs;
 	uint num_spilled;
 
 	Alloc();

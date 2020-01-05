@@ -19,6 +19,7 @@ private:
 
 	void visit(const Inst& inst, uint l);
 	void addEdge(const Operand& u, const Operand& v);
+	void addVertex(const Operand& operand);
 	void addVertices(const Inst& inst);
 
 public:

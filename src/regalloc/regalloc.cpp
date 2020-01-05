@@ -1,3 +1,4 @@
+#include <set>
 #include <unordered_map>
 #include "counter.hpp"
 #include "inst/operand.hpp"
@@ -9,7 +10,6 @@ typedef std::unordered_map<Operand, uint> Colors;
 
 
 Alloc::Alloc() :
-	num_used_regs(0),
 	num_spilled(0)
 {}
 
@@ -17,11 +17,16 @@ Alloc::Alloc() :
 Operand Alloc::lookup(const Operand& operand) const {
 	switch (operand.getType()) {
 		case Operand::REG:
-		case Operand::TMP:
+		case Operand::TMP: {
 			assert(map.find(operand) != map.end());
 			return map.at(operand);
+		}
+		case Operand::MEM: {
+			Operand mem = operand.getMemOperand();
+			assert(map.find(mem) != map.end());
+			return { map.at(mem).getReg(), operand.getMemOffset() };
+		}
 		case Operand::IMM:
-		case Operand::MEM:
 		case Operand::LBL:
 			return operand;
 	}
@@ -121,7 +126,7 @@ Colors greedyColor(IGPtr& G, std::vector<Operand>& order, Colors& precoloring) {
 Alloc toColoring(const Colors& colors) {
 	Alloc alloc;
 	uint offset = callerSaved.size() + 1;
-	std::unordered_set<Reg> used_regs;
+	std::set<Reg> used_regs;  // keeps regs in order
 
 	for (auto const& pair : colors) {
 		if (pair.second <= MAX_REG) {
@@ -136,7 +141,8 @@ Alloc toColoring(const Colors& colors) {
 		}
 	}
 
-	alloc.num_used_regs = used_regs.size();
+	std::vector<Reg> used(used_regs.begin(), used_regs.end());
+	alloc.used_regs = used;
 	return alloc;
 }
 
