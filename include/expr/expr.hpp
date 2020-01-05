@@ -2,8 +2,8 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include "cst/token.hpp"
 #include "cst/visitor.hpp"
+#include "parser/token.hpp"
 #include "cst/operator.hpp"
 #include "type/type.hpp"
 

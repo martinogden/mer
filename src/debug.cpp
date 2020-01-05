@@ -1,6 +1,6 @@
 #include <iomanip>
 #include <sstream>
-#include "cst/token.hpp"
+#include "parser/token.hpp"
 #include "cst/cst.hpp"
 #include "cst/operator.hpp"
 #include "graph.hpp"

@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include "cst/token.hpp"
+#include "parser/token.hpp"
 #include "visitor.hpp"
 #include "type/type.hpp"
 #include "cst/cst.hpp"

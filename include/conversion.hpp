@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "cst/token.hpp"
+#include "parser/token.hpp"
 #include "cst/operator.hpp"
 #include "type/type.hpp"
 #include "inst/operand.hpp"

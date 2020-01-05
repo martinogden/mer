@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "cst/token.hpp"
+#include "parser/token.hpp"
 
 
 class Errors {
