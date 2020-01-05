@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include "expr/expr.hpp"
-#include "token.hpp"
+#include "parser/token.hpp"
 #include "visitor.hpp"
 #include "operator.hpp"
 #include "type/type.hpp"
@@ -12,10 +12,12 @@
 class Stmt;
 class DeclStmt;
 class FunDecl;
+class StructDecl;
 
 typedef std::unique_ptr<Stmt> StmtPtr;
 typedef std::unique_ptr<DeclStmt> DeclStmtPtr;
 typedef std::unique_ptr<FunDecl> FunDeclPtr;
+typedef std::unique_ptr<StructDecl> StructDeclPtr;
 
 
 class Stmt {
@@ -30,11 +32,11 @@ public:
 
 class FunDecl : public Stmt {
 public:
-	Token type;
+	TypePtr type;
 	std::string identifier;
 	std::vector<DeclStmtPtr> params;
 
-	FunDecl(Token token, std::string identifier, Token type, std::vector<DeclStmtPtr> params);
+	FunDecl(Token token, std::string identifier, TypePtr type, std::vector<DeclStmtPtr> params);
 	void accept(CSTVisitor& visitor) override;
 };
 
@@ -49,23 +51,42 @@ public:
 };
 
 
-class TypedefStmt : public Stmt {
+class StructDecl : public Stmt {
 public:
-	Token type;
-	Token alias;
+	std::string identifier;
 
-	TypedefStmt(Token token, Token type, Token alias);
+	StructDecl(Token token, std::string identifier);
+	void accept(CSTVisitor& visitor) override;
+};
+
+
+class StructDefn : public Stmt {
+public:
+	StructDeclPtr decl;
+	std::vector<DeclStmtPtr> fields;
+
+	StructDefn(Token token, StructDeclPtr decl, std::vector<DeclStmtPtr> fields);
 	void accept(CSTVisitor& visitor) override;
 };
 
 
 class DeclStmt : public Stmt {
 public:
-	Token type;
+	TypePtr type;
 	std::string identifier;
 	ExprPtr expr;
 
-	DeclStmt(Token token, std::string identifier, Token type, ExprPtr expr);
+	DeclStmt(Token token, std::string identifier, TypePtr type, ExprPtr expr);
+	void accept(CSTVisitor& visitor) override;
+};
+
+
+class TypedefStmt : public Stmt {
+public:
+	TypePtr type;
+	Token alias;
+
+	TypedefStmt(Token token, TypePtr type, Token alias);
 	void accept(CSTVisitor& visitor) override;
 };
 

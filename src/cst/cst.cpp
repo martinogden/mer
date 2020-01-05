@@ -6,7 +6,7 @@ Stmt::Stmt(Token token) :
 {}
 
 
-FunDecl::FunDecl(Token token, std::string identifier, Token type, std::vector<DeclStmtPtr> params) :
+FunDecl::FunDecl(Token token, std::string identifier, TypePtr type, std::vector<DeclStmtPtr> params) :
 	Stmt(std::move(token)),
 	type(std::move(type)),
 	identifier(std::move(identifier)),
@@ -31,20 +31,30 @@ void FunDefn::accept(CSTVisitor& visitor) {
 };
 
 
-TypedefStmt::TypedefStmt(Token token, Token type, Token alias) :
+StructDecl::StructDecl(Token token, std::string identifier) :
 	Stmt(std::move(token)),
-	type(std::move(type)),
-	alias(std::move(alias))
+	identifier(std::move(identifier))
 {}
 
 
-void TypedefStmt::accept(CSTVisitor& visitor) {
+void StructDecl::accept(CSTVisitor& visitor) {
 	visitor.visit(*this);
 };
 
 
+StructDefn::StructDefn(Token token, StructDeclPtr decl, std::vector<DeclStmtPtr> fields) :
+	Stmt(std::move(token)),
+	decl(std::move(decl)),
+	fields(std::move(fields))
+{}
 
-DeclStmt::DeclStmt(Token token, std::string identifier, Token type, ExprPtr expr) :
+
+void StructDefn::accept(CSTVisitor& visitor) {
+	visitor.visit(*this);
+};
+
+
+DeclStmt::DeclStmt(Token token, std::string identifier, TypePtr type, ExprPtr expr) :
 	Stmt(std::move(token)),
 	type(std::move(type)),
 	identifier(std::move(identifier)),
@@ -53,6 +63,18 @@ DeclStmt::DeclStmt(Token token, std::string identifier, Token type, ExprPtr expr
 
 
 void DeclStmt::accept(CSTVisitor& visitor) {
+	visitor.visit(*this);
+};
+
+
+TypedefStmt::TypedefStmt(Token token, TypePtr type, Token alias) :
+	Stmt(std::move(token)),
+	type(std::move(type)),
+	alias(std::move(alias))
+{}
+
+
+void TypedefStmt::accept(CSTVisitor& visitor) {
 	visitor.visit(*this);
 };
 

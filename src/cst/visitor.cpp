@@ -1,36 +1,6 @@
 #include "cst/cst.hpp"
 
 
-void CSTVisitor::visit(CallExpr& expr) {
-	for (auto const& arg : expr.args)
-		arg->accept(*this);
-}
-
-
-void CSTVisitor::visit(TernaryExpr& expr) {
-	expr.cond->accept(*this);
-	expr.then->accept(*this);
-	expr.otherwise->accept(*this);
-}
-
-
-void CSTVisitor::visit(BinaryExpr& expr) {
-	expr.left->accept(*this);
-	expr.right->accept(*this);
-}
-
-
-void CSTVisitor::visit(UnaryExpr& unary) {
-	unary.expr->accept(*this);
-}
-
-
-void CSTVisitor::visit(LiteralExpr& expr) {}
-
-
-void CSTVisitor::visit(IdExpr& expr) {}
-
-
 void CSTVisitor::visit(FunDecl& decl) {
 	for (auto const& param : decl.params)
 		param->accept(*this);
@@ -43,17 +13,22 @@ void CSTVisitor::visit(FunDefn& defn) {
 }
 
 
+void CSTVisitor::visit(StructDecl& decl) {}
+
+
+void CSTVisitor::visit(StructDefn& defn) {
+	for (auto const& field : defn.fields)
+		field->accept(*this);
+}
+
+
+void CSTVisitor::visit(DeclStmt& stmt) {}
+
 
 void CSTVisitor::visit(TypedefStmt& stmt) {}
 
 
-void CSTVisitor::visit(DeclStmt& stmt) {
-	stmt.expr->accept(*this);
-}
-
-
 void CSTVisitor::visit(IfStmt& stmt) {
-	stmt.cond->accept(*this);
 	stmt.then->accept(*this);
 
 	if (stmt.otherwise)
@@ -62,7 +37,6 @@ void CSTVisitor::visit(IfStmt& stmt) {
 
 
 void CSTVisitor::visit(WhileStmt& stmt) {
-	stmt.cond->accept(*this);
 	stmt.body->accept(*this);
 }
 
@@ -70,17 +44,14 @@ void CSTVisitor::visit(WhileStmt& stmt) {
 void CSTVisitor::visit(ForStmt& stmt) {
 	if (stmt.init)
 		stmt.init->accept(*this);
-	stmt.cond->accept(*this);
+
 	if (stmt.step)
 		stmt.step->accept(*this);
 	stmt.body->accept(*this);
 }
 
 
-void CSTVisitor::visit(ReturnStmt& stmt) {
-	if (stmt.expr)
-		stmt.expr->accept(*this);
-}
+void CSTVisitor::visit(ReturnStmt& stmt) {}
 
 
 void CSTVisitor::visit(BlockStmt& block) {
@@ -89,17 +60,10 @@ void CSTVisitor::visit(BlockStmt& block) {
 }
 
 
-void CSTVisitor::visit(ExprStmt& stmt) {
-	stmt.expr->accept(*this);
-}
+void CSTVisitor::visit(ExprStmt& stmt) {}
 
 
-void CSTVisitor::visit(AssignStmt& stmt) {
-	stmt.lvalue->accept(*this);
-	stmt.rvalue->accept(*this);
-}
+void CSTVisitor::visit(AssignStmt& stmt) {}
 
 
-void CSTVisitor::visit(PostOpStmt& stmt) {
-	stmt.expr->accept(*this);
-}
+void CSTVisitor::visit(PostOpStmt& stmt) {}
