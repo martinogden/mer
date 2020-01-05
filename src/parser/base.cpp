@@ -97,12 +97,9 @@ Token BaseParser::expect(TokenType type) {
 }
 
 
-void BaseParser::consumeLine() {
-	while (!isAtEnd()) {
-		if (accept(terminator))
-			return;
+void BaseParser::consume(TokenType until) {
+	while (!isAtEnd() && !accept(until))
 		advance();
-	}
 }
 
 

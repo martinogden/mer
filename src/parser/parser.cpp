@@ -54,7 +54,7 @@ std::vector<StmtPtr> Parser::program() {
 		catch (ParseError& e) {
 			// ignore rest of line on syntax error
 			errors.add(e.what(), e.token);
-			consumeLine();
+			consume(e.terminator);
 		}
 	}
 

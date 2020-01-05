@@ -27,7 +27,7 @@ public:
 	bool accept(TokenType type);
 	bool accept(const std::set<TokenType>& types);
 	Token expect(TokenType type);
-	void consumeLine();
+	void consume(TokenType until);
 
 	BaseParser(Lexer& lexer, uint lookahead=0, TokenType terminator=TokenType::SEMICOLON);
 	virtual ~BaseParser() = default;
