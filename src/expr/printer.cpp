@@ -1,29 +1,18 @@
 #include <sstream>
 #include "expr/printer.hpp"
+#include "type/printer.hpp"
+#include "type/comparison.hpp"
 #include "print-utils.hpp"
 
 
-ExprPrinter::ExprPrinter(ExprPtr& expr) :
-	root(expr)
-{}
-
-
-std::string ExprPrinter::run() {
-	return get(root);
-}
-
-
 void ExprPrinter::visit(CallExpr& expr) {
-	std::stringstream buf;
-	buf << "(call " << expr.identifier << " ";
-
+	std::string id = expr.identifier;
 	std::vector<std::string> args;
+
 	for (auto& arg : expr.args)
 		args.push_back( get(arg) );
-	buf << join(args, " ");
 
-	buf << ")";
-	ret(buf.str());
+	ret("(call " + id + " " + join(args, ", ") + ")");
 }
 
 
@@ -33,18 +22,12 @@ void ExprPrinter::visit(TernaryExpr& expr) {
 
 
 void ExprPrinter::visit(BinaryExpr& expr) {
-	// TODO: extract to to_string helper
-	std::stringstream buf;
-	buf << expr.op;
-	ret("(" + buf.str() + " " + get(expr.left) + " " + get(expr.right) + ")");
+	ret("(" + to_string(expr.op) + " " + get(expr.left) + " " + get(expr.right) + ")");
 }
 
 
 void ExprPrinter::visit(UnaryExpr& unary) {
-	// TODO: extract to to_string helper
-	std::stringstream buf;
-	buf << unary.op;
-	ret("(" + buf.str() + " " + get(unary.expr) + ")");
+	ret("(" + to_string(unary.op) + " " + get(unary.expr) + ")");
 }
 
 
@@ -56,18 +39,46 @@ void ExprPrinter::visit(IdExpr& expr) {
 void ExprPrinter::visit(LiteralExpr& expr) {
 	std::string s;
 
-	switch (expr.type) {
-		case Type::INT:
-			s = std::to_string(expr.as.i);
-			break;
-		case Type::BOOL:
-			s = std::to_string(expr.as.b);
-			break;
-		default:
-			throw 1;  // should never get here
-	}
+	if (eq(expr.type, Type::INT))
+		s = std::to_string(expr.as.i);
+	else if (eq(expr.type, Type::BOOL))
+		s = expr.as.b ? "true" : "false";
+	else if (eq(expr.type, Type::INDEF))
+		s = "NULL";
+	else
+		throw 1;  // should never get here
 
 	ret(s);
+}
+
+
+void ExprPrinter::visit(SubscriptExpr& expr) {
+	ret( "(" + get(expr.left) + "[" + get(expr.right) + "])" );
+}
+
+
+void ExprPrinter::visit(ArrowExpr& expr) {
+	ret( "(" + get(expr.expr) + "->" + expr.identifier + ")" );
+}
+
+
+void ExprPrinter::visit(DotExpr& expr) {
+	ret( "(" + get(expr.expr) + "." + expr.identifier + ")" );
+}
+
+
+void ExprPrinter::visit(DerefExpr& ptr) {
+	ret( "(*" + get(ptr.expr) + ")" );
+}
+
+
+void ExprPrinter::visit(AllocExpr& alloc) {
+	std::string type = get(alloc.typeParam);
+
+	if (alloc.expr)
+		ret( "alloc_array(<" + type + ">, " + get(alloc.expr) + ")" );
+	else
+		ret( "alloc(<" + type + ">)" );
 }
 
 
@@ -78,7 +89,25 @@ void ExprPrinter::ret(std::string s) {
 
 std::string ExprPrinter::get(ExprPtr& expr) {
 	expr->accept(*this);
-	std::string s = retval;
-	retval = "";
-	return s;
+	return std::move(retval);
+}
+
+
+std::string ExprPrinter::get(TypePtr& type) {
+	TypePrinter printer;
+	return printer.get(type);
+}
+
+
+std::string to_string(UnOp op) {
+	std::stringstream buffer;
+	buffer << op;
+	return buffer.str();
+}
+
+
+std::string to_string(BinOp op) {
+	std::stringstream buffer;
+	buffer << op;
+	return buffer.str();
 }

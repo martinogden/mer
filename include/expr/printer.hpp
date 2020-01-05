@@ -1,12 +1,15 @@
 #pragma once
 #include <string>
-#include "cst/visitor.hpp"
-#include "cst/cst.hpp"
+#include "visitor.hpp"
+#include "expr.hpp"
 
 
-class ExprPrinter : public CSTVisitor {
+std::string to_string(UnOp op);
+std::string to_string(BinOp op);
+
+
+class ExprPrinter : public ExprVisitor {
 private:
-	ExprPtr& root;
 	std::string retval;
 
 	void visit(CallExpr&) override;
@@ -15,11 +18,15 @@ private:
 	void visit(UnaryExpr&) override;
 	void visit(LiteralExpr&) override;
 	void visit(IdExpr&) override;
+	void visit(SubscriptExpr&) override;
+	void visit(ArrowExpr&) override;
+	void visit(DotExpr&) override;
+	void visit(DerefExpr&) override;
+	void visit(AllocExpr&) override;
 
 	void ret(std::string);
-	std::string get(ExprPtr&);
+	std::string get(TypePtr&);
 
 public:
-	ExprPrinter(ExprPtr&);
-	std::string run();
+	std::string get(ExprPtr&);
 };
