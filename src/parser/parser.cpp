@@ -3,8 +3,8 @@
 #include "conversion.hpp"
 
 
-ParserSpec createParserSpec();
 constexpr uint LHD = 0;
+static ParserSpec createParserSpec();
 
 
 std::set<TokenType> asnOps = {
@@ -28,6 +28,7 @@ Parser::Parser(Lexer& lexer) :
 
 
 ParseTree Parser::run() {
+	advance();  // seek lexer
 	try {
 		// TODO handle w/o block
 		std::vector<StmtPtr> decls = program();
@@ -42,8 +43,6 @@ ParseTree Parser::run() {
 
 
 std::vector<StmtPtr> Parser::program() {
-	advance();
-
 	std::vector<StmtPtr> decls;
 	Token token = get();
 
@@ -67,32 +66,139 @@ std::vector<StmtPtr> Parser::program() {
 }
 
 
+TypePtr Parser::typeOpt() {
+	return type(true);
+}
+
+
+ExprPtr Parser::expression(int rbp=0) {
+	Token token = get();
+
+	// special-case expression that contain types
+	if (accept(TokenType::ALLOC)) {
+		expect(TokenType::LPAREN);
+		TypePtr ty = type();
+		expect(TokenType::RPAREN);
+		return std::make_unique<AllocExpr>(token, ty);
+	}
+	else if (accept(TokenType::ALLOC_ARRAY)) {
+		expect(TokenType::LPAREN);
+		TypePtr ty = type();
+		expect(TokenType::COMMA);
+		ExprPtr expr = expression();
+		expect(TokenType::RPAREN);
+		return std::make_unique<AllocExpr>(token, ty, std::move(expr));
+	}
+	else
+		return PrattParser::expression(rbp);
+}
+
+
+TypePtr Parser::type(bool optional) {
+	Token token = get();
+	TypePtr ty;
+
+	if (token.isTypeAlias && accept(TokenType::IDENT))
+		ty = std::make_unique<BaseType>(token.lexeme);
+
+	else if (accept(TokenType::TYPE))
+		ty = std::make_unique<BaseType>(token.lexeme);
+
+	else if (accept(TokenType::STRUCT)) {
+		Token id = get();
+		if (accept(TokenType::TYPE))
+			ty = std::make_unique<StructType>(id.lexeme);
+		else {
+			expect(TokenType::IDENT);
+			ty = std::make_unique<StructType>(id.lexeme);
+		}
+	}
+	else {
+		if (!optional)
+			errors.add("Expected a type, got: `" + token.lexeme + "`.", token);
+		return nullptr;
+	}
+
+	while (!isAtEnd()) {
+		if (accept(TokenType::MUL))
+			ty = std::make_unique<PtrType>(std::move(ty));
+		else if (accept(TokenType::LBRACK)) {
+			expect(TokenType::RBRACK);
+			ty = std::make_unique<ArrayType>(std::move(ty));
+		}
+		else break;
+	}
+
+	return std::move(ty);
+}
+
+
 StmtPtr Parser::declaration() {
 	Token token = get();
 
 	if (accept(TokenType::TYPEDEF))
 		return typedefStmt(token);
 
-	expect(TokenType::TYPE);
-	return function(token);
+	TypePtr ty = type();
+	Token t = get();
+
+	if (accept(TokenType::IDENT))
+		return finishFun(token, t, ty);
+
+	if ( auto stype = dynamic_cast<StructType*>(ty.get()) )
+		return finishStruct(token, stype->name);
+
+	throw ParseError("Unexpected token: `" + t.lexeme + "`.", t, TokenType::RBRACE);
 }
 
 
 StmtPtr Parser::typedefStmt(Token& token) {
-	Token tyToken = expect(TokenType::TYPE);
+	TypePtr ty = type();
 	Token idToken = expect(TokenType::IDENT);
-	// essential we forward new type to lexer here before it
+
+	// essential we forward new type alias to lexer here before it
 	// reads the semicolon. Otherwise lexer will read in lookahead
 	// token, which could be a type token of this new type
-	lexer.addType(idToken.lexeme);
+	lexer.addTypeAlias(idToken.lexeme);
+
 	expect(TokenType::SEMICOLON);
-	return std::make_unique<TypedefStmt>(token, tyToken, idToken);
+	return std::make_unique<TypedefStmt>(token, std::move(ty), idToken);
 }
 
 
-StmtPtr Parser::function(Token& token) {
-	Token id = expect(TokenType::IDENT);
-	FunDeclPtr decl = std::make_unique<FunDecl>(token, id.lexeme, token, params(token));
+StmtPtr Parser::finishStruct(Token& token, std::string& name) {
+	StructDeclPtr decl = std::make_unique<StructDecl>(token, name);
+	StmtPtr stmt;
+
+	if (accept(TokenType::LBRACE))
+		stmt = std::make_unique<StructDefn>(token, std::move(decl), fields());
+	else
+		stmt = std::move(decl);
+
+	expect(TokenType::SEMICOLON);
+	return std::move(stmt);
+}
+
+
+std::vector<DeclStmtPtr> Parser::fields() {
+	std::vector<DeclStmtPtr> decls;
+
+	while (!isAtEnd() && !match(TokenType::RBRACE)) {
+		Token t = get();
+		TypePtr ty = type();
+		Token id = expect(TokenType::IDENT);
+		expect(TokenType::SEMICOLON);
+		DeclStmtPtr decl = std::make_unique<DeclStmt>(t, id.lexeme, std::move(ty), nullptr);
+		decls.push_back( std::move(decl) );
+	}
+
+	expect(TokenType::RBRACE);
+	return std::move(decls);
+}
+
+
+StmtPtr Parser::finishFun(Token& token, Token& idToken, TypePtr ty) {
+	FunDeclPtr decl = std::make_unique<FunDecl>(token, idToken.lexeme, std::move(ty), params(idToken));
 
 	if (accept(TokenType::SEMICOLON))
 		return std::move(decl);
@@ -107,9 +213,10 @@ std::vector<DeclStmtPtr> Parser::params(Token& token) {
 
 	expect(TokenType::LPAREN);
 	while (!isAtEnd() && !match(TokenType::RPAREN)) {
-		Token type = expect(TokenType::TYPE);
+		Token t = get();
+		TypePtr ty = type();
 		Token id = expect(TokenType::IDENT);
-		DeclStmtPtr decl = std::make_unique<DeclStmt>(type, id.lexeme, type, nullptr);
+		DeclStmtPtr decl = std::make_unique<DeclStmt>(t, id.lexeme, std::move(ty), nullptr);
 		decls.push_back( std::move(decl) );
 
 		if (!accept(TokenType::COMMA))
@@ -141,8 +248,8 @@ StmtPtr Parser::statement() {
 	StmtPtr stmt;
 	if (accept(TokenType::RETURN))
 		stmt = returnStmt(token);
-	else if (accept(TokenType::TYPE))
-		stmt = declStmt(token);
+	else if (TypePtr type = typeOpt())
+		stmt = finishDeclStmt(token, std::move(type));
 	else
 		stmt = simpleStmt(token);
 
@@ -192,8 +299,8 @@ StmtPtr Parser::declOrSimpleStmtOpt(TokenType terminator) {
 
 	Token token = get();
 	StmtPtr stmt;
-	if (accept(TokenType::TYPE))
-		stmt = declStmt(token);
+	if (TypePtr type = typeOpt())
+		stmt = finishDeclStmt(token, std::move(type));
 	else
 		stmt = simpleStmt(token);
 
@@ -204,20 +311,22 @@ StmtPtr Parser::declOrSimpleStmtOpt(TokenType terminator) {
 
 StmtPtr Parser::returnStmt(Token& token) {
 	ExprPtr expr = nullptr;
-	if (!match(terminator))
+	if (!match(TokenType::SEMICOLON))
 		expr = expression();
 	return std::make_unique<ReturnStmt>(token, std::move(expr));
 }
 
 
-StmtPtr Parser::declStmt(Token& token) {
+StmtPtr Parser::finishDeclStmt(Token& token, TypePtr ty) {
+	assert(ty != nullptr);
+
 	Token id = expect(TokenType::IDENT);
+	Token t = get();
 
-	ExprPtr expr = nullptr;
 	if (accept(TokenType::EQL))
-		expr = expression();
-
-	return std::make_unique<DeclStmt>(token, id.lexeme, token, std::move(expr));
+		return std::make_unique<DeclStmt>(t, id.lexeme, std::move(ty), expression());
+	else
+		return std::make_unique<DeclStmt>(token, id.lexeme, std::move(ty), nullptr);
 }
 
 
@@ -233,7 +342,7 @@ StmtPtr Parser::block(Token& token) {
 
 
 StmtPtr Parser::simpleStmt(Token& token) {
-	ExprPtr lval = expression();
+	ExprPtr lval = lvalue();
 	Token op = get();
 
 	bool isasnop = match(asnOps);
@@ -242,15 +351,11 @@ StmtPtr Parser::simpleStmt(Token& token) {
 	if (!isasnop && !ispostop)
 		return std::make_unique<ExprStmt>(token, std::move(lval));
 
-	advance();  // is asnop or postop, so read token
-
-	// make sure lval is an ident
-//	if ( dynamic_cast<IdExpr*>(lval.get()) == nullptr )
-//		throw ParseError("Expected an identifier", token);
+	Token t = advance();  // is asnop or postop, so read token
 
 	if (isasnop) {
 		ExprPtr rval = expression();
-		return std::make_unique<AssignStmt>(token, asnOpToBinOp(op.type), std::move(lval), std::move(rval));
+		return std::make_unique<AssignStmt>(t, asnOpToBinOp(op.type), std::move(lval), std::move(rval));
 	}
 
 	assert(ispostop);
@@ -266,8 +371,15 @@ ExprPtr Parser::condition() {
 }
 
 
+ExprPtr Parser::lvalue() {
+	// TODO: is this the best way to handle lvalues?
+	// Doing it this way, we need to check for valid lvalues in elab
+	return expression();
+}
+
+
 void Parser::seedTypes() {
-	for (auto const& pair : concreteTypes)
+	for (const auto& pair : Type::baseTypes)
 		lexer.addType(pair.first);
 }
 
@@ -278,12 +390,15 @@ ParserSpec createParserSpec() {
 	// null parsers
 	spec.add( TokenType::LPAREN, std::make_shared<ParensParser>());
 	spec.add({TokenType::BANG, TokenType::TILDE, TokenType::SUB}, std::make_shared<UnaryParser>());
-	spec.add({TokenType::TRUE, TokenType::FALSE}, std::make_shared<LiteralParser>());
+	spec.add({TokenType::NUM, TokenType::TRUE, TokenType::FALSE, TokenType::NUL}, std::make_shared<LiteralParser>());
 	spec.add( TokenType::IDENT, std::make_shared<IdentParser>());
-	spec.add( TokenType::NUM, std::make_shared<LiteralParser>());
+	spec.add( TokenType::MUL, std::make_shared<DerefParser>());
 
 	// left parsers
 	spec.add( TokenType::LPAREN, std::make_shared<CallParser>());
+	spec.add( TokenType::LBRACK, std::make_shared<SubscriptParser>());
+	spec.add( TokenType::SUB_GT, std::make_shared<ArrowParser>());
+	spec.add( TokenType::FULL_STOP, std::make_shared<DotParser>());
 	spec.add({TokenType::MUL, TokenType::DIV, TokenType::MOD}, std::make_shared<BinaryParser>(MUL));
 	spec.add({TokenType::ADD, TokenType::SUB}, std::make_shared<BinaryParser>(ADD));
 	spec.add({TokenType::LT, TokenType::LT_EQL, TokenType::GT, TokenType::GT_EQL}, std::make_shared<BinaryParser>(COMP));
@@ -295,5 +410,5 @@ ParserSpec createParserSpec() {
 	spec.add( TokenType::PIPE_PIPE, std::make_shared<BinaryParser>(LOR));
 	spec.add( TokenType::QUESTION, std::make_shared<TernaryParser>());
 
-	return spec;
+	return std::move(spec);
 }

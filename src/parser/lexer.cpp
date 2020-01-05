@@ -3,6 +3,7 @@
 
 
 const int D = static_cast<int>(TokenType::ADD_EQL) - static_cast<int>(TokenType::ADD);
+const u_int64_t MER_INT_MAX = (1ULL<<63U) - 1;  // 0x7FFFFFFFFFFFFFFF
 
 
 Lexer::Lexer(std::string src) :
@@ -34,6 +35,8 @@ Token Lexer::nextToken() {
 				return emit(TokenType::SEMICOLON);
 			case ',':
 				return emit(TokenType::COMMA);
+			case '.':
+				return emit(TokenType::FULL_STOP);
 			case '(':
 				return emit(TokenType::LPAREN);
 			case ')':
@@ -42,6 +45,10 @@ Token Lexer::nextToken() {
 				return emit(TokenType::LBRACE);
 			case '}':
 				return emit(TokenType::RBRACE);
+			case '[':
+				return emit(TokenType::LBRACK);
+			case ']':
+				return emit(TokenType::RBRACK);
 
 			// operators + special cases
 			case '>':
@@ -90,6 +97,8 @@ Token Lexer::nextToken() {
 			case '-':
 				if (accept('-'))
 					return emit(TokenType::SUB_SUB);
+				if (accept('>'))
+					return emit(TokenType::SUB_GT);
 				return op(c);
 			case '+':
 				if (accept('+'))
@@ -284,7 +293,7 @@ Token Lexer::hex() {
 	if (!isHexDigit(get()))  // at least one
 		return error("invalid hex number");
 
-	int64_t value = hex2int(advance());
+	u_int64_t value = hex2int(advance());
 
 	while (! isAtEnd()) {
 		char c = get();
@@ -293,14 +302,12 @@ Token Lexer::hex() {
 			break;
 
 		value = 16*value + hex2int(c);
-		if (value > 0xFFFFFFFF)
+		if (value > MER_INT_MAX + 1)
 			return error("integer value too big");
-		c = advance();
+		advance();
 	}
 
-	// we allow 32-bit input, but operate on 64-bit regs for now
-	// TODO: decide if we allow 64-bit ints or operate on 32-bit regs
-	return emit(TokenType::NUM, value);
+	return emit(TokenType::NUM, static_cast<int64_t>(value));
 }
 
 
@@ -315,7 +322,7 @@ inline uint dec2int(char c) {
 
 // 0 | [1-9][0-9]*
 Token Lexer::dec() {
-	int64_t value = dec2int(prev());
+	u_int64_t value = dec2int(prev());
 
 	while (! isAtEnd()) {
 		char c = get();
@@ -324,12 +331,12 @@ Token Lexer::dec() {
 			break;
 
 		value = 10*value + dec2int(c);
-		if (value > 1U<<31U)
+		if (value > MER_INT_MAX)
 			return error("integer value too big");
 		c = advance();
 	}
 
-	return emit(TokenType::NUM, value);
+	return emit(TokenType::NUM, static_cast<int64_t>(value));
 }
 
 
@@ -349,6 +356,9 @@ Token Lexer::ident() {
 
 	if (types.find(lexeme) != types.end())
 		return emit(TokenType::TYPE, lexeme);
+
+	if (typeAliases.find(lexeme) != typeAliases.end())
+		return emitTypeAlias(lexeme);
 
 	if (reserved.find(lexeme) != reserved.end())
 		return emit(TokenType::RESERVED, lexeme);
@@ -390,13 +400,16 @@ bool Lexer::isAlphaUnder(char c) {
 
 
 Token Lexer::error(std::string msg) {
-	return emit(TokenType::ERROR, msg, 0);
+	return emit(TokenType::ERROR, std::move(msg), 0);
 }
 
 
-Token Lexer::emit(TokenType type, std::string lexeme, uint value) {
+Token Lexer::emit(TokenType type, std::string lexeme, int64_t value, bool isTypeAlias) {
+	if (isTypeAlias)
+		assert(type == TokenType::IDENT);
+
 	uint length = curr - start;
-	return Token(type, std::move(lexeme), value, line, col-length);
+	return Token(type, std::move(lexeme), value, line, col-length, isTypeAlias);
 }
 
 
@@ -405,7 +418,7 @@ Token Lexer::emit(TokenType type, std::string lexeme) {
 }
 
 
-Token Lexer::emit(TokenType type, uint value) {
+Token Lexer::emit(TokenType type, int64_t value) {
 	return emit(type, getLexeme(), value);
 }
 
@@ -414,6 +427,12 @@ Token Lexer::emit(TokenType type) {
 	return emit(type, getLexeme(), 0);
 }
 
+
+Token Lexer::emitTypeAlias(std::string lexeme) {
+	return emit(TokenType::IDENT, std::move(lexeme), 0, true);
+}
+
+
 std::string Lexer::getLexeme() {
 	return src.substr(start, curr-start);
 }
@@ -421,4 +440,9 @@ std::string Lexer::getLexeme() {
 
 void Lexer::addType(std::string type) {
 	types.insert(type);
+}
+
+
+void Lexer::addTypeAlias(std::string type) {
+	typeAliases.insert(type);
 }

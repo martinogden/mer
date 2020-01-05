@@ -42,7 +42,7 @@ protected:
 	ParserSpec spec;
 
 public:
-	ExprPtr expression(int rbp=0);
+	virtual ExprPtr expression(int rbp);
 	PrattParser(ParserSpec&& spec, Lexer& lexer, uint lookahead);
 	~PrattParser() override = default;
 };

@@ -3,7 +3,7 @@
 #include <memory>
 #include <set>
 #include <vector>
-#include "cst/token.hpp"
+#include "token.hpp"
 
 
 class NullParser;

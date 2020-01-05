@@ -24,6 +24,40 @@ ExprPtr CallParser::parse(ExprPtr left, Token& token, PrattParser& parser) {
 }
 
 
+SubscriptParser::SubscriptParser(int lbp) :
+		LeftParser(lbp)
+{}
+
+
+ExprPtr SubscriptParser::parse(ExprPtr left, Token& token, PrattParser& parser) {
+	ExprPtr right = parser.expression( 0 );
+	parser.expect(TokenType::RBRACK);
+	return std::make_unique<SubscriptExpr>(token, std::move(left), std::move(right));
+}
+
+
+ArrowParser::ArrowParser(int lbp) :
+		LeftParser(lbp)
+{}
+
+
+ExprPtr ArrowParser::parse(ExprPtr left, Token& token, PrattParser& parser) {
+	Token t = parser.expect(TokenType::IDENT);
+	return std::make_unique<ArrowExpr>(token, std::move(left), std::move(t.lexeme));
+}
+
+
+DotParser::DotParser(int lbp) :
+		LeftParser(lbp)
+{}
+
+
+ExprPtr DotParser::parse(ExprPtr left, Token& token, PrattParser& parser) {
+	Token t = parser.expect(TokenType::IDENT);
+	return std::make_unique<DotExpr>(token, std::move(left), std::move(t.lexeme));
+}
+
+
 TernaryParser::TernaryParser(int lbp) :
 	LeftParser(lbp)
 {}
@@ -95,6 +129,10 @@ ExprPtr LiteralParser::parse(Token& token, PrattParser& parser) {
 			return std::make_unique<LiteralExpr>(token, true);
 		case TokenType::FALSE:
 			return std::make_unique<LiteralExpr>(token, false);
+		case TokenType::NUL: {
+			LiteralExpr::Value value {.i=0};
+			return  std::make_unique<LiteralExpr>(token, Type::INDEF, value);
+		}
 		default:
 			// should never get here
 			throw ParseError("Invalid literal", token);
@@ -121,4 +159,15 @@ ExprPtr ParensParser::parse(Token& token, PrattParser& parser) {
 	ExprPtr expr = parser.expression( getBP() );
 	parser.expect(TokenType::RPAREN);
 	return std::move(expr);
+}
+
+
+DerefParser::DerefParser(int bp) :
+		NullParser(bp)
+{}
+
+
+ExprPtr DerefParser::parse(Token& token, PrattParser& parser) {
+	ExprPtr expr = parser.expression( getBP() );
+	return std::make_unique<DerefExpr>(token, std::move(expr));
 }

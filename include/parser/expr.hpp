@@ -34,6 +34,27 @@ public:
 };
 
 
+class SubscriptParser : public LeftParser {
+public:
+	SubscriptParser(int lbp=LPAREN);
+	ExprPtr parse(ExprPtr cond, Token& token, PrattParser& parser) override;
+};
+
+
+class ArrowParser : public LeftParser {
+public:
+	ArrowParser(int lbp=LPAREN);
+	ExprPtr parse(ExprPtr cond, Token& token, PrattParser& parser) override;
+};
+
+
+class DotParser : public LeftParser {
+public:
+	DotParser(int lbp=LPAREN);
+	ExprPtr parse(ExprPtr cond, Token& token, PrattParser& parser) override;
+};
+
+
 class TernaryParser : public LeftParser {
 public:
 	TernaryParser(int lbp=TERN);
@@ -78,5 +99,12 @@ public:
 class ParensParser : public NullParser {
 public:
 	ParensParser(int bp=RPAREN);
+	ExprPtr parse(Token& token, PrattParser& parser) override;
+};
+
+
+class DerefParser : public NullParser {
+public:
+	DerefParser(int bp=UNARY);
 	ExprPtr parse(Token& token, PrattParser& parser) override;
 };

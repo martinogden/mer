@@ -1,7 +1,7 @@
 #pragma once
 #include <unordered_set>
 #include <string>
-#include "cst/token.hpp"
+#include "token.hpp"
 
 
 class Lexer {
@@ -12,6 +12,7 @@ private:
 	uint line;
 	uint col;
 	std::unordered_set<std::string> types;
+	std::unordered_set<std::string> typeAliases;
 
 	// src navigation
 	void incrCol();
@@ -41,14 +42,16 @@ private:
 	bool isAlphaUnder(char c);
 	std::string getLexeme();
 
-	Token emit(TokenType type, std::string lexeme, uint value);
+	Token emit(TokenType type, std::string lexeme, int64_t value, bool isTypeAlias=false);
 	Token emit(TokenType type, std::string lexeme);
-	Token emit(TokenType type, uint value);
+	Token emit(TokenType type, int64_t value);
 	Token emit(TokenType type);
+	Token emitTypeAlias(std::string lexeme);
 	Token error(std::string msg);
 public:
 	Lexer(std::string src);
 	Token nextToken();
 	bool isAtEnd();
 	void addType(std::string type);
+	void addTypeAlias(std::string type);
 };
