@@ -1,5 +1,6 @@
 #include <sstream>
 #include "irt/printer.hpp"
+#include "irt/containers.hpp"
 #include "print-utils.hpp"
 
 
@@ -15,9 +16,9 @@ void IRTPrinter::ret(std::string str) {
 }
 
 
-std::string IRTPrinter::get(IRTFunPtr& cmd) {
-	cmd->accept(*this);
-	return retval;
+std::string IRTPrinter::get(IRTFun& fun) {
+	std::string label = fun.id + "(" + join(fun.params, ", ") + "):\n";
+	return label + get(fun.body);
 }
 
 
@@ -30,12 +31,6 @@ std::string IRTPrinter::get(IRTCmdPtr& cmd) {
 std::string IRTPrinter::get(IRTExprPtr& e) {
 	e->accept(*this);
 	return retval;
-}
-
-
-void IRTPrinter::visit(IRTFun& fun) {
-	std::string label = "." + fun.id + "(" + join(fun.params, ", ") + "):\n";
-	ret( label + get(fun.body) );
 }
 
 
@@ -59,6 +54,16 @@ void IRTPrinter::visit(AssignCmd& cmd) {
 }
 
 
+void IRTPrinter::visit(LoadCmd& cmd) {
+	ret( "\t" + cmd.dst + " <- MEM[" + get(cmd.src) + "]\n" );
+}
+
+
+void IRTPrinter::visit(StoreCmd& cmd) {
+	ret( "\tMEM[" + get(cmd.dst) + "] <- " + cmd.src + "\n" );
+}
+
+
 void IRTPrinter::visit(EffAssignCmd& cmd) {
 	ret("\t" + cmd.var + " <- " + get(cmd.left)\
 		+ " " + to_string(cmd.op)\
@@ -68,7 +73,7 @@ void IRTPrinter::visit(EffAssignCmd& cmd) {
 
 
 void IRTPrinter::visit(LabelCmd& cmd) {
-	ret ( "." + cmd.name + ":\n" );
+	ret ( cmd.name + ":\n" );
 }
 
 
@@ -97,16 +102,21 @@ void IRTPrinter::visit(CmdExpr& e) {
 }
 
 
-void IRTPrinter::visit(IntExpr& e) {
+void IRTPrinter::visit(IRTIntExpr& e) {
 	ret( std::to_string(e.value) );
 }
 
 
-void IRTPrinter::visit(VarExpr& e) {
+void IRTPrinter::visit(IRTIdExpr& e) {
 	ret( e.name );
 }
 
 
-void IRTPrinter::visit(PairExpr& e) {
+void IRTPrinter::visit(IRTBinaryExpr& e) {
 	ret( "(" + get(e.left) + " " + to_string(e.op) + " " + get(e.right) + ")");
+}
+
+
+void IRTPrinter::visit(IRTMemExpr& e) {
+	ret(get(e.address) );
 }

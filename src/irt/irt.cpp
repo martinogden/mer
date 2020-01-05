@@ -1,22 +1,11 @@
 #include "irt/irt.hpp"
 
 
-IRTFun::IRTFun(std::string id, std::vector<std::string> params, IRTCmdPtr body) :
-	id(std::move(id)),
-	params(std::move(params)),
-	body(std::move(body))
-{}
-
-
-void IRTFun::accept(IRTVisitor& visitor) {
-	visitor.visit(*this);
-}
-
-
 SeqCmd::SeqCmd(IRTCmdPtr head, IRTCmdPtr rest) :
 	head(std::move(head)),
 	rest(std::move(rest))
 {}
+
 
 void SeqCmd::accept(IRTVisitor& visitor) {
 	visitor.visit(*this);
@@ -60,6 +49,28 @@ AssignCmd::AssignCmd(std::string var, IRTExprPtr value) :
 
 
 void AssignCmd::accept(IRTVisitor& visitor) {
+	visitor.visit(*this);
+}
+
+
+LoadCmd::LoadCmd(std::string dst, IRTExprPtr src) :
+	dst(std::move(dst)),
+	src(std::move(src))
+{}
+
+
+void LoadCmd::accept(IRTVisitor& visitor) {
+	visitor.visit(*this);
+}
+
+
+StoreCmd::StoreCmd(IRTExprPtr dst, std::string src) :
+	dst(std::move(dst)),
+	src(std::move(src))
+{}
+
+
+void StoreCmd::accept(IRTVisitor& visitor) {
 	visitor.visit(*this);
 }
 
@@ -124,33 +135,44 @@ void CmdExpr::accept(IRTVisitor& visitor) {
 }
 
 
-IntExpr::IntExpr(int value) :
+IRTIntExpr::IRTIntExpr(int64_t value) :
 	value(value)
 {}
 
 
-void IntExpr::accept(IRTVisitor& visitor) {
+void IRTIntExpr::accept(IRTVisitor& visitor) {
 	visitor.visit(*this);
 }
 
 
-VarExpr::VarExpr(std::string name) :
+IRTIdExpr::IRTIdExpr(std::string name) :
 	name(std::move(name))
 {}
 
 
-void VarExpr::accept(IRTVisitor& visitor) {
+void IRTIdExpr::accept(IRTVisitor& visitor) {
 	visitor.visit(*this);
 }
 
 
-PairExpr::PairExpr(BinOp op, IRTExprPtr left, IRTExprPtr right) :
+IRTBinaryExpr::IRTBinaryExpr(BinOp op, IRTExprPtr left, IRTExprPtr right) :
 	op(op),
 	left(std::move(left)),
 	right(std::move(right))
 {}
 
 
-void PairExpr::accept(IRTVisitor& visitor) {
+void IRTBinaryExpr::accept(IRTVisitor& visitor) {
+	visitor.visit(*this);
+}
+
+
+IRTMemExpr::IRTMemExpr(IRTExprPtr address, int offset) :
+	address(std::move(address)),
+	offset(offset)
+{}
+
+
+void IRTMemExpr::accept(IRTVisitor& visitor) {
 	visitor.visit(*this);
 }

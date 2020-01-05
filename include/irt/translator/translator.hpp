@@ -3,8 +3,9 @@
 #include "ast/visitor.hpp"
 #include "ast/ast.hpp"
 #include "irt/irt.hpp"
+#include "irt/containers.hpp"
 #include "expr.hpp"
-#include "inst/generator.hpp"
+#include "generator.hpp"
 
 
 // translate: AST -> IRT
@@ -22,7 +23,7 @@ private:
 	IRTCmdPtr get(ASTNodePtr&);
 
 public:
-	Translator(Generator& gen);
+	Translator(Generator& gen, Map<IRTStruct>& structs);
 
 	void visit(FunNode&) override;
 	void visit(AssignNode&) override;
@@ -34,5 +35,5 @@ public:
 	void visit(DeclNode&) override;
 	void visit(ExprNode&) override;
 
-	IRTFunPtr get(FunNodePtr&);
+	IRTFun get(FunNodePtr&);
 };

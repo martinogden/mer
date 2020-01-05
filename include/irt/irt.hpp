@@ -28,20 +28,6 @@ typedef std::unique_ptr<IRTExpr> IRTExprPtr;
 typedef std::unique_ptr<IRTCmd> IRTCmdPtr;
 
 
-class IRTFun {
-public:
-	std::string id;
-	std::vector<std::string> params;
-	IRTCmdPtr body;
-
-	IRTFun(std::string id, std::vector<std::string> params, IRTCmdPtr body);
-	void accept(IRTVisitor& visitor);
-};
-
-
-typedef std::unique_ptr<IRTFun> IRTFunPtr;
-
-
 class SeqCmd : public IRTCmd {
 public:
 	IRTCmdPtr head;
@@ -89,6 +75,26 @@ public:
 	IRTExprPtr value;
 
 	AssignCmd(std::string var, IRTExprPtr value);
+	void accept(IRTVisitor& visitor) override;
+};
+
+
+class LoadCmd : public IRTCmd {
+public:
+	std::string dst;
+	IRTExprPtr src;
+
+	LoadCmd(std::string dst, IRTExprPtr src);
+	void accept(IRTVisitor& visitor) override;
+};
+
+
+class StoreCmd : public IRTCmd {
+public:
+	IRTExprPtr dst;
+	std::string src;
+
+	StoreCmd(IRTExprPtr dst, std::string src);
 	void accept(IRTVisitor& visitor) override;
 };
 
@@ -155,31 +161,40 @@ public:
 typedef std::unique_ptr<CmdExpr> CmdExprPtr;
 
 
-class IntExpr : public IRTExpr {
+class IRTIntExpr : public IRTExpr {
 public:
-	int value;
+	int64_t value;
 
-	IntExpr(int value);
+	IRTIntExpr(int64_t value);
 	void accept(IRTVisitor& visitor) override;
 };
 
 
-class VarExpr : public IRTExpr {
+class IRTIdExpr : public IRTExpr {
 public:
 	std::string name;
 
-	VarExpr(std::string name);
+	IRTIdExpr(std::string name);
 	void accept(IRTVisitor& visitor) override;
 };
 
 
-// TODO: better name or namespace it
-class PairExpr : public IRTExpr {
+class IRTBinaryExpr : public IRTExpr {
 public:
 	BinOp op;
 	IRTExprPtr left;
 	IRTExprPtr right;
 
-	PairExpr(BinOp op, IRTExprPtr left, IRTExprPtr right);
+	IRTBinaryExpr(BinOp op, IRTExprPtr left, IRTExprPtr right);
+	void accept(IRTVisitor& visitor) override;
+};
+
+
+class IRTMemExpr : public IRTExpr {
+public:
+	IRTExprPtr address;
+	int offset;
+
+	IRTMemExpr(IRTExprPtr address, int offset=0);
 	void accept(IRTVisitor& visitor) override;
 };

@@ -31,7 +31,28 @@ IRTCmdPtr BoolExprTranslator::get(ExprPtr expr, std::string t, std::string f) {
 	l1 = std::move(t);
 	l2 = std::move(f);
 	expr->accept(*this);
+	assert(retval);
 	return std::move(retval);
+}
+
+
+void BoolExprTranslator::visit(CallExpr& expr) {
+//	throw 1;  // we should never get here
+	std::string t = getTrueLabel();
+	std::string f = getFalseLabel();
+	IRTExprPtr zero = std::make_unique<IRTIntExpr>(0);
+	CmdExprPtr e = tr.get(&expr);  // HACK
+
+	std::vector<IRTCmdPtr> cmds;
+	cmds.push_back( std::move(e->cmd) );
+	cmds.push_back( std::make_unique<IfCmd>(Comparison(BinOp::NOT_EQL, std::move(e->expr), std::move(zero)), t, f) );
+
+	ret( std::move(cmds) );
+}
+
+
+void BoolExprTranslator::visit(AllocExpr& expr) {
+	throw 1;  // we should never get here
 }
 
 
@@ -123,11 +144,43 @@ void BoolExprTranslator::visit(LiteralExpr& expr) {
 void BoolExprTranslator::visit(IdExpr& expr) {
 	std::string t = getTrueLabel();
 	std::string f = getFalseLabel();
-	CmdExprPtr e = std::make_unique<CmdExpr>(std::make_unique<NopCmd>(), std::make_unique<VarExpr>(expr.identifier));
-	IRTExprPtr zero = std::make_unique<IntExpr>(0);
+	IRTExprPtr e = std::make_unique<IRTIdExpr>(expr.identifier);
+	IRTExprPtr zero = std::make_unique<IRTIntExpr>(0);
+
+	ret( std::make_unique<IfCmd>(Comparison(BinOp::NOT_EQL, std::move(e), std::move(zero)), t, f) );
+}
+
+
+void BoolExprTranslator::visit(SubscriptExpr& expr) {
+	ret( toRValue(expr, getTrueLabel(), getFalseLabel()) );
+}
+
+
+void BoolExprTranslator::visit(ArrowExpr& expr) {
+	throw 1;  // we should never get here
+}
+
+
+void BoolExprTranslator::visit(DotExpr& expr) {
+	ret( toRValue(expr, getTrueLabel(), getFalseLabel()) );
+}
+
+
+void BoolExprTranslator::visit(DerefExpr& expr) {
+	ret( toRValue(expr, getTrueLabel(), getFalseLabel()) );
+}
+
+
+IRTCmdPtr BoolExprTranslator::toRValue(Expr& expr, const std::string& t, const std::string& f) {
+	CmdExprPtr e = tr.toRValue(expr);
+
+	auto v = dynamic_cast<IRTIdExpr*>(e->expr.get());
+	assert(v);
+
+	IRTExprPtr zero = std::make_unique<IRTIntExpr>(0);
 
 	std::vector<IRTCmdPtr> cmds;
 	cmds.push_back( std::move(e->cmd) );
 	cmds.push_back( std::make_unique<IfCmd>(Comparison(BinOp::NOT_EQL, std::move(e->expr), std::move(zero)), t, f) );
-	ret( std::move(cmds) );
+	return concat(std::move(cmds));
 }

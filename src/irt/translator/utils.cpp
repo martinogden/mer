@@ -4,8 +4,11 @@
 IRTCmdPtr concat(std::vector<IRTCmdPtr> cmds) {
 	IRTCmdPtr cmd = std::make_unique<NopCmd>();
 
-	for (auto it=cmds.rbegin(); it!=cmds.rend(); ++it)
+	for (auto it=cmds.rbegin(); it!=cmds.rend(); ++it) {
+		assert(*it);
+		assert(cmd);
 		cmd = std::make_unique<SeqCmd>(std::move(*it), std::move(cmd));
+	}
 
 	return cmd;
 }
@@ -19,21 +22,4 @@ bool isPureOp(BinOp op) {
 		default:
 			return true;
 	}
-}
-
-
-bool isBoolOp(BinOp op) {
-	switch (getOpType(op)) {
-		case OpType::REL:
-		case OpType::EQL:
-		case OpType::LOGICAL:
-			return true;
-		default:
-			return false;
-	}
-}
-
-
-bool isBoolOp(UnOp op) {
-	return op == UnOp::LOG_NOT;
 }

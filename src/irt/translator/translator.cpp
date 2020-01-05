@@ -1,14 +1,15 @@
 #include <iostream>
+#include "irt/containers.hpp"
 #include "irt/translator/utils.hpp"
 #include "irt/translator/translator.hpp"
 #include "irt/translator/bool-expr.hpp"
 
 
-Translator::Translator(Generator& gen) :
+Translator::Translator(Generator& gen, Map<IRTStruct>& structs) :
 	retval(nullptr),
 	returnLabel(""),
 	returnTmp(""),
-	tr(gen)
+	tr(gen, structs)
 {}
 
 
@@ -22,13 +23,13 @@ void Translator::ret(std::vector<IRTCmdPtr> val) {
 }
 
 
-IRTFunPtr Translator::get(FunNodePtr& node) {
+IRTFun Translator::get(FunNodePtr& node) {
 	std::vector<std::string> params;
 	for (auto const& param : node->params)
 		params.push_back(param.name);
 
 	node->accept(*this);
-	return std::make_unique<IRTFun>(node->id, params, std::move(retval));
+	return {node->id, params, std::move(retval)};
 }
 
 
@@ -44,24 +45,37 @@ CmdExprPtr Translator::get(ExprPtr expr) {
 
 
 void Translator::visit(FunNode& node) {
+	TypePtr type = node.type->codomain;
 	returnLabel = tr.freshLabel();
 	returnTmp = tr.freshTmp();
 
 	std::vector<IRTCmdPtr> cmds;
 	cmds.push_back( get(node.body) );
 	cmds.push_back( std::make_unique<LabelCmd>(returnLabel) );
-	cmds.push_back( std::make_unique<ReturnCmd>(std::make_unique<VarExpr>(returnTmp)) );
+	cmds.push_back( std::make_unique<ReturnCmd>(std::make_unique<IRTIdExpr>(returnTmp)) );
 
 	ret( std::move(cmds) );
 }
 
 
 void Translator::visit(AssignNode& node) {
-	CmdExprPtr e = get( std::move(node.expr) );
+	CmdExprPtr lvalue = tr.getAsLValue( std::move(node.lvalue) );
+	CmdExprPtr rvalue = get( std::move(node.rvalue) );
 
 	std::vector<IRTCmdPtr> cmds;
-	cmds.push_back( std::move(e->cmd) );
-	cmds.push_back( std::make_unique<AssignCmd>(node.id, std::move(e->expr)) );
+	cmds.push_back( std::move(lvalue->cmd) );
+	cmds.push_back( std::move(rvalue->cmd) );
+
+	if ( auto expr = dynamic_cast<IRTIdExpr*>(lvalue->expr.get()) )
+		cmds.push_back( std::make_unique<AssignCmd>(expr->name, std::move(rvalue->expr)) );
+	else if ( auto addr = dynamic_cast<IRTMemExpr*>(lvalue->expr.get()) ) {
+		std::string address = tr.freshTmp();
+		std::string val = tr.freshTmp();
+
+		cmds.push_back( std::make_unique<AssignCmd>(val, std::move(rvalue->expr)) );
+		cmds.push_back( std::make_unique<StoreCmd>(std::move(lvalue->expr), val) );
+	}
+	else throw 1;  // we should never ger here
 
 	ret( std::move(cmds) );
 }
