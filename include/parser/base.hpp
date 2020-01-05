@@ -38,7 +38,8 @@ class ParseError : public std::exception {
 public:
 	std::string msg;
 	Token token;
+	TokenType terminator;
 
-	ParseError(std::string msg, Token token);
+	ParseError(std::string msg, Token token, TokenType terminator=TokenType::SEMICOLON);
 	const char* what() const noexcept override;
 };

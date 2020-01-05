@@ -103,9 +103,10 @@ void BaseParser::consume(TokenType until) {
 }
 
 
-ParseError::ParseError(std::string msg, Token token) :
+ParseError::ParseError(std::string msg, Token token, TokenType terminator) :
 	msg(std::move(msg)),
-	token(std::move(token))
+	token(std::move(token)),
+	terminator(terminator)
 {}
 
 
