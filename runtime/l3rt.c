@@ -27,3 +27,10 @@ void* _c0_alloc_array(size_t size, size_t n) {
 	*(int*)(ptr + size - WORD_SIZE) = n;
 	return ptr + size;
 }
+
+
+void _c0_bounds_check(void* A, int i) {
+	int n = *(int*)(A-WORD_SIZE);
+	if (i < 0 || i >= n)
+		exit(12);  // -12 = SIGUSR2?
+}

@@ -5,7 +5,9 @@ int main()
   int TMIN;
   int overflow;
 
-  TMIN = -2147483648;
+  //  TMIN = -2147483648;
+  // TODO lex negative literals rather than negate the corres. positive literal
+  TMIN = -9223372036854775807 - 1;
   overflow = TMIN % -1;
   return 3;
 }
