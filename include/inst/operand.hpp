@@ -8,7 +8,7 @@
 
 
 typedef unsigned int uint;
-typedef int Imm;
+typedef int64_t Imm;
 typedef std::string Tmp;
 typedef std::string Lbl;
 
@@ -36,8 +36,12 @@ r14             | r14d          | r14w          | r14b
 r15             | r15d          | r15w          | r15b
  */
 enum class Reg {
-	EAX, EDI, ESI, EDX, ECX, R8D, R9D, R10D, R11D,  // caller-saved
-	EBX, R12D, R13D, R14D, R15D, // callee-saved
+//	EAX, EDI, ESI, EDX, ECX, R8D, R9D, R10D, R11D,
+//	EBX, R12D, R13D, R14D, R15D,
+//	ESP, EBP,
+
+	RAX, RDI, RSI, RDX, RCX, R8, R9, R10, R11,  // caller-saved
+	RBX, R12, R13, R14, R15, // callee-saved
 	RSP, RBP,  // stack
 };
 
@@ -48,17 +52,7 @@ extern Set<Reg> callerSaved;
 extern Set<Reg> calleeSaved;
 
 
-std::string promote(Reg reg);
-
-
-struct Mem {
-	Reg reg;
-	int offset;
-	Mem(Reg reg, int offset);
-};
-
-
-struct Operand {
+class Operand {
 public:
 	enum Type {
 		TMP,
@@ -72,7 +66,8 @@ public:
 	Operand(Tmp tmp);
 	Operand(Imm imm);
 	Operand(Reg reg);
-	Operand(Reg reg, int off);
+	Operand(Tmp tmp, int offset);
+	Operand(Reg reg, int offset);
 
 	static Operand label(Lbl lbl) {
 		return Operand(LBL, std::move(lbl));
@@ -84,7 +79,8 @@ public:
 	std::string getTmp() const;
 	int getImm() const;
 	Reg getReg() const;
-	Mem getMem() const;
+	Operand getMemOperand() const;
+	int getMemOffset() const;
 
 	friend bool operator==(Operand a, Operand b);
 	friend bool operator!=(Operand a, Operand b);
@@ -93,17 +89,15 @@ public:
 	std::string to_string() const;
 
 private:
-	Operand(Type type, std::string tmp) :
-		type(type),
-		tmp(std::move(tmp))
-	{}
-
+	Operand(Type type, std::string tmp);
+	int offset;
+	Type memType;
 	Type type;
 	Tmp tmp;
+
 	union {
 		Imm imm;
 		Reg reg;
-		Mem mem;
 	};
 };
 

@@ -2,14 +2,15 @@
 #include <vector>
 #include "irt/visitor.hpp"
 #include "irt/irt.hpp"
+#include "irt/containers.hpp"
 #include "inst/operand.hpp"
 #include "inst/inst.hpp"
-#include "inst/generator.hpp"
+#include "generator.hpp"
 
 
 class CodeGen : public IRTVisitor {
 private:
-	IRTFunPtr& fun;
+	IRTFun& fun;
 	Generator& gen;
 
 	std::vector<Inst> insts;
@@ -19,23 +20,25 @@ private:
 	void ret(Operand);
 
 public:
-	CodeGen(IRTFunPtr& fun, Generator& gen);
+	CodeGen(IRTFun& fun, Generator& gen);
 
-	void visit(IRTFun&) override;
 	void visit(SeqCmd&) override;
 	void visit(NopCmd&) override;
 	void visit(CallCmd&) override;
 	void visit(AssignCmd&) override;
 	void visit(EffAssignCmd&) override;
+	void visit(LoadCmd&) override;
+	void visit(StoreCmd&) override;
 	void visit(LabelCmd&) override;
 	void visit(IfCmd&) override;
 	void visit(GotoCmd&) override;
 	void visit(ReturnCmd&) override;
 
 	void visit(CmdExpr&) override;
-	void visit(IntExpr&) override;
-	void visit(VarExpr&) override;
-	void visit(PairExpr&) override;
+	void visit(IRTIntExpr&) override;
+	void visit(IRTIdExpr&) override;
+	void visit(IRTBinaryExpr&) override;
+	void visit(IRTMemExpr&) override;
 
 	Operand& get(IRTExprPtr&);
 	InstFun run();

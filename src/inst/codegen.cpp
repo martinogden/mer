@@ -2,15 +2,16 @@
 #include "conversion.hpp"
 
 
-CodeGen::CodeGen(IRTFunPtr& fun, Generator& gen) :
+CodeGen::CodeGen(IRTFun& fun, Generator& gen) :
 	fun(fun),
 	gen(gen)
 {}
 
 
 InstFun CodeGen::run() {
-	fun->accept(*this);
-	return InstFun(fun->id, std::move(fun->params), std::move(insts));
+	emit({ Inst::ENTER });
+	fun.body->accept(*this);
+	return InstFun(fun.id, std::move(fun.params), std::move(insts));
 }
 
 
@@ -27,12 +28,6 @@ void CodeGen::ret(Operand op) {
 Operand& CodeGen::get(IRTExprPtr& expr) {
 	expr->accept(*this);
 	return retval;
-}
-
-
-void CodeGen::visit(IRTFun& fun) {
-	emit({ Inst::ENTER });
-	fun.body->accept(*this);
 }
 
 
@@ -69,15 +64,27 @@ void CodeGen::visit(EffAssignCmd& cmd) {
 }
 
 
+void CodeGen::visit(LoadCmd& cmd) {
+	Operand& op = get(cmd.src);
+	emit({ Inst::OpCode::MOV, cmd.dst, op });
+}
+
+
+void CodeGen::visit(StoreCmd& cmd) {
+	Operand& op = get(cmd.dst);
+	emit({ Inst::OpCode::MOV, op, cmd.src });
+}
+
+
 void CodeGen::visit(LabelCmd& cmd) {
 	emit({ Inst::LBL, Operand::label(cmd.name) });
 }
 
 
 void CodeGen::visit(IfCmd& cmd) {
-	Operand t = gen.tmp();
 	Operand left = get(cmd.cmp.left);
 	Operand right = get(cmd.cmp.right);
+	std::string t = gen.tmp();
 	Inst::OpCode opcode = toOpCode(cmd.cmp.op);
 
 	emit({ Inst::SUB, t, left, right });
@@ -102,22 +109,37 @@ void CodeGen::visit(CmdExpr& e) {
 }
 
 
-void CodeGen::visit(IntExpr& e) {
+void CodeGen::visit(IRTIntExpr& e) {
 	ret(e.value);
 }
 
 
-void CodeGen::visit(VarExpr& e) {
+void CodeGen::visit(IRTIdExpr& e) {
 	ret(e.name);
 }
 
 
-void CodeGen::visit(PairExpr& e) {
+void CodeGen::visit(IRTBinaryExpr& e) {
 	Operand left = get(e.left);
 	Operand right = get(e.right);
-	Operand t = gen.tmp();
+	std::string t = gen.tmp();
 	Inst::OpCode opcode = toOpCode(e.op);
 
 	emit({ opcode, t, left, right });
 	ret(t);
+}
+
+
+void CodeGen::visit(IRTMemExpr& e) {
+	Operand& op = get(e.address);
+	switch (op.getType()) {
+		case Operand::REG:
+			ret({ op.getReg(), e.offset });
+			break;
+		case Operand::TMP:
+			ret({ op.getTmp(), e.offset });
+			break;
+		default:
+			throw 1;  // we should never get here
+	}
 }

@@ -2,60 +2,22 @@
 
 
 Set<Reg> callerSaved ({
-	//Reg::EAX,
-	Reg::EDI, Reg::ESI,
-	Reg::EDX, Reg::ECX, Reg::R8D,
-	Reg::R9D, Reg::R10D, Reg::R11D,
+	//Reg::RAX,
+	Reg::RDI, Reg::RSI,
+	Reg::RDX, Reg::RCX, Reg::R8,
+	Reg::R9, Reg::R10, Reg::R11,
 });
 
 
 Set<Reg> calleeSaved({
-	Reg::EBX, Reg::R12D, Reg::R13D,
-	Reg::R14D, //Reg::R15D,
+	Reg::RBX, Reg::R12, Reg::R13,
+	// Reg::R14, Reg::R15,
 });
 
 
-std::string promote(Reg reg) {
-	switch(reg) {
-		case Reg::EAX:
-			return "%rax";
-		case Reg::EBX:
-			return "%rbx";
-		case Reg::ECX:
-			return "%rcx";
-		case Reg::EDX:
-			return "%rdx";
-		case Reg::EDI:
-			return "%rdi";
-		case Reg::ESI:
-			return "%rsi";
-		case Reg::R8D:
-			return "%r8";
-		case Reg::R9D:
-			return "%r9";
-		case Reg::R10D:
-			return "%r10";
-		case Reg::R11D:
-			return "%r11";
-		case Reg::R12D:
-			return "%r12";
-		case Reg::R13D:
-			return "%r13";
-		case Reg::R14D:
-			return "%r14";
-		case Reg::R15D:
-			return "%r15";
-		case Reg::RBP:
-			return "%rbp";
-		case Reg::RSP:
-			return "%rsp";
-
-	}
-}
-
-
-Mem::Mem(Reg reg, int offset) :
-	reg(reg), offset(offset)
+Operand::Operand(Type type, std::string tmp) :
+	type(type),
+	tmp(std::move(tmp))
 {}
 
 
@@ -63,7 +25,7 @@ Operand::Operand() {}
 
 
 Operand::Operand(Tmp tmp) :
-	Operand(TMP, tmp)
+	Operand(TMP, std::move(tmp))
 {}
 
 
@@ -79,9 +41,19 @@ Operand::Operand(Reg reg) :
 {}
 
 
-Operand::Operand(Reg reg, int off) :
+Operand::Operand(Tmp tmp, int offset) :
+	offset(offset),
+	memType(TMP),
 	type(MEM),
-	mem({reg, off})
+	tmp(std::move(tmp))
+{}
+
+
+Operand::Operand(Reg reg, int offset) :
+	offset(offset),
+	memType(REG),
+	type(MEM),
+	reg(reg)
 {}
 
 
@@ -119,28 +91,29 @@ Reg Operand::getReg() const {
 }
 
 
-Mem Operand::getMem() const {
+Operand Operand::getMemOperand() const {
 	assert(type == MEM);
-	return mem;
+	switch (memType) {
+		case REG:
+			return Operand(reg);
+		case TMP:
+			return Operand(tmp);
+		default:
+			throw 1;  // we should never get here
+	}
+}
+
+
+int Operand::getMemOffset() const {
+	assert(type == MEM);
+	return offset;
 }
 
 
 std::string Operand::to_string() const {
-	switch (type) {
-		case Operand::LBL:
-			return getLabel();
-		case Operand::IMM:
-			return "$" + std::to_string(getImm());
-		case Operand::REG: {
-			std::stringstream buf;
-			buf << getReg();
-			return buf.str();
-		}
-		case Operand::TMP:
-			return getTmp();
-		case Operand::MEM:
-			throw 1;  // TODO
-	}
+	std::stringstream buf;
+	buf << *this;
+	return buf.str();
 }
 
 
