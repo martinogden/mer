@@ -1,4 +1,4 @@
-//test return 42
+//test return -42
 // check to see if variable definition works properly.
 int main()
 {

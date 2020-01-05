@@ -3,7 +3,8 @@
 int main()
 {
     int a = 0;
-    int b = 0xFFFFFFFF;
+    // TODO: fix comparison codegen: can't negate this value (overflows)
+    int b = 0x8000000000000000;
     bool wut = a < b;
     if (wut) {
         return -1;

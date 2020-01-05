@@ -1,9 +1,10 @@
-//test error
+//test return 0
 // namespace
 
 typedef bool x;
 
 int main () {
+    x y = true;
     int x = 0;
     return 0;
 }

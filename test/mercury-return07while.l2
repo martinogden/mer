@@ -2,7 +2,7 @@
 
 int main()
 {
-  int x = 0XfFfFfFfF;
+  int x = 0x8000000000000000;
   while (x > 0) {
     1 / 0;
   }

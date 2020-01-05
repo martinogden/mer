@@ -23,6 +23,8 @@ class Effect(Enum):
 	SIGFPE = auto()
 	SIGALRM = auto()
 	SIGABRT = auto()
+	SIGSEGV = auto()
+	SIGUSR2 = auto()
 	ERROR = auto()
 
 
@@ -46,6 +48,10 @@ def parse_test_directive(f):
 	if match:
 		return Effect.SIGABRT, None
 
+	match = re.match(r"//\s*test\s+memerror\s*", line)
+	if match:
+		return Effect.SIGUSR2, None
+
 	match = re.match(r"//\s*test\s+error\s*", line)
 	if match:
 		return Effect.ERROR, None
@@ -56,7 +62,7 @@ def parse_test_directive(f):
 
 def run(fp, effect, result):
 	fn = os.path.basename(fp)
-	#print(fn)
+	# print(fn)
 	r = subprocess.run([EXE, fp], capture_output=True)
 
 	if effect == Effect.ERROR:
@@ -67,7 +73,11 @@ def run(fp, effect, result):
 	r = link_and_execute(r.stdout, fn)
 
 	if effect == Effect.RETURN:
-		output = int(r.stdout.strip())
+		try:
+			output = int(r.stdout.strip())
+		except ValueError as e:
+			import ipdb; ipdb.set_trace()
+			exit(1)
 		assert output == result, "Invalid result(%s != %d) in: `%s`" % (output, result, fn)
 
 	if effect == Effect.SIGFPE:
@@ -76,8 +86,11 @@ def run(fp, effect, result):
 	if effect == Effect.SIGALRM:
 		assert r.returncode == -14, "SIGALRM not raised in: `%s`" % fn
 
-	if effect == Effect.SIGALRM:
+	if effect == Effect.SIGABRT:
 		assert r.returncode == -6, "SIGABRT not raised in: `%s`" % fn
+
+	if effect == Effect.SIGSEGV:
+		assert r.returncode == -11, "SIGSEGV not raised in: `%s`" % fn
 
 
 def link_and_execute(asm, fn):
