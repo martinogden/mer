@@ -1,301 +1,150 @@
 #include <string>
 #include "cst/printer.hpp"
+#include "expr/printer.hpp"
+#include "print-utils.hpp"
 
 
-const std::string SPACE = " ";
-const std::string LPAREN = "(";
-const std::string RPAREN = ")";
+std::string CSTPrinter::get(ParseTree& tree) {
+	std::vector<std::string> decls;
 
+	for (auto& decl : tree.decls)
+		decls.push_back( get(decl) );
 
-std::string to_string(UnOp op) {
-	std::stringstream buffer;
-	buffer << op;
-	return buffer.str();
+	return join(decls, "\n");
 }
 
 
-std::string to_string(BinOp op) {
-	std::stringstream buffer;
-	buffer << op;
-	return buffer.str();
+void CSTPrinter::ret(std::string s) {
+	retval = std::move(s);
 }
 
 
-std::string to_string(bool b) {
-	return b ? "true" : "false";
+std::string CSTPrinter::get(StmtPtr& stmt) {
+	stmt->accept(*this);
+	return retval;
 }
 
 
-CSTPrinter::CSTPrinter(ParseTree& tree) :
-	tree(tree)
-{}
+std::string CSTPrinter::get(ExprPtr& expr) {
+	ExprPrinter printer;
+	return printer.get(expr);
+}
 
 
-std::string CSTPrinter::run() {
-	for (auto const& decl : tree.decls)
-		decl->accept(*this);
-	return buffer.str();
+std::string CSTPrinter::get(TypePtr& type) {
+	TypePrinter printer;
+	return printer.get(type);
 }
 
 
 void CSTPrinter::visit(FunDecl& decl) {
-	open("declare");
-	printFunSignature(decl);
-	close();
+	ret("declare " + decl.identifier + " " + signature(decl));
 }
 
 
 void CSTPrinter::visit(FunDefn& defn) {
-	open("define");
-	// TODO: get rid of this
-	FunDecl* decl = defn.decl.get();
-	printFunSignature(*decl);
-	append(SPACE);
-	defn.body->accept(*this);
-	close();
+	ret("fun " + defn.decl->identifier + " " + signature(*defn.decl) + " " + get(defn.body) + ";");
+}
+
+
+void CSTPrinter::visit(StructDecl& decl) {
+	ret("struct " + decl.identifier + ";");
+}
+
+
+void CSTPrinter::visit(StructDefn& defn) {
+	std::string id = defn.decl->identifier;
+	std::vector<std::string> fields;
+
+	for (const auto& field : defn.fields)
+		fields.push_back(field->identifier + ":" + get(field->type));
+
+	ret("struct " + id + " {" + join(fields, ", ") + "};");
 }
 
 
 void CSTPrinter::visit(TypedefStmt& stmt) {
-	open("typedef");
-	append(stmt.type.lexeme);
-	append(SPACE);
-	append(stmt.alias.lexeme);
-	close();
+	ret("typedef " + get(stmt.type) + " " + stmt.alias.lexeme + ";");
 }
 
 
 void CSTPrinter::visit(DeclStmt& stmt) {
-	open("declare");
-	append(stmt.type.lexeme);
-	append(SPACE);
-	append(stmt.identifier);
-	if (stmt.expr) {
-		append(SPACE);
-		stmt.expr->accept(*this);
-	}
-	close();
+	std::string expr = stmt.expr ? " = " + get(stmt.expr) : "";
+	ret("declare " + get(stmt.type) + " " + stmt.identifier + expr + ";");
 }
 
 
 void CSTPrinter::visit(IfStmt& stmt) {
-	open("if");
-	stmt.cond->accept(*this);
-	append(SPACE);
-	stmt.then->accept(*this);
-	append(SPACE);
-	if (stmt.otherwise)
-		stmt.otherwise->accept(*this);
-	else
-		append("()");
-
-	close();
+	std::string ow = stmt.otherwise ? get(stmt.otherwise) : "()";
+	ret("if " + get(stmt.cond) + " " + get(stmt.then) + " " + ow);
 }
 
 
 void CSTPrinter::visit(WhileStmt& stmt) {
-	open("while");
-	stmt.cond->accept(*this);
-	append(SPACE);
-	stmt.body->accept(*this);
-	close();
+	ret("while " + get(stmt.cond) + " " + get(stmt.body));
 }
 
 
 void CSTPrinter::visit(ForStmt& stmt) {
-	open("for");
-	if (stmt.init)
-		stmt.init->accept(*this);
-	else
-		append("()");
-
-	append(SPACE);
-	stmt.cond->accept(*this);
-	append(SPACE);
-
-	if (stmt.step)
-		stmt.step->accept(*this);
-	else
-		append("()");
-
-	append(SPACE);
-	stmt.body->accept(*this);
-	close();
+	std::string init = stmt.init ? get(stmt.init) : "()";
+	std::string step = stmt.step ? get(stmt.step) : "()";
+	ret("for " + init + " " + get(stmt.cond) + " " + step + " " + get(stmt.body));
 }
 
 
 void CSTPrinter::visit(ReturnStmt& stmt) {
-	if (stmt.expr) {
-		open(stmt.token.lexeme);
-		stmt.expr->accept(*this);
-		close();
-	}
-	else
-		append("(return)");
+	std::string expr = stmt.expr ? " " + get(stmt.expr) : "";
+	ret("return" + expr + ";");
 }
 
 
 void CSTPrinter::visit(BlockStmt& block) {
-	if (block.statements.empty()) {
-		append("[]");
-		return;
+	if (block.statements.empty())
+		ret("[]");
+	else {
+		std::vector<std::string> stmts;
+		for (auto& stmt : block.statements)
+			stmts.push_back( get(stmt) );
+
+		ret("[\n" + join(stmts, "\n") + "\n]");
 	}
-
-	append("[");
-	newline();
-	std::vector<StmtPtr>& stmts = block.statements;
-
-	for (auto it=stmts.begin(); it != --stmts.end(); it++) {
-		(*it)->accept(*this);
-		newline();
-	}
-
-	(*--stmts.end())->accept(*this);
-	newline();
-	append("]");
 }
 
 
 void CSTPrinter::visit(ExprStmt& stmt) {
-	stmt.expr->accept(*this);
+	ret( get(stmt.expr) + ";" );
 }
 
 
 void CSTPrinter::visit(AssignStmt& stmt) {
-	open("assign");
-	append(to_string(stmt.op));
-	append(SPACE);
-	stmt.lvalue->accept(*this);
-	append(SPACE);
-	stmt.rvalue->accept(*this);
-	close();
+	std::string op = stmt.op == BinOp::EQL ? "" : to_string(stmt.op) + " ";
+	ret("assign " + op + get(stmt.lvalue) + " " + get(stmt.rvalue) + ";");
 }
 
 
 void CSTPrinter::visit(PostOpStmt& stmt) {
-	open();
+	std::string tag;
+
 	switch (stmt.op) {
 		case BinOp::ADD:
-			append("incr");
+			tag = "incr";
 			break;
 		case BinOp::SUB:
-			append("decr");
+			tag = "decr";
 			break;
 		default:
 			throw 1; // should never get here
 	}
 
-	append(SPACE);
-	stmt.expr->accept(*this);
-	close();
+	ret(tag + " " + get(stmt.expr) + ";");
 }
 
 
-void CSTPrinter::visit(CallExpr& expr) {
-	open("call");
-	append(expr.identifier);
-	append(SPACE);
+std::string CSTPrinter::signature(FunDecl& decl) {
+	std::vector<std::string> params;
 
-	open();
-	std::vector<ExprPtr>& args = expr.args;
+	for (const auto& param : decl.params)
+		params.push_back(param->identifier + ":" + get(param->type));
 
-	if (!expr.args.empty()) {
-		for (auto it=args.begin(); it != --args.end(); ++it) {
-			(*it)->accept(*this);
-			append(SPACE);
-		}
-		(*--args.end())->accept(*this);
-	}
-	close();
-	close();
-}
-
-
-void CSTPrinter::visit(TernaryExpr& expr) {
-	open("?");
-	expr.cond->accept(*this);
-	append(SPACE);
-	expr.then->accept(*this);
-	append(SPACE);
-	expr.otherwise->accept(*this);
-	close();
-}
-
-
-void CSTPrinter::visit(BinaryExpr& expr) {
-	open(to_string(expr.op));
-	expr.left->accept(*this);
-	append(SPACE);
-	expr.right->accept(*this);
-	close();
-}
-
-
-void CSTPrinter::visit(UnaryExpr& unary) {
-	open("neg");
-	unary.expr->accept(*this);
-	close();
-}
-
-
-void CSTPrinter::visit(LiteralExpr& expr) {
-	switch (expr.type) {
-		case Type::INT:
-			append(std::to_string(expr.as.i));
-			break;
-		case Type::BOOL:
-			append(std::to_string(expr.as.b));
-			break;
-		default:
-			throw 1;  // should never get here
-	}
-}
-
-
-void CSTPrinter::visit(IdExpr& expr) {
-	append(expr.identifier);
-}
-
-
-void CSTPrinter::append(const std::string& str) {
-	buffer << str;
-}
-
-
-void CSTPrinter::open(const std::string& atom) {
-	append(LPAREN + atom + SPACE);
-}
-
-
-void CSTPrinter::open() {
-	append(LPAREN);
-}
-
-
-void CSTPrinter::close() {
-	append(RPAREN);
-}
-
-
-void CSTPrinter::newline() {
-	append("\n");
-}
-
-
-void CSTPrinter::printFunSignature(FunDecl& decl) {
-	append(decl.identifier);
-	append(" <");
-	open();
-
-	std::vector<DeclStmtPtr>& params = decl.params;
-	if (!params.empty()) {
-		for (auto it=params.begin(); it != --params.end(); ++it)
-			append((*it)->identifier + ":" + (*it)->type.lexeme + ", ");
-		append((*--params.end())->identifier + ":" + (*--params.end())->type.lexeme);
-	}
-	close();
-
-	append(" -> ");
-	append(decl.type.lexeme);
-	append(">");
+	return "<(" + join(params, ", ") + ") -> " + get(decl.type) + ">";
 }
